@@ -121,7 +121,7 @@
 
             let messages = [];
             // Bin ID fixo criado manualmente
-            const JSONBIN_BIN_ID = '68cb789843b1c97be946b655';
+            const JSONBIN_BIN_ID = '68cb79e543b1c97be946b710';
 
             try {
                 console.log('🔍 Buscando mensagens do bin:', JSONBIN_BIN_ID);
@@ -136,7 +136,10 @@
                     messages = data.record.messages || [];
                     console.log('✅ Carregadas', messages.length, 'mensagens online');
                 } else {
-                    throw new Error('Erro HTTP: ' + response.status);
+                    console.error('❌ Erro HTTP:', response.status, response.statusText);
+                    const errorText = await response.text();
+                    console.error('❌ Detalhes do erro:', errorText);
+                    throw new Error(`Erro HTTP: ${response.status} - ${errorText}`);
                 }
             } catch (error) {
                 console.error('❌ Erro ao carregar online:', error);
