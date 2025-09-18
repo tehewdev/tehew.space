@@ -138,12 +138,11 @@
                 } else {
                     throw new Error('Erro HTTP: ' + response.status);
                 }
-            }
             } catch (error) {
-            console.error('❌ Erro ao carregar online:', error);
-            messages = JSON.parse(localStorage.getItem('tehewMessages') || '[]');
-            console.log('� Usandeo backup local:', messages.length, 'mensagens');
-        }
+                console.error('❌ Erro ao carregar online:', error);
+                messages = JSON.parse(localStorage.getItem('tehewMessages') || '[]');
+                console.log('📱 Usando backup local:', messages.length, 'mensagens');
+            }
 
         if (messages.length === 0) {
             container.innerHTML = '';
@@ -187,7 +186,7 @@
                     </div>
                 `;
         }).join('');
-        }
+    }
 
         function exportMessages() {
             const messages = JSON.parse(localStorage.getItem('tehewMessages') || '[]');
