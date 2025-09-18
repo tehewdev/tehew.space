@@ -47,7 +47,7 @@
         <!-- Header -->
         <header class="text-center py-8">
             <h1 class="text-4xl md:text-6xl font-bold mb-4">obrigado!</h1>
-            <p class="text-neutral-400 text-lg">suas mensagens foram salvas aqui</p>
+            <p class="text-neutral-400 text-lg">mensagens dos visitantes</p>
         </header>
 
         <!-- Info e botões -->
@@ -120,11 +120,12 @@
             `;
 
             let messages = [];
+            // Usando bin ID fixo (seguindo JSONBin docs)
+            const JSONBIN_BIN_ID = '676a1e5ead19ca34f8d4d2a8';
 
             try {
-                // Tenta buscar mensagens online primeiro
-                const response = await fetch('https://api.jsonbin.io/v3/b/67899f4bad19ca34f8d4c8e5/latest', {
-                    method: 'GET',
+                console.log('🔍 Buscando mensagens do bin:', JSONBIN_BIN_ID);
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
                     headers: {
                         'X-Master-Key': '$2a$10$sLapKiELl6njmNCvL/1G1.aksjUJ6nyXMnWpjwtR7csdw0ERQBkmO'
                     }
@@ -133,51 +134,45 @@
                 if (response.ok) {
                     const data = await response.json();
                     messages = data.record.messages || [];
-                    console.log('✅ Mensagens carregadas do JSONBin:', messages.length);
-                } else if (response.status === 404) {
-                    console.log('📝 Bin ainda não existe - nenhuma mensagem salva ainda');
-                    messages = [];
+                    console.log('✅ Carregadas', messages.length, 'mensagens online');
                 } else {
-                    console.error('❌ Erro HTTP JSONBin:', response.status);
-                    throw new Error('Falha ao carregar online');
+                    throw new Error('Erro HTTP: ' + response.status);
                 }
+            }
             } catch (error) {
-                console.error('❌ Erro ao carregar do JSONBin:', error);
-                // Fallback para localStorage
-                messages = JSON.parse(localStorage.getItem('tehewMessages') || '[]');
-                console.log('📱 Usando localStorage como fallback:', messages.length, 'mensagens');
-            }
+            console.error('❌ Erro ao carregar online:', error);
+            messages = JSON.parse(localStorage.getItem('tehewMessages') || '[]');
+            console.log('� Usandeo backup local:', messages.length, 'mensagens');
+        }
 
-            if (messages.length === 0) {
-                emptyState.classList.remove('hidden');
-                container.innerHTML = '';
-                return;
-            }
+        if (messages.length === 0) {
+            container.innerHTML = '';
+            emptyState.classList.remove('hidden');
+            document.getElementById('messageCount').textContent = 'nenhuma mensagem ainda';
+            return;
+        }
 
-            emptyState.classList.add('hidden');
+        emptyState.classList.add('hidden');
+        document.getElementById('messageCount').textContent =
+            `${messages.length} mensagem${messages.length !== 1 ? 's' : ''} de visitantes`;
 
-            // Atualiza contador
-            document.getElementById('messageCount').textContent =
-                `${messages.length} mensagem${messages.length !== 1 ? 's' : ''} de visitantes`;
+        // Ordena por data (mais recente primeiro)
+        messages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-            // Ordena mensagens por data (mais recente primeiro)
-            messages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        container.innerHTML = messages.map((message, index) => {
+            const date = new Date(message.timestamp);
+            const formattedDate = date.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
 
-            container.innerHTML = messages.map((message, index) => {
-                const date = new Date(message.timestamp);
-                const formattedDate = date.toLocaleDateString('pt-BR', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
+            const browserInfo = message.userAgent ?
+                `<span class="text-xs text-neutral-600 block mt-1">${message.userAgent}</span>` : '';
 
-                // Mostra info do navegador se disponível
-                const browserInfo = message.userAgent ?
-                    `<span class="text-xs text-neutral-600 block mt-1">${message.userAgent}</span>` : '';
-
-                return `
+            return `
                     <div class="message-card bg-neutral-900 border border-neutral-700 rounded-lg p-6" style="animation-delay: ${index * 0.1}s">
                         <div class="flex justify-between items-start mb-3">
                             <div>
@@ -191,10 +186,8 @@
                         <p class="text-white text-lg leading-relaxed whitespace-pre-wrap">${escapeHtml(message.text)}</p>
                     </div>
                 `;
-            }).join('');
+        }).join('');
         }
-
-
 
         function exportMessages() {
             const messages = JSON.parse(localStorage.getItem('tehewMessages') || '[]');
