@@ -269,7 +269,7 @@
 
             // Configuração JSONBin.io
             const JSONBIN_API_KEY = '$2a$10$sLapKiELl6njmNCvL/1G1.aksjUJ6nyXMnWpjwtR7csdw0ERQBkmO';
-            const JSONBIN_BIN_ID = '68cb789843b1c97be946b655'; // Bin criado manualmente
+            const JSONBIN_BIN_ID = '68cb79e543b1c97be946b710'; // Bin criado manualmente
 
             // Função para salvar mensagens (usando bin existente)
             async function saveMessage(message) {
@@ -288,7 +288,7 @@
                 // Salva online no JSONBin.io
                 try {
                     console.log('📋 Buscando mensagens existentes...');
-                    
+
                     // 1. Busca mensagens existentes
                     let existingMessages = [];
                     const getResponse = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
@@ -296,7 +296,7 @@
                             'X-Master-Key': JSONBIN_API_KEY
                         }
                     });
-                    
+
                     if (getResponse.ok) {
                         const data = await getResponse.json();
                         existingMessages = data.record.messages || [];
@@ -305,41 +305,12 @@
                         console.log('⚠️ Bin vazio ou erro, criando nova lista');
                         existingMessages = [];
                     }
-                    
+
                     // 2. Adiciona nova mensagem
                     existingMessages.push(newMessage);
-                    
+
                     // 3. Atualiza o bin
                     const updateResponse = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Master-Key': JSONBIN_API_KEY
-                        },
-                        body: JSON.stringify({
-                            messages: existingMessages,
-                            lastUpdated: new Date().toISOString()
-                        })
-                    });
-                    try {
-                        const getResponse = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-                            headers: {
-                                'X-Master-Key': JSONBIN_API_KEY
-                            }
-                        });
-                        if (getResponse.ok) {
-                            const data = await getResponse.json();
-                            existingMessages = data.record.messages || [];
-                        }
-                    } catch (e) {
-                        console.log('Erro ao buscar mensagens existentes, criando nova lista');
-                    }
-
-                    // Adiciona nova mensagem
-                    existingMessages.push(newMessage);
-
-                    // Atualiza o bin
-                    const saveResponse = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
@@ -356,12 +327,13 @@
                     } else {
                         throw new Error(`Erro ao atualizar bin: ${updateResponse.status}`);
                     }
-                    
+
                 } catch (error) {
                     console.error('❌ Erro ao salvar online:', error);
                     console.log('📱 Mensagem salva apenas localmente como backup');
                 }
             }
+
             noteBox.addEventListener('animationend', (event) => {
                 if (event.animationName === 'fade-out') {
                     noteBox.style.animation = '';
