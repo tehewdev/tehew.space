@@ -115,14 +115,17 @@
                 if (response.ok) {
                     const data = await response.json();
                     messages = data.record.messages || [];
-                    console.log('Mensagens carregadas online:', messages.length);
+                    console.log('✅ Mensagens carregadas do JSONBin:', messages.length);
+                    console.log('📋 Dados:', messages);
                 } else {
+                    console.error('❌ Erro HTTP JSONBin:', response.status);
                     throw new Error('Falha ao carregar online');
                 }
             } catch (error) {
-                console.error('Erro ao carregar online, usando localStorage:', error);
+                console.error('❌ Erro ao carregar do JSONBin:', error);
                 // Fallback para localStorage
                 messages = JSON.parse(localStorage.getItem('tehewMessages') || '[]');
+                console.log('📱 Usando localStorage como fallback:', messages.length, 'mensagens');
             }
             
             if (messages.length === 0) {
@@ -133,9 +136,10 @@
             
             emptyState.classList.add('hidden');
             
-            // Atualiza contador
+            // Atualiza contador com fonte dos dados
+            const source = messages.length > 0 && messages[0].timestamp ? '🌐 online' : '📱 local';
             document.getElementById('messageCount').textContent = 
-                `${messages.length} mensagem${messages.length !== 1 ? 's' : ''} de visitantes`;
+                `${messages.length} mensagem${messages.length !== 1 ? 's' : ''} de visitantes (${source})`;
             
             // Ordena mensagens por data (mais recente primeiro)
             messages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
