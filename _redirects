@@ -1,0 +1,5 @@
+# _redirects
+/chat/* /chat/index.html 200
+/tehew/* /tehew/index.html 200
+/*/ /*/index.html 200
+/* /index.html 404
