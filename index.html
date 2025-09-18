@@ -289,6 +289,8 @@
                 try {
                     // Primeiro tenta buscar mensagens existentes
                     let existingMessages = [];
+                    let binExists = false;
+                    
                     try {
                         const getResponse = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
                             headers: {
@@ -298,20 +300,29 @@
                         if (getResponse.ok) {
                             const data = await getResponse.json();
                             existingMessages = data.record.messages || [];
+                            binExists = true;
+                            console.log('📋 Bin existe, mensagens atuais:', existingMessages.length);
                         }
                     } catch (e) {
-                        console.log('Bin não existe ainda, criando novo...');
+                        console.log('📝 Bin não existe, será criado...');
                     }
 
                     // Adiciona nova mensagem
                     existingMessages.push(newMessage);
 
-                    // Salva de volta no JSONBin
-                    const saveResponse = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
-                        method: 'PUT',
+                    // Cria ou atualiza o bin
+                    const url = binExists ? 
+                        `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}` : 
+                        'https://api.jsonbin.io/v3/b';
+                    
+                    const method = binExists ? 'PUT' : 'POST';
+                    
+                    const saveResponse = await fetch(url, {
+                        method: method,
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-Master-Key': JSONBIN_API_KEY
+                            'X-Master-Key': JSONBIN_API_KEY,
+                            'X-Bin-Name': 'tehew-messages'
                         },
                         body: JSON.stringify({
                             messages: existingMessages,
