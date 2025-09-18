@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Sites Discovery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+        }
+        .loading { animation: pulse 2s infinite; }
+        .site-card {
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        .site-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255,255,255,0.1);
+        }
+    </style>
+</head>
+<body class="bg-black text-white min-h-screen">
+    <!-- Header -->
+    <header class="bg-neutral-900 border-b border-neutral-800">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold cursor-pointer" onclick="location.reload()">🚀 Auto Sites</h1>
+            <div class="flex items-center gap-4">
+                <span id="sites-count" class="text-sm text-neutral-400">Carregando...</span>
+                <button onclick="refreshSites()" class="bg-white text-black px-3 py-1 rounded text-sm hover:bg-neutral-200">
+                    Atualizar
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+        <!-- Loading State -->
+        <div id="loading" class="text-center py-12">
+            <div class="loading text-4xl mb-4">🔍</div>
+            <p class="text-neutral-400">Descobrindo sites automaticamente...</p>
+        </div>
+
+        <!-- Sites Grid -->
+        <div id="sites-grid" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Sites serão inseridos aqui automaticamente -->
+        </div>
+
+        <!-- No Sites Found -->
+        <div id="no-sites" class="hidden text-center py-12">
+            <div class="text-6xl mb-4">📁</div>
+            <h2 class="text-2xl font-bold mb-2">Nenhum site encontrado</h2>
+            <p class="text-neutral-400 mb-6">Crie uma pasta com index.html e faça push para o GitHub!</p>
+            <div class="bg-neutral-900 p-4 rounded-lg text-left max-w-md mx-auto">
+                <code class="text-sm text-green-400">
+                    mkdir meusite<br>
+                    echo "&lt;h1&gt;Meu Site&lt;/h1&gt;" &gt; meusite/index.html<br>
+                    git add .<br>
+                    git commit -m "novo site"<br>
+                    git push
+                </code>
+            </div>
+        </div>
+    </main>
+
+    <!-- Site Modal -->
+    <div id="site-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+        <div class="bg-neutral-900 rounded-lg w-full max-w-6xl h-5/6 flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b border-neutral-700">
+                <h3 id="modal-title" class="text-lg font-bold">Site Preview</h3>
+                <button onclick="closeModal()" class="text-neutral-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            <iframe id="modal-iframe" class="flex-1 w-full" frameborder="0"></iframe>
+        </div>
+    </div>
+
+    <script>
+  // Configuração do repositório
+const REPO_CONFIG = {
+    owner: 'tehewdev',           // ✅ Apenas o nome do usuário
+    repo: 'tehew.space',         // ✅ Apenas o nome do repositório  
+    branch: 'main'               // ou 'master'
+};
+
+
+        // Auto-detecta configuração se estiver no GitHub Pages
+        function autoDetectRepo() {
+            const hostname = window.location.hostname;
+            if (hostname.includes('github.io')) {
+                const parts = hostname.split('.');
+                if (parts.length >= 3) {
+                    REPO_CONFIG.owner = parts[0];
+                    // Se for user.github.io, o repo é user.github.io
+                    // Se for user.github.io/repo, precisa detectar pelo path
+                    const path = window.location.pathname;
+                    if (path !== '/' && path !== '') {
+                        REPO_CONFIG.repo = path.split('/')[1];
+                    } else {
+                        REPO_CONFIG.repo = hostname;
+                    }
+                }
+            }
+        }
+
+        let discoveredSites = [];
+
+        // Descobre sites automaticamente via GitHub API
+        async function discoverSites() {
+            const loading = document.getElementById('loading');
+            const sitesGrid = document.getElementById('sites-grid');
+            const noSites = document.getElementById('no-sites');
+            const sitesCount = document.getElementById('sites-count');
+
+            loading.classList.remove('hidden');
+            sitesGrid.classList.add('hidden');
+            noSites.classList.add('hidden');
+
+            try {
+                // Método 1: Via GitHub API (funciona mesmo sem autenticação)
+                const apiUrl = `https://api.github.com/repos/${REPO_CONFIG.owner}/${REPO_CONFIG.repo}/contents`;
+                const response = await fetch(apiUrl);
+                
+                if (response.ok) {
+                    const contents = await response.json();
+                    const folders = contents.filter(item => item.type === 'dir');
+                    
+                    // Verifica cada pasta se tem index.html
+                    const sites = [];
+                    for (const folder of folders) {
+                        try {
+                            const folderContents = await fetch(`${apiUrl}/${folder.name}`);
+                            if (folderContents.ok) {
+                                const files = await folderContents.json();
+                                const hasIndex = files.some(file => 
+                                    file.name.toLowerCase() === 'index.html'
+                                );
+                                
+                                if (hasIndex) {
+                                    sites.push({
+                                        name: folder.name,
+                                        path: folder.name,
+                                        url: `./${folder.name}/`,
+                                        lastModified: folder.sha,
+                                        autoDetected: true
+                                    });
+                                }
+                            }
+                        } catch (e) {
+                            console.log(`Erro ao verificar pasta ${folder.name}:`, e);
+                        }
+                    }
+                    
+                    discoveredSites = sites;
+                } else {
+                    // Método 2: Fallback - tenta descobrir por URLs conhecidas
+                    await discoverByTesting();
+                }
+            } catch (error) {
+                console.log('Erro na API do GitHub, usando método alternativo...', error);
+                await discoverByTesting();
+            }
+
+            // Atualiza a interface
+            updateSitesDisplay();
+        }
+
+        // Método alternativo: testa URLs comuns
+        async function discoverByTesting() {
+            const commonNames = [
+                'tehew', 'chat', 'seila', 'dashboard', 'admin', 
+                'blog', 'portfolio', 'docs', 'app', 'site',
+                'home', 'main', 'test', 'demo', 'project'
+            ];
+
+            const sites = [];
+            const testPromises = commonNames.map(async (name) => {
+                try {
+                    const response = await fetch(`./${name}/`, { method: 'HEAD' });
+                    if (response.ok) {
+                        sites.push({
+                            name: name,
+                            path: name,
+                            url: `./${name}/`,
+                            lastModified: Date.now(),
+                            autoDetected: false
+                        });
+                    }
+                } catch (e) {
+                    // Silentemente ignora erros
+                }
+            });
+
+            await Promise.all(testPromises);
+            discoveredSites = sites;
+        }
+
+        // Atualiza a exibição dos sites
+        function updateSitesDisplay() {
+            const loading = document.getElementById('loading');
+            const sitesGrid = document.getElementById('sites-grid');
+            const noSites = document.getElementById('no-sites');
+            const sitesCount = document.getElementById('sites-count');
+
+            loading.classList.add('hidden');
+
+            if (discoveredSites.length === 0) {
+                noSites.classList.remove('hidden');
+                sitesCount.textContent = 'Nenhum site encontrado';
+                return;
+            }
+
+            // Mostra os sites
+            sitesGrid.innerHTML = '';
+            sitesGrid.classList.remove('hidden');
+            
+            discoveredSites.forEach(site => {
+                const siteCard = createSiteCard(site);
+                sitesGrid.appendChild(siteCard);
+            });
+
+            sitesCount.textContent = `${discoveredSites.length} site(s) encontrado(s)`;
+        }
+
+        // Cria o card de um site
+        function createSiteCard(site) {
+            const card = document.createElement('div');
+            card.className = 'site-card bg-neutral-900 border border-neutral-700 rounded-lg p-6 hover:border-white';
+            
+            card.innerHTML = `
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h3 class="text-xl font-bold mb-1">${site.name}</h3>
+                        <p class="text-sm text-neutral-400">
+                            ${site.autoDetected ? '🔍 Auto-descoberto' : '🧪 Testado'}
+                        </p>
+                    </div>
+                    <div class="text-2xl">🌐</div>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button onclick="openSite('${site.url}')" 
+                            class="flex-1 bg-white text-black px-4 py-2 rounded hover:bg-neutral-200 font-medium">
+                        Abrir
+                    </button>
+                    <button onclick="previewSite('${site.url}', '${site.name}')" 
+                            class="px-4 py-2 border border-neutral-600 rounded hover:border-white">
+                        👁️
+                    </button>
+                </div>
+
+                <div class="mt-3 pt-3 border-t border-neutral-700">
+                    <code class="text-xs text-green-400">/${site.path}/</code>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Funções de interação
+        function openSite(url) {
+            window.open(url, '_blank');
+        }
+
+        function previewSite(url, name) {
+            document.getElementById('modal-title').textContent = `Preview: ${name}`;
+            document.getElementById('modal-iframe').src = url;
+            document.getElementById('site-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('site-modal').classList.add('hidden');
+            document.getElementById('modal-iframe').src = '';
+        }
+
+        function refreshSites() {
+            discoveredSites = [];
+            discoverSites();
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            autoDetectRepo();
+            discoverSites();
+        });
+
+        // Fecha modal ao clicar fora
+        document.getElementById('site-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'site-modal') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
