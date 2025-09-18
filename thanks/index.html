@@ -120,14 +120,15 @@
             `;
 
             let messages = [];
-            // Bin ID fixo criado manualmente
+            // Configuração JSONBin.io
+            const JSONBIN_API_KEY = '$2a$10$sLapKiELl6njmNCvL/1G1.aksjUJ6nyXMnWpjwtR7csdw0ERQBkmO';
             const JSONBIN_BIN_ID = '68cb79e543b1c97be946b710';
 
             try {
                 console.log('🔍 Buscando mensagens do bin:', JSONBIN_BIN_ID);
                 const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
                     headers: {
-                        'X-Master-Key': '$2a$10$sLapKiELl6njmNCvL/1G1.aksjUJ6nyXMnWpjwtR7csdw0ERQBkmO'
+                        'X-Access-Key': JSONBIN_API_KEY
                     }
                 });
 
