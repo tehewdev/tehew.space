@@ -293,7 +293,7 @@
                     let existingMessages = [];
                     const getResponse = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
                         headers: {
-                            'X-Master-Key': JSONBIN_API_KEY
+                            'X-Access-Key': JSONBIN_API_KEY
                         }
                     });
 
@@ -314,7 +314,7 @@
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-Master-Key': JSONBIN_API_KEY
+                            'X-Access-Key': JSONBIN_API_KEY
                         },
                         body: JSON.stringify({
                             messages: existingMessages,
