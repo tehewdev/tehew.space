@@ -1535,11 +1535,11 @@
                 const payload = {
                     contents: [{ role: 'user', parts: [{ text }] }],
                     generationConfig: {
-                        responseModalities: ['AUDIO'],
-                        audioConfig: {
-                            voiceName,
-                            audioEncoding: 'MP3'
-                        }
+                        responseModalities: ['AUDIO']
+                    },
+                    outputAudioConfig: {
+                        voiceName,
+                        audioEncoding: 'MP3'
                     }
                 };
 
