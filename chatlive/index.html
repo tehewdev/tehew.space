@@ -54,6 +54,17 @@
             outline-offset: 2px;
         }
 
+        .tts-provider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .is-hidden {
+            display: none !important;
+        }
+
         .app-shell {
             flex: 1;
             display: grid;
@@ -973,19 +984,48 @@
                 </section>
 
                 <section class="api-section">
-                    <h4>🎙 ElevenLabs (Voz)</h4>
-                    <label for="elevenlabs-api-key">Chave de API do ElevenLabs</label>
-                    <input type="password" id="elevenlabs-api-key" placeholder="sk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
-
-                    <label for="voice-select">Voz do ElevenLabs</label>
-                    <select id="voice-select">
-                        <option value="21m00Tcm4TlvDq8ikWAM">Rachel - Calm (Feminina)</option>
-                        <option value="ErXwobaYiN019PkySvjV">Antoni - Well-rounded (Masculina)</option>
-                        <option value="XJ2fW4ybq7HouelYYGcL">Cherry Twinkle - Cartoon Girl</option>
-                        <option value="tTdCI0IDTgFa2iLQiWu4">Daniela - Cute Storyteller</option>
-                        <option value="BlgEcC0TfWpBak7FmvHW">Fena - Character Voice</option>
-                        <option value="vGQNBgLaiM3EdZtxIiuY">Kawaii Aerisita - Anime Style</option>
+                    <h4>Configuracoes de voz</h4>
+                    <label for="tts-provider">Motor de voz</label>
+                    <select id="tts-provider">
+                        <option value="gemini">Gemini TTS (Preview)</option>
+                        <option value="elevenlabs">ElevenLabs</option>
                     </select>
+
+                    <div id="gemini-tts-settings" class="tts-provider-group">
+                        <label for="gemini-tts-model">Modelo TTS do Gemini</label>
+                        <select id="gemini-tts-model">
+                            <option value="gemini-2.5-flash-preview-tts">Gemini 2.5 Flash Preview TTS</option>
+                            <option value="gemini-2.5-pro-preview-tts">Gemini 2.5 Pro Preview TTS</option>
+                        </select>
+
+                        <label for="gemini-voice-select">Voz do Gemini</label>
+                        <select id="gemini-voice-select">
+                            <option value="Callirrhoe">Callirrhoe - Easy-going, Middle pitch</option>
+                            <option value="Fenrir">Fenrir - Excitable, Lower pitch</option>
+                            <option value="Leda">Leda - Youthful, Higher pitch</option>
+                            <option value="Orus">Orus - Firm, Lower middle pitch</option>
+                            <option value="Aoede">Aoede - Breezy, Middle pitch</option>
+                            <option value="Zephyr">Zephyr - Bright, Higher pitch</option>
+                            <option value="Puck">Puck - Upbeat, Middle pitch</option>
+                            <option value="Charon">Charon - Informative, Lower pitch</option>
+                            <option value="Kore">Kore - Firm, Middle pitch</option>
+                        </select>
+                    </div>
+
+                    <div id="elevenlabs-tts-settings" class="tts-provider-group">
+                        <label for="elevenlabs-api-key">Chave de API do ElevenLabs</label>
+                        <input type="password" id="elevenlabs-api-key" placeholder="sk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+
+                        <label for="voice-select">Voz do ElevenLabs</label>
+                        <select id="voice-select">
+                            <option value="21m00Tcm4TlvDq8ikWAM">Rachel - Calm (Feminina)</option>
+                            <option value="ErXwobaYiN019PkySvjV">Antoni - Well-rounded (Masculina)</option>
+                            <option value="XJ2fW4ybq7HouelYYGcL">Cherry Twinkle - Cartoon Girl</option>
+                            <option value="tTdCI0IDTgFa2iLQiWu4">Daniela - Cute Storyteller</option>
+                            <option value="BlgEcC0TfWpBak7FmvHW">Fena - Character Voice</option>
+                            <option value="vGQNBgLaiM3EdZtxIiuY">Kawaii Aerisita - Anime Style</option>
+                        </select>
+                    </div>
                 </section>
 
                 <label for="model-select">Modelo de Chat</label>
@@ -1032,6 +1072,11 @@
         const apiKeyInput = document.getElementById('api-key');
         const elevenlabsApiKeyInput = document.getElementById('elevenlabs-api-key');
         const voiceSelect = document.getElementById('voice-select');
+        const ttsProviderSelect = document.getElementById('tts-provider');
+        const geminiTtsModelSelect = document.getElementById('gemini-tts-model');
+        const geminiVoiceSelect = document.getElementById('gemini-voice-select');
+        const geminiTtsSettings = document.getElementById('gemini-tts-settings');
+        const elevenlabsTtsSettings = document.getElementById('elevenlabs-tts-settings');
         const modelSelect = document.getElementById('model-select');
         const ttsEnabledCheckbox = document.getElementById('tts-enabled');
         const systemPromptPreset = document.getElementById('system-prompt-preset');
@@ -1102,6 +1147,16 @@
             apiKeyInput.value = localStorage.getItem('gemini-api-key') || '';
             elevenlabsApiKeyInput.value = localStorage.getItem('elevenlabs-api-key') || '';
             voiceSelect.value = localStorage.getItem('elevenlabs-voice') || '21m00Tcm4TlvDq8ikWAM';
+            if (ttsProviderSelect) {
+                ttsProviderSelect.value = localStorage.getItem('tts-provider') || 'gemini';
+            }
+            if (geminiTtsModelSelect) {
+                geminiTtsModelSelect.value = localStorage.getItem('gemini-tts-model') || 'gemini-2.5-flash-preview-tts';
+            }
+            if (geminiVoiceSelect) {
+                geminiVoiceSelect.value = localStorage.getItem('gemini-voice') || 'Callirrhoe';
+            }
+            updateTtsProviderVisibility();
             modelSelect.value = localStorage.getItem('gemini-model') || 'gemini-2.5-flash-lite';
             ttsEnabledCheckbox.checked = localStorage.getItem('gemini-tts-enabled') === 'true';
             const savedPrompt = localStorage.getItem('gemini-system-prompt');
@@ -1113,9 +1168,19 @@
             localStorage.setItem('gemini-api-key', apiKeyInput.value);
             localStorage.setItem('elevenlabs-api-key', elevenlabsApiKeyInput.value);
             localStorage.setItem('elevenlabs-voice', voiceSelect.value);
+            if (ttsProviderSelect) {
+                localStorage.setItem('tts-provider', ttsProviderSelect.value);
+            }
+            if (geminiTtsModelSelect) {
+                localStorage.setItem('gemini-tts-model', geminiTtsModelSelect.value);
+            }
+            if (geminiVoiceSelect) {
+                localStorage.setItem('gemini-voice', geminiVoiceSelect.value);
+            }
             localStorage.setItem('gemini-model', modelSelect.value);
             localStorage.setItem('gemini-tts-enabled', ttsEnabledCheckbox.checked);
             localStorage.setItem('gemini-system-prompt', systemPromptInput.value);
+            updateTtsProviderVisibility();
             updateStatusIndicators();
             updateConversationMeta();
             closeModal();
@@ -1273,13 +1338,22 @@
                 const copyBtn = createActionButton('Copiar resposta', icons.copy, () => copyToClipboard(text));
                 actionsDiv.appendChild(copyBtn);
 
-                const listenBtn = createActionButton('Ouvir resposta', icons.speaker, () => {
-                    const elevenlabsApiKey = elevenlabsApiKeyInput.value.trim();
-                    if (!elevenlabsApiKey) {
-                        showToast('Defina a chave do ElevenLabs para usar o TTS.', 'error');
-                        return;
+                const listenBtn = createActionButton('Ouvir resposta', icons.speaker, async () => {
+                    const provider = ttsProviderSelect?.value || 'gemini';
+                    if (provider === 'elevenlabs') {
+                        const elevenlabsApiKey = elevenlabsApiKeyInput.value.trim();
+                        if (!elevenlabsApiKey) {
+                            showToast('Defina a chave do ElevenLabs para usar o TTS.', 'error');
+                            return;
+                        }
+                    } else {
+                        const apiKey = apiKeyInput.value.trim();
+                        if (!apiKey) {
+                            showToast('Defina sua chave do Gemini para usar o TTS.', 'error');
+                            return;
+                        }
                     }
-                    playElevenLabsAudio(text);
+                    await playTtsAudio(text);
                 });
                 actionsDiv.appendChild(listenBtn);
             }
@@ -1407,7 +1481,7 @@
                 updateConversationMeta();
 
                 if (ttsEnabledCheckbox.checked) {
-                    await playElevenLabsAudio(fullResponse);
+                    await playTtsAudio(fullResponse);
                 }
             } catch (error) {
                 console.error('Erro ao enviar mensagem:', error);
@@ -1423,12 +1497,95 @@
                 if (!isListening) promptInput.focus();
             }
         }
+        function base64ToBlob(base64, mimeType) {
+            const binaryString = atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i += 1) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return new Blob([bytes], { type: mimeType });
+        }
+
+        async function playTtsAudio(text) {
+            if (!text) return;
+            audioPlayer.pause();
+            audioPlayer.currentTime = 0;
+            const provider = ttsProviderSelect?.value || 'gemini';
+            if (provider === 'elevenlabs') {
+                await playElevenLabsAudio(text);
+            } else {
+                await playGeminiAudio(text);
+            }
+        }
+
+        async function playGeminiAudio(text) {
+            const apiKey = apiKeyInput.value.trim();
+            const modelId = geminiTtsModelSelect?.value || 'gemini-2.5-flash-preview-tts';
+            const voiceName = geminiVoiceSelect?.value || 'Callirrhoe';
+
+            if (!apiKey) {
+                console.warn('Chave da API do Gemini nao configurada.');
+                showToast('Defina sua chave do Gemini para usar o TTS.', 'error');
+                return;
+            }
+
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;
+                const payload = {
+                    contents: [{ role: 'user', parts: [{ text }] }],
+                    generationConfig: {
+                        responseModalities: ['AUDIO'],
+                        audioConfig: {
+                            voiceName,
+                            audioEncoding: 'MP3'
+                        }
+                    }
+                };
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorPayload = await response.json().catch(() => ({}));
+                    const message = errorPayload.error?.message || response.statusText;
+                    throw new Error(`Gemini TTS API: ${response.status} - ${message}`);
+                }
+
+                const json = await response.json();
+                const audioPart = json.candidates?.[0]?.content?.parts?.find(part => part.inlineData?.mimeType?.startsWith('audio/'));
+                const inlineData = audioPart?.inlineData;
+                if (!inlineData?.data) {
+                    throw new Error('Nenhum audio retornado pelo Gemini TTS.');
+                }
+
+                const mimeType = inlineData.mimeType || 'audio/mp3';
+                const audioBlob = base64ToBlob(inlineData.data, mimeType);
+                const audioUrl = URL.createObjectURL(audioBlob);
+
+                audioPlayer.src = audioUrl;
+                try {
+                    await audioPlayer.play();
+                } catch (playError) {
+                    console.error('Erro ao tocar audio do Gemini TTS:', playError);
+                }
+                audioPlayer.onended = () => URL.revokeObjectURL(audioUrl);
+            } catch (error) {
+                console.error('Erro ao gerar audio com Gemini TTS:', error);
+                showToast('Erro ao gerar audio no Gemini TTS.', 'error');
+            }
+        }
+
         async function playElevenLabsAudio(text) {
             const elevenlabsApiKey = elevenlabsApiKeyInput.value.trim();
             const voiceId = voiceSelect.value;
 
             if (!elevenlabsApiKey) {
-                console.warn('Chave da API do ElevenLabs não configurada.');
+                console.warn('Chave da API do ElevenLabs nao configurada.');
+                showToast('Defina a chave do ElevenLabs para usar o TTS.', 'error');
                 return;
             }
 
@@ -1464,11 +1621,15 @@
                 const audioUrl = URL.createObjectURL(audioBlob);
 
                 audioPlayer.src = audioUrl;
-                audioPlayer.play();
+                try {
+                    await audioPlayer.play();
+                } catch (playError) {
+                    console.error('Erro ao tocar audio do ElevenLabs:', playError);
+                }
                 audioPlayer.onended = () => URL.revokeObjectURL(audioUrl);
             } catch (error) {
-                console.error('Erro ao gerar áudio com ElevenLabs:', error);
-                showToast('Erro ao gerar áudio no ElevenLabs.', 'error');
+                console.error('Erro ao gerar audio com ElevenLabs:', error);
+                showToast('Erro ao gerar audio no ElevenLabs.', 'error');
             }
         }
 
@@ -1498,19 +1659,46 @@
             };
         }
 
+        function updateTtsProviderVisibility() {
+            if (!ttsProviderSelect || !geminiTtsSettings || !elevenlabsTtsSettings) return;
+            const provider = ttsProviderSelect.value || 'gemini';
+            if (provider === 'elevenlabs') {
+                geminiTtsSettings.classList.add('is-hidden');
+                elevenlabsTtsSettings.classList.remove('is-hidden');
+            } else {
+                geminiTtsSettings.classList.remove('is-hidden');
+                elevenlabsTtsSettings.classList.add('is-hidden');
+            }
+        }
+
         function updateStatusIndicators() {
             const hasGeminiKey = !!apiKeyInput.value.trim();
             const hasElevenLabsKey = !!elevenlabsApiKeyInput.value.trim();
             const ttsEnabled = ttsEnabledCheckbox.checked;
+            const provider = ttsProviderSelect?.value || 'gemini';
 
             setStatusBadge(googleStatus, hasGeminiKey ? 'Ativa' : 'Inativa', hasGeminiKey ? 'ok' : 'warn');
             setStatusBadge(elevenlabsStatus, hasElevenLabsKey ? 'Ativa' : 'Inativa', hasElevenLabsKey ? 'ok' : 'warn');
-            if (ttsEnabled && hasElevenLabsKey) {
-                setStatusBadge(ttsStatus, 'Pronto', 'ok');
-            } else if (ttsEnabled && !hasElevenLabsKey) {
-                setStatusBadge(ttsStatus, 'Sem chave', 'warn');
-            } else {
+
+            if (!ttsStatus) {
+                return;
+            }
+
+            if (!ttsEnabled) {
                 setStatusBadge(ttsStatus, 'Desligado', 'warn');
+                return;
+            }
+
+            if (provider === 'elevenlabs') {
+                if (hasElevenLabsKey) {
+                    setStatusBadge(ttsStatus, 'Pronto', 'ok');
+                } else {
+                    setStatusBadge(ttsStatus, 'Sem chave do ElevenLabs', 'warn');
+                }
+            } else if (hasGeminiKey) {
+                setStatusBadge(ttsStatus, 'Pronto', 'ok');
+            } else {
+                setStatusBadge(ttsStatus, 'Sem chave do Gemini', 'warn');
             }
         }
 
@@ -1622,6 +1810,10 @@
         });
         apiKeyInput.addEventListener('input', updateStatusIndicators);
         elevenlabsApiKeyInput.addEventListener('input', updateStatusIndicators);
+        ttsProviderSelect?.addEventListener('change', () => {
+            updateTtsProviderVisibility();
+            updateStatusIndicators();
+        });
         ttsEnabledCheckbox.addEventListener('change', updateStatusIndicators);
 
         toggleSidebarBtn?.addEventListener('click', openSidebar);
