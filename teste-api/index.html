@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 API Tester Universal - Teste Qualquer Backend</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(45deg, #16213e, #0f3460);
+            border-radius: 15px;
+            border: 1px solid #00ff88;
+        }
+        
+        .header h1 {
+            color: #00ff88;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00ff88;
+        }
+        
+        .header p {
+            color: #cccccc;
+            font-size: 1.1rem;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+        
+        .panel {
+            background: linear-gradient(145deg, #1a1a1a, #2a2a3a);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .panel h3 {
+            color: #00ff88;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #cccccc;
+            font-weight: bold;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            background: #0a0a0a;
+            border: 2px solid #333;
+            color: #ffffff;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #00ff88;
+            box-shadow: 0 0 5px rgba(0, 255, 136, 0.3);
+        }
+        
+        .url-input {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .method-select {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
+            color: #ffffff;
+            border: 2px solid #00ff88;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+        
+        button:hover {
+            background: #00ff88;
+            color: #000000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 255, 136, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .status.loading {
+            background: linear-gradient(45deg, #2a2a0a, #4a4a0a);
+            color: #ffaa00;
+            border: 1px solid #ffaa00;
+        }
+        
+        .status.success {
+            background: linear-gradient(45deg, #0a2a0a, #0a4a0a);
+            color: #00ff88;
+            border: 1px solid #00ff88;
+        }
+        
+        .status.error {
+            background: linear-gradient(45deg, #2a0a0a, #4a0a0a);
+            color: #ff4444;
+            border: 1px solid #ff4444;
+        }
+        
+        .response-area {
+            background: #0a0a0a;
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 300px;
+            overflow: auto;
+        }
+        
+        .response-area h3 {
+            color: #00ff88;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        .quick-apis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .api-btn {
+            background: linear-gradient(145deg, #2a2a2a, #3a3a3a);
+            border: 1px solid #555;
+            padding: 8px 12px;
+            font-size: 12px;
+            min-width: auto;
+        }
+        
+        .headers-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+            margin: 10px 0;
+        }
+        
+        .header-item input {
+            font-size: 12px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin: 15px 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        .tab {
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: #888;
+            cursor: pointer;
+            font-size: 14px;
+            min-width: auto;
+        }
+        
+        .tab.active {
+            color: #00ff88;
+            border-bottom-color: #00ff88;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .history {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #111;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        
+        .history-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: #1a1a1a;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            border-left: 3px solid #00ff88;
+        }
+        
+        .history-item:hover {
+            background: #2a2a2a;
+        }
+        
+        .history-item .method {
+            color: #00ff88;
+            font-weight: bold;
+        }
+        
+        .history-item .url {
+            color: #cccccc;
+        }
+        
+        .history-item .time {
+            color: #888;
+            font-size: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 API Tester Universal</h1>
+            <p>Teste qualquer API, backend ou endpoint da web - Seu Postman em HTML!</p>
+        </div>
+        
+        <div class="main-grid">
+            <div class="panel">
+                <h3>🎯 Configuração da Requisição</h3>
+                
+                <div class="input-group">
+                    <label for="baseUrl">🌐 URL Base do Backend/API:</label>
+                    <input type="url" id="baseUrl" class="url-input" placeholder="https://api.exemplo.com" value="https://jsonplaceholder.typicode.com">
+                </div>
+                
+                <div class="input-group">
+                    <label for="endpoint">📍 Endpoint:</label>
+                    <input type="text" id="endpoint" placeholder="/users/1" value="/posts/1">
+                </div>
+                
+                <div class="input-group">
+                    <label for="method">🔧 Método HTTP:</label>
+                    <select id="method" class="method-select">
+                        <option value="GET">GET - Buscar dados</option>
+                        <option value="POST">POST - Criar/Enviar</option>
+                        <option value="PUT">PUT - Atualizar completo</option>
+                        <option value="PATCH">PATCH - Atualizar parcial</option>
+                        <option value="DELETE">DELETE - Deletar</option>
+                        <option value="OPTIONS">OPTIONS - Verificar métodos</option>
+                        <option value="HEAD">HEAD - Só headers</option>
+                    </select>
+                </div>
+                
+                <div class="controls">
+                    <button onclick="sendRequest()" id="sendBtn">🚀 Enviar Requisição</button>
+                    <button onclick="saveToHistory()">💾 Salvar Config</button>
+                    <button onclick="clearAll()">🗑️ Limpar Tudo</button>
+                </div>
+                
+                <div class="input-group">
+                    <label>⚡ APIs Populares para Teste:</label>
+                    <div class="quick-apis">
+                        <button class="api-btn" onclick="loadQuickAPI('https://jsonplaceholder.typicode.com', '/posts')">JSONPlaceholder</button>
+                        <button class="api-btn" onclick="loadQuickAPI('https://httpbin.org', '/get')">HTTPBin</button>
+                        <button class="api-btn" onclick="loadQuickAPI('https://api.github.com', '/users/octocat')">GitHub API</button>
+                        <button class="api-btn" onclick="loadQuickAPI('https://catfact.ninja', '/fact')">Cat Facts</button>
+                        <button class="api-btn" onclick="loadQuickAPI('https://api.adviceslip.com', '/advice')">Random Advice</button>
+                        <button class="api-btn" onclick="loadQuickAPI('https://httpstat.us', '/200')">HTTP Status</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h3>⚙️ Configurações Avançadas</h3>
+                
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('headers')">Headers</button>
+                    <button class="tab" onclick="showTab('body')">Body</button>
+                    <button class="tab" onclick="showTab('auth')">Auth</button>
+                    <button class="tab" onclick="showTab('history')">Histórico</button>
+                </div>
+                
+                <div id="headers" class="tab-content active">
+                    <div id="headersContainer">
+                        <div class="headers-grid">
+                            <input type="text" placeholder="Authorization" value="Content-Type">
+                            <input type="text" placeholder="Bearer token..." value="application/json">
+                            <button onclick="addHeader()">+</button>
+                        </div>
+                    </div>
+                    <button onclick="addHeader()">➕ Adicionar Header</button>
+                </div>
+                
+                <div id="body" class="tab-content">
+                    <div class="input-group">
+                        <label>Tipo de Body:</label>
+                        <select id="bodyType" onchange="toggleBodyType()">
+                            <option value="json">JSON</option>
+                            <option value="form">Form Data</option>
+                            <option value="text">Raw Text</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <textarea id="requestBody" rows="8" placeholder='{"titulo": "Meu post", "conteudo": "Exemplo"}'></textarea>
+                    </div>
+                </div>
+                
+                <div id="auth" class="tab-content">
+                    <div class="input-group">
+                        <label>Tipo de Autenticação:</label>
+                        <select id="authType">
+                            <option value="none">Nenhuma</option>
+                            <option value="bearer">Bearer Token</option>
+                            <option value="basic">Basic Auth</option>
+                            <option value="api-key">API Key</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="authValue" placeholder="Token/Chave/Usuário:Senha">
+                    </div>
+                </div>
+                
+                <div id="history" class="tab-content">
+                    <div class="history" id="historyContainer">
+                        <p style="color: #888; text-align: center;">Nenhuma requisição salva ainda</p>
+                    </div>
+                    <button onclick="clearHistory()">🗑️ Limpar Histórico</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div id="status" class="status loading">Pronto para testar APIs!</div>
+            
+            <div class="response-area">
+                <h3>📊 Resposta da API</h3>
+                <div class="tabs">
+                    <button class="tab active" onclick="showResponseTab('response')">Resposta</button>
+                    <button class="tab" onclick="showResponseTab('headers-res')">Headers</button>
+                    <button class="tab" onclick="showResponseTab('raw')">Raw</button>
+                </div>
+                
+                <div id="response" class="tab-content active">
+                    <pre id="responseContent">Faça uma requisição para ver a resposta aqui...</pre>
+                </div>
+                
+                <div id="headers-res" class="tab-content">
+                    <pre id="responseHeaders">Headers aparecerão aqui...</pre>
+                </div>
+                
+                <div id="raw" class="tab-content">
+                    <pre id="responseRaw">Dados brutos aparecerão aqui...</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let requestHistory = JSON.parse(localStorage.getItem('apiTesterHistory') || '[]');
+        
+        // Elementos DOM
+        const elements = {
+            baseUrl: document.getElementById('baseUrl'),
+            endpoint: document.getElementById('endpoint'),
+            method: document.getElementById('method'),
+            requestBody: document.getElementById('requestBody'),
+            status: document.getElementById('status'),
+            responseContent: document.getElementById('responseContent'),
+            responseHeaders: document.getElementById('responseHeaders'),
+            responseRaw: document.getElementById('responseRaw'),
+            sendBtn: document.getElementById('sendBtn'),
+            authType: document.getElementById('authType'),
+            authValue: document.getElementById('authValue'),
+            bodyType: document.getElementById('bodyType'),
+            headersContainer: document.getElementById('headersContainer'),
+            historyContainer: document.getElementById('historyContainer')
+        };
+        
+        function updateStatus(message, type = 'loading') {
+            elements.status.textContent = message;
+            elements.status.className = `status ${type}`;
+        }
+        
+        function getHeaders() {
+            const headers = { 'Accept': '*/*' };
+            const headerInputs = elements.headersContainer.querySelectorAll('.headers-grid');
+            
+            headerInputs.forEach(grid => {
+                const inputs = grid.querySelectorAll('input');
+                if (inputs.length >= 2 && inputs[0].value && inputs[1].value) {
+                    headers[inputs[0].value.trim()] = inputs[1].value.trim();
+                }
+            });
+            
+            // Adicionar autenticação
+            const authType = elements.authType.value;
+            const authValue = elements.authValue.value;
+            
+            if (authType === 'bearer' && authValue) {
+                headers['Authorization'] = `Bearer ${authValue}`;
+            } else if (authType === 'basic' && authValue) {
+                headers['Authorization'] = `Basic ${btoa(authValue)}`;
+            } else if (authType === 'api-key' && authValue) {
+                headers['X-API-Key'] = authValue;
+            }
+            
+            return headers;
+        }
+        
+        function getBody() {
+            const method = elements.method.value;
+            const bodyType = elements.bodyType.value;
+            const bodyContent = elements.requestBody.value.trim();
+            
+            if (!bodyContent || ['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+                return null;
+            }
+            
+            if (bodyType === 'json') {
+                try {
+                    JSON.parse(bodyContent);
+                    return bodyContent;
+                } catch (e) {
+                    throw new Error('JSON inválido no body');
+                }
+            }
+            
+            return bodyContent;
+        }
+        
+        async function sendRequest() {
+            try {
+                const baseUrl = elements.baseUrl.value.trim();
+                const endpoint = elements.endpoint.value.trim();
+                const method = elements.method.value;
+                
+                if (!baseUrl) {
+                    throw new Error('URL base é obrigatória');
+                }
+                
+                const fullUrl = baseUrl + (endpoint || '');
+                
+                updateStatus(`Enviando ${method} para ${fullUrl}...`, 'loading');
+                elements.sendBtn.disabled = true;
+                
+                const requestOptions = {
+                    method: method,
+                    headers: getHeaders()
+                };
+                
+                const body = getBody();
+                if (body !== null) {
+                    requestOptions.body = body;
+                    if (elements.bodyType.value === 'json') {
+                        requestOptions.headers['Content-Type'] = 'application/json';
+                    }
+                }
+                
+                const startTime = performance.now();
+                const response = await fetch(fullUrl, requestOptions);
+                const endTime = performance.now();
+                const duration = Math.round(endTime - startTime);
+                
+                let responseData;
+                const contentType = response.headers.get('content-type') || '';
+                
+                if (contentType.includes('application/json')) {
+                    responseData = await response.json();
+                } else {
+                    responseData = await response.text();
+                }
+                
+                // Mostrar resposta
+                if (response.ok) {
+                    updateStatus(`✅ ${method} ${response.status} - ${duration}ms`, 'success');
+                } else {
+                    updateStatus(`❌ ${method} ${response.status} ${response.statusText} - ${duration}ms`, 'error');
+                }
+                
+                elements.responseContent.textContent = JSON.stringify(responseData, null, 2);
+                elements.responseHeaders.textContent = Array.from(response.headers.entries())
+                    .map(([key, value]) => `${key}: ${value}`).join('\n');
+                elements.responseRaw.textContent = typeof responseData === 'string' ? responseData : JSON.stringify(responseData);
+                
+                // Salvar no histórico automático
+                addToHistory(method, fullUrl, response.status, duration);
+                
+            } catch (error) {
+                updateStatus(`❌ Erro: ${error.message}`, 'error');
+                elements.responseContent.textContent = `Erro: ${error.message}\n\n${error.stack || ''}`;
+                elements.responseHeaders.textContent = 'Nenhum header recebido';
+                elements.responseRaw.textContent = error.message;
+            } finally {
+                elements.sendBtn.disabled = false;
+            }
+        }
+        
+        function loadQuickAPI(baseUrl, endpoint) {
+            elements.baseUrl.value = baseUrl;
+            elements.endpoint.value = endpoint;
+            elements.method.value = 'GET';
+            updateStatus(`Configurado para testar: ${baseUrl}${endpoint}`, 'success');
+        }
+        
+        function addHeader() {
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'headers-grid';
+            headerDiv.innerHTML = `
+                <input type="text" placeholder="Nome do header">
+                <input type="text" placeholder="Valor do header">
+                <button onclick="this.parentElement.remove()">-</button>
+            `;
+            elements.headersContainer.appendChild(headerDiv);
+        }
+        
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`[onclick="showTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+        
+        function showResponseTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`[onclick="showResponseTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+        
+        function toggleBodyType() {
+            const bodyType = elements.bodyType.value;
+            if (bodyType === 'json') {
+                elements.requestBody.placeholder = '{"chave": "valor", "numero": 123}';
+            } else if (bodyType === 'form') {
+                elements.requestBody.placeholder = 'chave1=valor1&chave2=valor2';
+            } else {
+                elements.requestBody.placeholder = 'Texto livre...';
+            }
+        }
+        
+        function addToHistory(method, url, status, duration) {
+            const historyItem = {
+                method,
+                url,
+                status,
+                duration,
+                timestamp: new Date().toLocaleString()
+            };
+            
+            requestHistory.unshift(historyItem);
+            requestHistory = requestHistory.slice(0, 50); // Manter só os últimos 50
+            localStorage.setItem('apiTesterHistory', JSON.stringify(requestHistory));
+            updateHistoryDisplay();
+        }
+        
+        function updateHistoryDisplay() {
+            if (requestHistory.length === 0) {
+                elements.historyContainer.innerHTML = '<p style="color: #888; text-align: center;">Nenhuma requisição salva ainda</p>';
+                return;
+            }
+            
+            elements.historyContainer.innerHTML = requestHistory.map(item => `
+                <div class="history-item" onclick="loadFromHistory('${item.url}', '${item.method}')">
+                    <span class="method">${item.method}</span>
+                    <span class="url">${item.url}</span>
+                    <div class="time">${item.timestamp} - ${item.status} (${item.duration}ms)</div>
+                </div>
+            `).join('');
+        }
+        
+        function loadFromHistory(url, method) {
+            try {
+                const urlObj = new URL(url);
+                elements.baseUrl.value = urlObj.origin;
+                elements.endpoint.value = urlObj.pathname + urlObj.search;
+                elements.method.value = method;
+                updateStatus('Configuração carregada do histórico', 'success');
+            } catch (e) {
+                updateStatus('Erro ao carregar do histórico', 'error');
+            }
+        }
+        
+        function saveToHistory() {
+            const baseUrl = elements.baseUrl.value.trim();
+            const endpoint = elements.endpoint.value.trim();
+            const method = elements.method.value;
+            
+            if (baseUrl) {
+                addToHistory(method, baseUrl + endpoint, 'Salvo', 0);
+                updateStatus('Configuração salva no histórico', 'success');
+            }
+        }
+        
+        function clearHistory() {
+            requestHistory = [];
+            localStorage.removeItem('apiTesterHistory');
+            updateHistoryDisplay();
+            updateStatus('Histórico limpo', 'success');
+        }
+        
+        function clearAll() {
+            elements.baseUrl.value = '';
+            elements.endpoint.value = '';
+            elements.requestBody.value = '';
+            elements.authValue.value = '';
+            elements.responseContent.textContent = 'Resposta aparecerá aqui...';
+            elements.responseHeaders.textContent = 'Headers aparecerão aqui...';
+            elements.responseRaw.textContent = 'Dados brutos aparecerão aqui...';
+            updateStatus('Tudo limpo - Pronto para nova requisição', 'success');
+        }
+        
+        // Atalhos de teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                sendRequest();
+            }
+        });
+        
+        // Inicializar histórico
+        updateHistoryDisplay();
+        updateStatus('🚀 API Tester carregado - Teste qualquer API da web!', 'success');
+    </script>
+</body>
+</html>
