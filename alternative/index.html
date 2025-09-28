@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#000000">
+    <meta name="description" content="Sandbox de Chamadas de Função com Áudio Nativo">
+    <title>Sandbox de Chamadas de Função com Áudio Nativo</title>
+    
+    <!-- Fontes do Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Space Mono', monospace;
+            background: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #00ff88;
+            font-size: 2rem;
+        }
+        
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-family: monospace;
+        }
+        
+        .status.loading {
+            background: #333;
+            color: #ffaa00;
+        }
+        
+        .status.success {
+            background: #003322;
+            color: #00ff88;
+            border: 1px solid #00ff88;
+        }
+        
+        .status.error {
+            background: #330000;
+            color: #ff4444;
+            border: 1px solid #ff4444;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: #1a1a1a;
+            color: #ffffff;
+            border: 2px solid #00ff88;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Space Mono', monospace;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: #00ff88;
+            color: #000000;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #cccccc;
+        }
+        
+        input, textarea {
+            width: 100%;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Space Mono', monospace;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #00ff88;
+        }
+        
+        .response-area {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 200px;
+            overflow-x: auto;
+        }
+        
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .endpoint-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .endpoint-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .endpoint-card h3 {
+            color: #00ff88;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        
+        .endpoint-card p {
+            color: #cccccc;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎯 Sandbox de Chamadas de Função com Áudio Nativo</h1>
+        
+        <div id="status" class="status loading">
+            Conectando ao backend...
+        </div>
+        
+        <div class="controls">
+            <button onclick="testConnection()">🔗 Testar Conexão</button>
+            <button onclick="getAllEndpoints()">📋 Listar Endpoints</button>
+            <button onclick="clearResponse()">🗑️ Limpar</button>
+        </div>
+        
+        <div class="input-group">
+            <label for="customEndpoint">🎯 Endpoint Personalizado:</label>
+            <input type="text" id="customEndpoint" placeholder="/api/exemplo" value="/api/health">
+        </div>
+        
+        <div class="controls">
+            <button onclick="callCustomEndpoint('GET')">GET</button>
+            <button onclick="callCustomEndpoint('POST')">POST</button>
+            <button onclick="callCustomEndpoint('PUT')">PUT</button>
+            <button onclick="callCustomEndpoint('DELETE')">DELETE</button>
+        </div>
+        
+        <div class="input-group">
+            <label for="requestBody">📝 Body da Requisição (JSON):</label>
+            <textarea id="requestBody" rows="4" placeholder='{"exemplo": "dados para enviar"}'></textarea>
+        </div>
+        
+        <div class="response-area">
+            <h3>📊 Resposta do Backend:</h3>
+            <pre id="response">Aguardando chamada...</pre>
+        </div>
+        
+        <div class="endpoint-list" id="endpointList">
+            <!-- Endpoints descobertos aparecerão aqui -->
+        </div>
+    </div>
+
+    <script>
+        // URL do seu backend
+        const BACKEND_URL = 'https://alternative-dialogue-gnmp.onrender.com';
+        
+        // Elementos DOM
+        const statusEl = document.getElementById('status');
+        const responseEl = document.getElementById('response');
+        const customEndpointEl = document.getElementById('customEndpoint');
+        const requestBodyEl = document.getElementById('requestBody');
+        const endpointListEl = document.getElementById('endpointList');
+        
+        // Função para atualizar status
+        function updateStatus(message, type = 'loading') {
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+        
+        // Função para atualizar resposta
+        function updateResponse(data) {
+            responseEl.textContent = JSON.stringify(data, null, 2);
+        }
+        
+        // Função para fazer requisições HTTP
+        async function makeRequest(endpoint, method = 'GET', body = null) {
+            try {
+                updateStatus(`Fazendo ${method} para ${endpoint}...`, 'loading');
+                
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                };
+                
+                if (body && (method === 'POST' || method === 'PUT')) {
+                    options.body = JSON.stringify(body);
+                }
+                
+                const response = await fetch(`${BACKEND_URL}${endpoint}`, options);
+                
+                let data;
+                const contentType = response.headers.get('content-type');
+                
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    data = await response.text();
+                }
+                
+                if (response.ok) {
+                    updateStatus(`✅ ${method} ${endpoint} - Status: ${response.status}`, 'success');
+                    updateResponse({
+                        status: response.status,
+                        statusText: response.statusText,
+                        headers: Object.fromEntries(response.headers.entries()),
+                        data: data
+                    });
+                } else {
+                    updateStatus(`❌ Erro ${response.status}: ${response.statusText}`, 'error');
+                    updateResponse({
+                        error: true,
+                        status: response.status,
+                        statusText: response.statusText,
+                        data: data
+                    });
+                }
+                
+            } catch (error) {
+                updateStatus(`❌ Erro de conexão: ${error.message}`, 'error');
+                updateResponse({
+                    error: true,
+                    message: error.message,
+                    type: 'ConnectionError'
+                });
+            }
+        }
+        
+        // Testar conexão básica
+        async function testConnection() {
+            await makeRequest('/');
+        }
+        
+        // Chamar endpoint personalizado
+        async function callCustomEndpoint(method) {
+            const endpoint = customEndpointEl.value || '/';
+            let body = null;
+            
+            if ((method === 'POST' || method === 'PUT') && requestBodyEl.value.trim()) {
+                try {
+                    body = JSON.parse(requestBodyEl.value);
+                } catch (e) {
+                    updateStatus('❌ JSON inválido no body da requisição', 'error');
+                    return;
+                }
+            }
+            
+            await makeRequest(endpoint, method, body);
+        }
+        
+        // Tentar descobrir endpoints comuns
+        async function getAllEndpoints() {
+            const commonEndpoints = [
+                '/api',
+                '/api/health',
+                '/api/status',
+                '/api/info',
+                '/health',
+                '/status',
+                '/docs',
+                '/api/docs',
+                '/swagger',
+                '/api/swagger'
+            ];
+            
+            endpointListEl.innerHTML = '<h3>🔍 Descobrindo endpoints...</h3>';
+            
+            const discovered = [];
+            
+            for (const endpoint of commonEndpoints) {
+                try {
+                    const response = await fetch(`${BACKEND_URL}${endpoint}`, {
+                        method: 'GET',
+                        timeout: 5000
+                    });
+                    
+                    if (response.ok) {
+                        discovered.push({
+                            endpoint,
+                            status: response.status,
+                            contentType: response.headers.get('content-type')
+                        });
+                    }
+                } catch (e) {
+                    // Endpoint não existe ou não acessível
+                }
+            }
+            
+            // Exibir endpoints descobertos
+            if (discovered.length > 0) {
+                endpointListEl.innerHTML = '<h3>🎯 Endpoints Disponíveis:</h3>';
+                discovered.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'endpoint-card';
+                    card.innerHTML = `
+                        <h3>${item.endpoint}</h3>
+                        <p>Status: ${item.status}</p>
+                        <p>Tipo: ${item.contentType || 'N/A'}</p>
+                        <button onclick="customEndpointEl.value='${item.endpoint}'; callCustomEndpoint('GET')">
+                            Testar
+                        </button>
+                    `;
+                    endpointListEl.appendChild(card);
+                });
+            } else {
+                endpointListEl.innerHTML = '<h3>❌ Nenhum endpoint comum encontrado</h3>';
+            }
+        }
+        
+        // Limpar área de resposta
+        function clearResponse() {
+            responseEl.textContent = 'Aguardando chamada...';
+            updateStatus('Pronto para nova requisição', 'success');
+        }
+        
+        // Teste de conexão inicial
+        window.addEventListener('load', () => {
+            setTimeout(testConnection, 1000);
+        });
+        
+        // Atalhos de teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                callCustomEndpoint('GET');
+            }
+        });
+    </script>
+</body>
+</html>
