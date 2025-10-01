@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/128/2516/2516451.png" type="image/png">
     <title>Controle Financeiro Pessoal</title>
     <style>
         * {
@@ -962,14 +961,21 @@
             <div class="form-section">
                 <h2>☁️ Sincronização na Nuvem</h2>
                 <p style="margin-bottom: 15px; font-size: 0.9em;">
-                    <strong>Status:</strong> <span id="cloudStatus">🟢 Conectado ao JSONBin.io</span><br>
-                    <small>Seus dados são sincronizados automaticamente a cada alteração</small>
+                    <strong>Status:</strong> <span id="cloudStatus">🔄 Verificando...</span><br>
+                    <small style="color: #666;">⚡ Os dados de todos os usuários são sincronizados ao abrir o app</small>
                 </p>
 
                 <div class="export-section">
                     <button class="btn btn-primary" onclick="sincronizarAgora()">☁️ Enviar para Nuvem</button>
                     <button class="btn btn-success" onclick="carregarAgora()">📥 Carregar da Nuvem</button>
                 </div>
+                
+                <p style="margin-top: 15px; padding: 12px; background: #e0f2fe; border-radius: 8px; font-size: 0.85em; color: #0c4a6e;">
+                    💡 <strong>Como funciona:</strong><br>
+                    • Ao abrir o app: <strong>Todos os usuários são sincronizados da nuvem</strong><br>
+                    • Ao trabalhar: <strong>Dados salvos localmente (instantâneo)</strong><br>
+                    • Ao clicar "Enviar": <strong>Backup manual na nuvem</strong>
+                </p>
             </div>
 
             <div class="form-section">
@@ -1053,6 +1059,9 @@
                 // Atualiza a lista de usuários ao abrir a aba
                 carregarListaUsuarios();
                 atualizarInfoUsuario();
+            } else if (tabName === 'export') {
+                // Verificar status de sincronização ao abrir aba de exportar
+                atualizarStatusSincronizacao();
             }
         }
 
@@ -1114,9 +1123,11 @@
 
         // ===== FUNÇÕES DE GERENCIAMENTO DE USUÁRIOS =====
         
-        // Carregar lista de usuários disponíveis
+        // Carregar lista de usuários disponíveis E seus dados
         async function carregarListaUsuarios() {
             try {
+                console.log('📥 Carregando usuários e dados da nuvem...');
+                
                 const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/b/${JSONBIN_CONFIG.BIN_ID}/latest`, {
                     method: 'GET',
                     headers: {
@@ -1127,7 +1138,16 @@
                 if (!response.ok) throw new Error('Erro ao carregar usuários');
 
                 const data = await response.json();
-                const usuarios = Object.keys(data.record || {});
+                const todosUsuarios = data.record || {};
+                const usuarios = Object.keys(todosUsuarios);
+                
+                // SALVAR DADOS DE TODOS OS USUÁRIOS NO LOCALSTORAGE
+                usuarios.forEach(usuario => {
+                    const userDataKey = `transactions_${usuario}`;
+                    const dadosUsuario = todosUsuarios[usuario] || [];
+                    localStorage.setItem(userDataKey, JSON.stringify(dadosUsuario));
+                    console.log(`💾 Dados de "${usuario}" salvos localmente (${dadosUsuario.length} transações)`);
+                });
                 
                 // Atualizar dropdown
                 const select = document.getElementById('userSelect');
@@ -1143,9 +1163,11 @@
                     select.appendChild(option);
                 });
                 
+                console.log(`✅ ${usuarios.length} usuários sincronizados da nuvem`);
                 return usuarios;
             } catch (error) {
-                console.error('Erro ao carregar lista de usuários:', error);
+                console.error('❌ Erro ao carregar da nuvem:', error);
+                console.log('📱 Usando dados locais offline');
                 return [];
             }
         }
@@ -1209,7 +1231,7 @@
         }
 
         // Mudar de usuário
-        async function mudarUsuario() {
+        function mudarUsuario() {
             const select = document.getElementById('userSelect');
             const novoUsuario = select.value;
             
@@ -1219,6 +1241,7 @@
                 transactions = [];
                 localStorage.setItem('transactions', JSON.stringify(transactions));
                 atualizarInfoUsuario();
+                atualizarStatusSincronizacao();
                 updateDashboard();
                 return;
             }
@@ -1226,18 +1249,25 @@
             currentUserName = novoUsuario;
             localStorage.setItem('currentUser', currentUserName);
             
-            // Carregar dados desse usuário da nuvem
-            try {
-                await carregarDaNuvem();
-                showNotification(`✅ Usuário "${currentUserName}" selecionado!`, 'success');
-            } catch (error) {
+            // Carregar dados do localStorage do usuário
+            // Cada usuário tem seu próprio localStorage separado por chave
+            const userDataKey = `transactions_${currentUserName}`;
+            const userData = localStorage.getItem(userDataKey);
+            
+            if (userData) {
+                transactions = JSON.parse(userData);
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+                showNotification(`✅ Usuário "${currentUserName}" selecionado! ${transactions.length} transações carregadas`, 'success');
+            } else {
                 transactions = [];
                 localStorage.setItem('transactions', JSON.stringify(transactions));
-                showNotification(`⚠️ Usuário "${currentUserName}" selecionado (sem dados)`, 'success');
+                showNotification(`✅ Usuário "${currentUserName}" selecionado (sem dados locais)`, 'success');
             }
             
             atualizarInfoUsuario();
+            atualizarStatusSincronizacao();
             updateDashboard();
+            updateCategories();
         }
 
         // Atualizar informações do usuário na UI
@@ -1400,24 +1430,51 @@
 
         // ===== FUNÇÕES DE SINCRONIZAÇÃO COM JSONBIN.IO =====
         
-        // Inicializar app - tentar carregar da nuvem primeiro
+        // Inicializar app - SINCRONIZAR AUTOMATICAMENTE AO CARREGAR
         async function inicializarApp() {
-            // Carregar lista de usuários
-            await carregarListaUsuarios();
-            atualizarInfoUsuario();
+            console.log('🚀 Iniciando aplicativo...');
             
-            // Se tem usuário selecionado, carregar dados dele
-            if (currentUserName) {
-                try {
-                    await carregarDaNuvem();
-                    showNotification('📥 Dados carregados da nuvem!', 'success');
-                } catch (error) {
-                    console.log('Usando dados locais...', error);
-                }
+            // Mostrar status de carregamento
+            const statusElement = document.getElementById('cloudStatus');
+            if (statusElement) {
+                statusElement.innerHTML = '🔄 Sincronizando da nuvem...';
+                statusElement.style.color = 'var(--primary)';
             }
             
+            // 1. Carregar lista de usuários E TODOS OS DADOS da nuvem
+            const usuarios = await carregarListaUsuarios();
+            
+            // 2. Se tem usuário selecionado, carregar seus dados do localStorage atualizado
+            if (currentUserName) {
+                const userDataKey = `transactions_${currentUserName}`;
+                const userData = localStorage.getItem(userDataKey);
+                
+                if (userData) {
+                    transactions = JSON.parse(userData);
+                    localStorage.setItem('transactions', JSON.stringify(transactions));
+                    console.log(`✅ Dados de "${currentUserName}" carregados (${transactions.length} transações)`);
+                } else {
+                    transactions = [];
+                    console.log(`⚠️ Usuário "${currentUserName}" sem dados`);
+                }
+            } else {
+                console.log('⚠️ Nenhum usuário selecionado');
+            }
+            
+            // 3. Atualizar interface
+            atualizarInfoUsuario();
             updateDashboard();
             updateCategories();
+            
+            // 4. Atualizar status final
+            await atualizarStatusSincronizacao();
+            
+            // 5. Mostrar notificação de sucesso
+            if (usuarios && usuarios.length > 0) {
+                console.log(`✅ ${usuarios.length} usuários sincronizados da nuvem`);
+            }
+            
+            console.log('✅ App iniciado e sincronizado!');
         }
 
         // Salvar na nuvem
@@ -1514,11 +1571,24 @@
             }
             
             try {
-                showNotification(`🔄 Sincronizando dados de "${currentUserName}"...`, 'success');
+                showNotification(`☁️ Enviando ${transactions.length} transações de "${currentUserName}" para a nuvem...`, 'success');
                 await salvarNaNuvem();
-                showNotification(`✅ Dados de "${currentUserName}" sincronizados!`, 'success');
+                
+                // Atualizar status
+                const statusElement = document.getElementById('cloudStatus');
+                if (statusElement) {
+                    statusElement.innerHTML = `✅ Última sincronização: AGORA (${new Date().toLocaleTimeString()})`;
+                    statusElement.style.color = 'var(--success)';
+                    
+                    // Voltar ao status normal depois de 5 segundos
+                    setTimeout(() => {
+                        atualizarStatusSincronizacao();
+                    }, 5000);
+                }
+                
+                showNotification(`✅ ${transactions.length} transações de "${currentUserName}" enviadas para a nuvem!`, 'success');
             } catch (error) {
-                showNotification('❌ Erro ao sincronizar', 'error');
+                showNotification('❌ Erro ao sincronizar com a nuvem', 'error');
             }
         }
 
@@ -1529,22 +1599,93 @@
                 return;
             }
             
+            const confirmar = confirm(`⚠️ Carregar dados de "${currentUserName}" da nuvem?\n\n⚠️ ATENÇÃO: Isso vai SUBSTITUIR seus dados locais pelos dados da nuvem!\n\nTem certeza?`);
+            
+            if (!confirmar) return;
+            
             try {
-                showNotification(`🔄 Carregando dados de "${currentUserName}"...`, 'success');
+                showNotification(`📥 Carregando dados de "${currentUserName}" da nuvem...`, 'success');
                 await carregarDaNuvem();
-                showNotification(`✅ Dados de "${currentUserName}" atualizados!`, 'success');
+                
+                // Atualizar status
+                const statusElement = document.getElementById('cloudStatus');
+                if (statusElement) {
+                    statusElement.innerHTML = `✅ Carregado da nuvem: ${transactions.length} transações (${new Date().toLocaleTimeString()})`;
+                    statusElement.style.color = 'var(--success)';
+                    
+                    // Voltar ao status normal depois de 5 segundos
+                    setTimeout(() => {
+                        atualizarStatusSincronizacao();
+                    }, 5000);
+                }
+                
+                showNotification(`✅ ${transactions.length} transações de "${currentUserName}" carregadas da nuvem!`, 'success');
             } catch (error) {
-                showNotification('❌ Erro ao carregar', 'error');
+                showNotification('❌ Erro ao carregar da nuvem', 'error');
             }
         }
 
         function saveTransactions() {
+            // Salvar na chave geral
             localStorage.setItem('transactions', JSON.stringify(transactions));
             
-            // Sincronizar automaticamente com a nuvem
-            salvarNaNuvem().catch(err => {
-                console.log('Sincronização automática falhou, dados salvos localmente');
-            });
+            // Salvar também na chave específica do usuário (para multi-usuário local)
+            if (currentUserName) {
+                const userDataKey = `transactions_${currentUserName}`;
+                localStorage.setItem(userDataKey, JSON.stringify(transactions));
+            }
+            
+            // NÃO sincronizar automaticamente - apenas salvar local
+            console.log('💾 Dados salvos no localStorage (local)');
+            
+            // NÃO verificar status a cada salvamento (muitas requisições)
+            // A verificação ocorre apenas ao: abrir app, trocar aba, trocar usuário
+        }
+        
+        // Atualizar status de sincronização na UI
+        async function atualizarStatusSincronizacao() {
+            const statusElement = document.getElementById('cloudStatus');
+            if (!statusElement) return;
+            
+            if (!currentUserName) {
+                statusElement.innerHTML = '⚠️ Nenhum usuário selecionado';
+                statusElement.style.color = 'var(--warning)';
+                return;
+            }
+            
+            // Verificar se há diferenças entre local e nuvem
+            try {
+                const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/b/${JSONBIN_CONFIG.BIN_ID}/latest`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const dadosNuvem = data.record[currentUserName] || [];
+                    const dadosLocais = transactions;
+                    
+                    // Comparar quantidade de transações
+                    if (dadosLocais.length > dadosNuvem.length) {
+                        statusElement.innerHTML = `⚠️ Você tem ${dadosLocais.length - dadosNuvem.length} mudanças não salvas na nuvem`;
+                        statusElement.style.color = 'var(--warning)';
+                    } else if (dadosLocais.length < dadosNuvem.length) {
+                        statusElement.innerHTML = `⚠️ A nuvem tem ${dadosNuvem.length - dadosLocais.length} transações a mais`;
+                        statusElement.style.color = 'var(--warning)';
+                    } else {
+                        statusElement.innerHTML = `✅ Sincronizado (${dadosLocais.length} transações)`;
+                        statusElement.style.color = 'var(--success)';
+                    }
+                } else {
+                    statusElement.innerHTML = `💾 Trabalhando localmente (${transactions.length} transações)`;
+                    statusElement.style.color = 'var(--primary)';
+                }
+            } catch (error) {
+                statusElement.innerHTML = `📱 Modo offline (${transactions.length} transações)`;
+                statusElement.style.color = '#666';
+            }
         }
 
         function updateDashboard() {
@@ -2283,11 +2424,11 @@
                     }
                     
                     transactions = imported;
-                    saveTransactions(); // Já sincroniza automaticamente
+                    saveTransactions(); // Salva apenas localmente
                     updateDashboard();
                     updateCategories();
                     
-                    showNotification(`${imported.length} transações importadas e sincronizadas!`, 'success');
+                    showNotification(`✅ ${imported.length} transações importadas! Use "Enviar para Nuvem" para fazer backup.`, 'success');
                     fileInput.value = '';
                 } catch (error) {
                     showNotification('Erro ao importar', 'error');
