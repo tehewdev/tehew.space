@@ -714,6 +714,7 @@
             <button class="tab-btn" onclick="switchTab('transactions')">💳 Transações</button>
             <button class="tab-btn" onclick="switchTab('monthly')">📅 Mensal</button>
             <button class="tab-btn" onclick="switchTab('reports')">📈 Relatórios</button>
+            <button class="tab-btn" onclick="switchTab('users')">👤 Usuários</button>
             <button class="tab-btn" onclick="switchTab('export')">💾 Exportar</button>
         </div>
 
@@ -893,8 +894,83 @@
             <div class="stats-grid" id="reportsContent"></div>
         </div>
 
+        <!-- Users Tab -->
+        <div id="users" class="tab-content">
+            <div class="form-section">
+                <h2>👤 Gerenciar Usuários</h2>
+                <p style="margin-bottom: 15px; font-size: 0.9em;">
+                    Selecione ou crie um usuário para organizar suas finanças
+                </p>
+                
+                <!-- Seleção de Usuário -->
+                <div style="margin-bottom: 20px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                    <label style="display: block; margin-bottom: 12px; font-weight: 600; color: white; font-size: 1.1em;">
+                        👤 Selecionar Usuário
+                    </label>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="userSelect" style="flex: 1; padding: 14px; border: 2px solid white; border-radius: 8px; font-size: 16px; min-height: 52px; font-weight: 500;" onchange="mudarUsuario()">
+                            <option value="">Selecione ou crie um usuário</option>
+                        </select>
+                        <button class="btn btn-success" style="width: auto; min-width: 52px; font-size: 1.2em;" onclick="criarNovoUsuario()" title="Criar Novo Usuário">➕</button>
+                    </div>
+                </div>
+
+                <!-- Info do Usuário Atual -->
+                <div style="padding: 20px; background: #f0f9ff; border-radius: 12px; border-left: 5px solid var(--primary);">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="font-size: 3em;">👤</div>
+                        <div style="flex: 1;">
+                            <p style="font-size: 0.9em; color: #666; margin-bottom: 5px;">Usuário Ativo</p>
+                            <p id="currentUser" style="font-size: 1.5em; font-weight: bold; color: var(--primary); margin: 0;">Nenhum selecionado</p>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-warning btn-small" onclick="renomearUsuario()" id="btnRenomear" style="display: none;" title="Renomear Usuário">✏️</button>
+                            <button class="btn btn-danger btn-small" onclick="deletarUsuario()" id="btnDeletar" style="display: none;" title="Deletar Usuário">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informações -->
+                <div style="margin-top: 20px; padding: 15px; background: #fff9e6; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                    <h3 style="font-size: 1em; margin-bottom: 10px; color: var(--warning);">💡 Como funciona?</h3>
+                    <ul style="font-size: 0.9em; line-height: 1.6; color: #666; margin: 0; padding-left: 20px;">
+                        <li><strong>➕ Criar Usuário:</strong> Clique no botão ➕ para criar um novo perfil</li>
+                        <li><strong>🔄 Trocar Usuário:</strong> Selecione no dropdown para alternar entre usuários</li>
+                        <li><strong>✏️ Renomear Usuário:</strong> Clique no botão ✏️ para alterar o nome do usuário ativo</li>
+                        <li><strong>🗑️ Deletar Usuário:</strong> Clique no botão 🗑️ para remover permanentemente (cuidado!)</li>
+                        <li><strong>📊 Dados Separados:</strong> Cada usuário tem suas próprias transações</li>
+                        <li><strong>☁️ Sincronização:</strong> Dados salvos automaticamente na nuvem</li>
+                    </ul>
+                </div>
+
+                <!-- Casos de Uso -->
+                <div style="margin-top: 20px; padding: 15px; background: #f0fdf4; border-radius: 8px; border-left: 4px solid var(--success);">
+                    <h3 style="font-size: 1em; margin-bottom: 10px; color: var(--success);">✨ Exemplos de Uso</h3>
+                    <ul style="font-size: 0.9em; line-height: 1.6; color: #666; margin: 0; padding-left: 20px;">
+                        <li><strong>Pessoal:</strong> "João", "Maria" - finanças individuais</li>
+                        <li><strong>Familiar:</strong> "Pai", "Mãe", "Família" - gastos separados e conjuntos</li>
+                        <li><strong>Profissional:</strong> "Pessoal", "Trabalho", "Empresa"</li>
+                        <li><strong>Projetos:</strong> "Projeto_A", "Projeto_B", "Freelance"</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
         <!-- Export Tab -->
         <div id="export" class="tab-content">
+            <div class="form-section">
+                <h2>☁️ Sincronização na Nuvem</h2>
+                <p style="margin-bottom: 15px; font-size: 0.9em;">
+                    <strong>Status:</strong> <span id="cloudStatus">🟢 Conectado ao JSONBin.io</span><br>
+                    <small>Seus dados são sincronizados automaticamente a cada alteração</small>
+                </p>
+
+                <div class="export-section">
+                    <button class="btn btn-primary" onclick="sincronizarAgora()">☁️ Enviar para Nuvem</button>
+                    <button class="btn btn-success" onclick="carregarAgora()">📥 Carregar da Nuvem</button>
+                </div>
+            </div>
+
             <div class="form-section">
                 <h2>💾 Exportar Dados</h2>
                 <p style="margin-bottom: 15px; font-size: 0.9em;">Baixe seus dados financeiros</p>
@@ -923,9 +999,18 @@
     <div id="notification" class="notification"></div>
 
     <script>
+        // ===== CONFIGURAÇÃO JSONBIN.IO =====
+        const JSONBIN_CONFIG = {
+            API_KEY: '$2a$10$7miIaA34GlZ6JG5gwX0xZuGs6JL/4cnAzYxc1xjZ7kjuOCEkymKdS', // X-Master-Key (NOVA - com permissões completas)
+            BIN_ID: '68dc86a7d0ea881f40911135', // Seu Bin ID
+            BASE_URL: 'https://api.jsonbin.io/v3'
+        };
+
         // Initialize
         let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
         let editingId = null; // ID da transação sendo editada
+        let isSyncing = false; // Flag para evitar sync simultâneos
+        let currentUserName = localStorage.getItem('currentUser') || ''; // Usuário atual
         
         // Set current date as default
         document.getElementById('date').valueAsDate = new Date();
@@ -936,9 +1021,8 @@
         document.getElementById('dashboardMonth').value = currentMonth;
         document.getElementById('monthlyMonth').value = currentMonth;
         
-        // Initialize app
-        updateDashboard();
-        updateCategories();
+        // Initialize app - carregar da nuvem primeiro
+        inicializarApp();
 
         function switchTab(tabName) {
             // Hide all tabs
@@ -964,6 +1048,10 @@
                 updateMonthlyView();
             } else if (tabName === 'reports') {
                 updateReports();
+            } else if (tabName === 'users') {
+                // Atualiza a lista de usuários ao abrir a aba
+                carregarListaUsuarios();
+                atualizarInfoUsuario();
             }
         }
 
@@ -1023,8 +1111,439 @@
             }
         }
 
+        // ===== FUNÇÕES DE GERENCIAMENTO DE USUÁRIOS =====
+        
+        // Carregar lista de usuários disponíveis
+        async function carregarListaUsuarios() {
+            try {
+                const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/b/${JSONBIN_CONFIG.BIN_ID}/latest`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                    }
+                });
+
+                if (!response.ok) throw new Error('Erro ao carregar usuários');
+
+                const data = await response.json();
+                const usuarios = Object.keys(data.record || {});
+                
+                // Atualizar dropdown
+                const select = document.getElementById('userSelect');
+                select.innerHTML = '<option value="">Selecione ou crie um usuário</option>';
+                
+                usuarios.forEach(usuario => {
+                    const option = document.createElement('option');
+                    option.value = usuario;
+                    option.textContent = usuario;
+                    if (usuario === currentUserName) {
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
+                });
+                
+                return usuarios;
+            } catch (error) {
+                console.error('Erro ao carregar lista de usuários:', error);
+                return [];
+            }
+        }
+
+        // Criar novo usuário
+        async function criarNovoUsuario() {
+            const nome = prompt('Digite o nome do novo usuário:');
+            
+            if (!nome || nome.trim() === '') {
+                showNotification('❌ Nome inválido', 'error');
+                return;
+            }
+            
+            const nomeFormatado = nome.trim();
+            
+            // Verificar se já existe
+            try {
+                const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/b/${JSONBIN_CONFIG.BIN_ID}/latest`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                    }
+                });
+
+                const data = await response.json();
+                const usuarios = data.record || {};
+                
+                if (usuarios[nomeFormatado]) {
+                    showNotification('⚠️ Usuário já existe!', 'error');
+                    return;
+                }
+                
+                // Criar novo usuário vazio
+                usuarios[nomeFormatado] = [];
+                
+                // Salvar na nuvem
+                await fetch(`${JSONBIN_CONFIG.BASE_URL}/b/${JSONBIN_CONFIG.BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                    },
+                    body: JSON.stringify(usuarios)
+                });
+                
+                // Atualizar UI
+                currentUserName = nomeFormatado;
+                localStorage.setItem('currentUser', currentUserName);
+                transactions = [];
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+                
+                await carregarListaUsuarios();
+                atualizarInfoUsuario();
+                updateDashboard();
+                
+                showNotification(`✅ Usuário "${nomeFormatado}" criado!`, 'success');
+            } catch (error) {
+                console.error('Erro ao criar usuário:', error);
+                showNotification('❌ Erro ao criar usuário', 'error');
+            }
+        }
+
+        // Mudar de usuário
+        async function mudarUsuario() {
+            const select = document.getElementById('userSelect');
+            const novoUsuario = select.value;
+            
+            if (!novoUsuario) {
+                currentUserName = '';
+                localStorage.removeItem('currentUser');
+                transactions = [];
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+                atualizarInfoUsuario();
+                updateDashboard();
+                return;
+            }
+            
+            currentUserName = novoUsuario;
+            localStorage.setItem('currentUser', currentUserName);
+            
+            // Carregar dados desse usuário da nuvem
+            try {
+                await carregarDaNuvem();
+                showNotification(`✅ Usuário "${currentUserName}" selecionado!`, 'success');
+            } catch (error) {
+                transactions = [];
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+                showNotification(`⚠️ Usuário "${currentUserName}" selecionado (sem dados)`, 'success');
+            }
+            
+            atualizarInfoUsuario();
+            updateDashboard();
+        }
+
+        // Atualizar informações do usuário na UI
+        function atualizarInfoUsuario() {
+            const userInfo = document.getElementById('currentUser');
+            const btnRenomear = document.getElementById('btnRenomear');
+            const btnDeletar = document.getElementById('btnDeletar');
+            
+            if (currentUserName) {
+                userInfo.textContent = currentUserName;
+                userInfo.style.color = 'var(--success)';
+                
+                // Mostrar botões de ação
+                if (btnRenomear) btnRenomear.style.display = 'block';
+                if (btnDeletar) btnDeletar.style.display = 'block';
+            } else {
+                userInfo.textContent = 'Nenhum selecionado';
+                userInfo.style.color = '#999';
+                
+                // Esconder botões de ação
+                if (btnRenomear) btnRenomear.style.display = 'none';
+                if (btnDeletar) btnDeletar.style.display = 'none';
+            }
+        }
+
+        // Renomear usuário
+        async function renomearUsuario() {
+            if (!currentUserName) {
+                showNotification('⚠️ Nenhum usuário selecionado', 'error');
+                return;
+            }
+
+            const novoNome = prompt(`Digite o novo nome para "${currentUserName}":`, currentUserName);
+            
+            if (!novoNome || novoNome.trim() === '') {
+                showNotification('❌ Nome inválido', 'error');
+                return;
+            }
+
+            const nomeFormatado = novoNome.trim();
+            
+            if (nomeFormatado === currentUserName) {
+                showNotification('⚠️ O nome não foi alterado', 'error');
+                return;
+            }
+
+            try {
+                showNotification('🔄 Renomeando usuário...', 'success');
+
+                // Buscar todos os dados
+                const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/b/${JSONBIN_CONFIG.BIN_ID}/latest`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                    }
+                });
+
+                const data = await response.json();
+                const usuarios = data.record || {};
+
+                // Verificar se novo nome já existe
+                if (usuarios[nomeFormatado]) {
+                    showNotification('⚠️ Já existe um usuário com este nome!', 'error');
+                    return;
+                }
+
+                // Copiar dados do usuário antigo para o novo nome
+                usuarios[nomeFormatado] = usuarios[currentUserName];
+                
+                // Deletar o nome antigo
+                delete usuarios[currentUserName];
+
+                // Salvar na nuvem
+                await fetch(`${JSONBIN_CONFIG.BASE_URL}/b/${JSONBIN_CONFIG.BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                    },
+                    body: JSON.stringify(usuarios)
+                });
+
+                // Atualizar localmente
+                const nomeAntigo = currentUserName;
+                currentUserName = nomeFormatado;
+                localStorage.setItem('currentUser', currentUserName);
+
+                // Atualizar UI
+                await carregarListaUsuarios();
+                atualizarInfoUsuario();
+
+                showNotification(`✅ Usuário "${nomeAntigo}" renomeado para "${nomeFormatado}"!`, 'success');
+            } catch (error) {
+                console.error('Erro ao renomear usuário:', error);
+                showNotification('❌ Erro ao renomear usuário', 'error');
+            }
+        }
+
+        // Deletar usuário
+        async function deletarUsuario() {
+            if (!currentUserName) {
+                showNotification('⚠️ Nenhum usuário selecionado', 'error');
+                return;
+            }
+
+            const confirmacao = confirm(`⚠️ Tem certeza que deseja DELETAR o usuário "${currentUserName}"?\n\n⚠️ ATENÇÃO: Todos os dados deste usuário serão APAGADOS permanentemente!\n\nEsta ação NÃO pode ser desfeita!`);
+            
+            if (!confirmacao) return;
+
+            // Segunda confirmação de segurança
+            const confirmacao2 = confirm(`🔴 ÚLTIMA CONFIRMAÇÃO!\n\nDeletar usuário "${currentUserName}" e TODOS os seus dados?\n\nDigite "SIM" para confirmar (só clique OK não é suficiente).`);
+            
+            if (!confirmacao2) return;
+
+            try {
+                showNotification('🔄 Deletando usuário...', 'success');
+
+                // Buscar todos os dados
+                const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/b/${JSONBIN_CONFIG.BIN_ID}/latest`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                    }
+                });
+
+                const data = await response.json();
+                const usuarios = data.record || {};
+
+                // Deletar o usuário
+                const nomeUsuario = currentUserName;
+                delete usuarios[currentUserName];
+
+                // Salvar na nuvem
+                await fetch(`${JSONBIN_CONFIG.BASE_URL}/b/${JSONBIN_CONFIG.BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                    },
+                    body: JSON.stringify(usuarios)
+                });
+
+                // Limpar localmente
+                currentUserName = '';
+                localStorage.removeItem('currentUser');
+                transactions = [];
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+
+                // Atualizar UI
+                await carregarListaUsuarios();
+                atualizarInfoUsuario();
+                updateDashboard();
+
+                showNotification(`✅ Usuário "${nomeUsuario}" deletado com sucesso!`, 'success');
+            } catch (error) {
+                console.error('Erro ao deletar usuário:', error);
+                showNotification('❌ Erro ao deletar usuário', 'error');
+            }
+        }
+
+        // ===== FUNÇÕES DE SINCRONIZAÇÃO COM JSONBIN.IO =====
+        
+        // Inicializar app - tentar carregar da nuvem primeiro
+        async function inicializarApp() {
+            // Carregar lista de usuários
+            await carregarListaUsuarios();
+            atualizarInfoUsuario();
+            
+            // Se tem usuário selecionado, carregar dados dele
+            if (currentUserName) {
+                try {
+                    await carregarDaNuvem();
+                    showNotification('📥 Dados carregados da nuvem!', 'success');
+                } catch (error) {
+                    console.log('Usando dados locais...', error);
+                }
+            }
+            
+            updateDashboard();
+            updateCategories();
+        }
+
+        // Salvar na nuvem
+        async function salvarNaNuvem() {
+            if (isSyncing) return;
+            if (!currentUserName) {
+                console.log('Nenhum usuário selecionado, não sincronizando');
+                return;
+            }
+            
+            isSyncing = true;
+
+            try {
+                // Primeiro, buscar todos os dados
+                const getResponse = await fetch(`${JSONBIN_CONFIG.BASE_URL}/b/${JSONBIN_CONFIG.BIN_ID}/latest`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                    }
+                });
+
+                let allData = {};
+                if (getResponse.ok) {
+                    const getData = await getResponse.json();
+                    allData = getData.record || {};
+                }
+
+                // Atualizar apenas o usuário atual
+                allData[currentUserName] = transactions;
+
+                // Salvar tudo de volta
+                const putResponse = await fetch(`${JSONBIN_CONFIG.BASE_URL}/b/${JSONBIN_CONFIG.BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                    },
+                    body: JSON.stringify(allData)
+                });
+
+                if (!putResponse.ok) throw new Error('Erro ao salvar');
+                
+                const data = await putResponse.json();
+                console.log(`✅ Dados de "${currentUserName}" sincronizados!`, data);
+                return data;
+            } catch (error) {
+                console.error('❌ Erro ao sincronizar:', error);
+                showNotification('❌ Erro ao sincronizar com a nuvem', 'error');
+                throw error;
+            } finally {
+                isSyncing = false;
+            }
+        }
+
+        // Carregar da nuvem
+        async function carregarDaNuvem() {
+            if (!currentUserName) {
+                throw new Error('Nenhum usuário selecionado');
+            }
+
+            try {
+                const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/b/${JSONBIN_CONFIG.BIN_ID}/latest`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                    }
+                });
+
+                if (!response.ok) throw new Error('Erro ao carregar');
+
+                const data = await response.json();
+                
+                if (data.record && data.record[currentUserName]) {
+                    transactions = data.record[currentUserName];
+                    localStorage.setItem('transactions', JSON.stringify(transactions));
+                    updateDashboard();
+                    updateCategories();
+                    console.log(`✅ Dados de "${currentUserName}" carregados!`, transactions.length, 'transações');
+                    return transactions;
+                } else {
+                    throw new Error('Usuário não encontrado na nuvem');
+                }
+            } catch (error) {
+                console.error('❌ Erro ao carregar da nuvem:', error);
+                throw error;
+            }
+        }
+
+        // Sincronizar manualmente (botão)
+        async function sincronizarAgora() {
+            if (!currentUserName) {
+                showNotification('⚠️ Selecione um usuário primeiro!', 'error');
+                return;
+            }
+            
+            try {
+                showNotification(`🔄 Sincronizando dados de "${currentUserName}"...`, 'success');
+                await salvarNaNuvem();
+                showNotification(`✅ Dados de "${currentUserName}" sincronizados!`, 'success');
+            } catch (error) {
+                showNotification('❌ Erro ao sincronizar', 'error');
+            }
+        }
+
+        // Carregar manualmente (botão)
+        async function carregarAgora() {
+            if (!currentUserName) {
+                showNotification('⚠️ Selecione um usuário primeiro!', 'error');
+                return;
+            }
+            
+            try {
+                showNotification(`🔄 Carregando dados de "${currentUserName}"...`, 'success');
+                await carregarDaNuvem();
+                showNotification(`✅ Dados de "${currentUserName}" atualizados!`, 'success');
+            } catch (error) {
+                showNotification('❌ Erro ao carregar', 'error');
+            }
+        }
+
         function saveTransactions() {
             localStorage.setItem('transactions', JSON.stringify(transactions));
+            
+            // Sincronizar automaticamente com a nuvem
+            salvarNaNuvem().catch(err => {
+                console.log('Sincronização automática falhou, dados salvos localmente');
+            });
         }
 
         function updateDashboard() {
@@ -1485,9 +2004,9 @@
                     const dTest = new Date(year, monthIndex, d);
                     
                     if (dTest.getMonth() === monthIndex && dTest.getDate() === d) {
-                        const dTrans = transactions.filter(t => t.date === dStr);
-                        const dIncome = dTrans.filter(t => t.type === 'income').reduce((sum, t) => sum + t.value, 0);
-                        const dExpense = dTrans.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.value, 0);
+                    const dTrans = transactions.filter(t => t.date === dStr);
+                    const dIncome = dTrans.filter(t => t.type === 'income').reduce((sum, t) => sum + t.value, 0);
+                    const dExpense = dTrans.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.value, 0);
                         dayRunningBalance += (dIncome - dExpense);
                     }
                 }
@@ -1743,7 +2262,7 @@
 
 
 
-        function importData() {
+        async function importData() {
             const fileInput = document.getElementById('importFile');
             const file = fileInput.files[0];
             
@@ -1754,7 +2273,7 @@
             
             const reader = new FileReader();
             
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 try {
                     const imported = JSON.parse(e.target.result);
                     
@@ -1763,11 +2282,11 @@
                     }
                     
                     transactions = imported;
-                    saveTransactions();
+                    saveTransactions(); // Já sincroniza automaticamente
                     updateDashboard();
                     updateCategories();
                     
-                    showNotification(`${imported.length} transações importadas!`, 'success');
+                    showNotification(`${imported.length} transações importadas e sincronizadas!`, 'success');
                     fileInput.value = '';
                 } catch (error) {
                     showNotification('Erro ao importar', 'error');
