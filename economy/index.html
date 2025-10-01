@@ -324,12 +324,14 @@
 
         .transaction-actions {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             margin-top: 10px;
+            flex-wrap: wrap;
         }
 
         .transaction-actions .btn {
             flex: 1;
+            min-width: 44px;
         }
 
         .month-selector {
@@ -797,7 +799,10 @@
                             <input type="date" id="date" required>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">✅ Adicionar Transação</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1;">✅ Adicionar Transação</button>
+                        <button type="button" class="btn btn-danger" id="cancelEditBtn" style="display: none;" onclick="cancelEdit()">❌ Cancelar</button>
+                    </div>
                 </form>
             </div>
 
@@ -920,6 +925,7 @@
     <script>
         // Initialize
         let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        let editingId = null; // ID da transação sendo editada
         
         // Set current date as default
         document.getElementById('date').valueAsDate = new Date();
@@ -964,6 +970,37 @@
         function addTransaction(event) {
             event.preventDefault();
             
+            if (editingId !== null) {
+                // Modo edição - atualiza a transação existente
+                const index = transactions.findIndex(t => t.id === editingId);
+                if (index !== -1) {
+                    transactions[index] = {
+                        id: editingId,
+                        type: document.getElementById('type').value,
+                        description: document.getElementById('description').value,
+                        value: parseFloat(document.getElementById('value').value),
+                        category: document.getElementById('category').value,
+                        date: document.getElementById('date').value
+                    };
+                    
+                    saveTransactions();
+                    editingId = null;
+                    
+                    // Muda texto do botão de volta e esconde botão cancelar
+                    document.querySelector('#transactionForm button[type="submit"]').innerHTML = '✅ Adicionar Transação';
+                    document.getElementById('cancelEditBtn').style.display = 'none';
+                    
+                    // Reset form
+                    document.getElementById('description').value = '';
+                    document.getElementById('value').value = '';
+                    
+                    updateDashboard();
+                    filterTransactions();
+                    updateCategories();
+                    showNotification('Transação atualizada!', 'success');
+                }
+            } else {
+                // Modo adição - cria nova transação
             const transaction = {
                 id: Date.now(),
                 type: document.getElementById('type').value,
@@ -976,12 +1013,14 @@
             transactions.push(transaction);
             saveTransactions();
             
-            // Reset form
-            document.getElementById('transactionForm').reset();
-            document.getElementById('date').valueAsDate = new Date();
+                // Reset form - mantém tipo, categoria E DATA, limpa apenas descrição e valor
+                document.getElementById('description').value = '';
+                document.getElementById('value').value = '';
+                // NÃO atualiza a data - mantém a mesma para facilitar adicionar várias na mesma data
             
             updateDashboard();
             showNotification('Transação adicionada!', 'success');
+            }
         }
 
         function saveTransactions() {
@@ -1036,8 +1075,9 @@
                         ${t.type === 'income' ? '+' : '-'} ${formatCurrency(t.value)}
                     </div>
                     <div class="transaction-actions">
-                        <button class="btn btn-warning btn-small" onclick="editTransaction(${t.id})">✏️</button>
-                        <button class="btn btn-danger btn-small" onclick="deleteTransaction(${t.id})">🗑️</button>
+                        <button class="btn btn-success btn-small" onclick="duplicateTransaction(${t.id})" title="Duplicar">📋</button>
+                        <button class="btn btn-warning btn-small" onclick="editTransaction(${t.id})" title="Editar">✏️</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteTransaction(${t.id})" title="Deletar">🗑️</button>
                     </div>
                 </div>
             `).join('');
@@ -1084,8 +1124,9 @@
                         ${t.type === 'income' ? '+' : '-'} ${formatCurrency(t.value)}
                     </div>
                     <div class="transaction-actions">
-                        <button class="btn btn-warning btn-small" onclick="editTransaction(${t.id})">✏️</button>
-                        <button class="btn btn-danger btn-small" onclick="deleteTransaction(${t.id})">🗑️</button>
+                        <button class="btn btn-success btn-small" onclick="duplicateTransaction(${t.id})" title="Duplicar">📋</button>
+                        <button class="btn btn-warning btn-small" onclick="editTransaction(${t.id})" title="Editar">✏️</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteTransaction(${t.id})" title="Deletar">🗑️</button>
                     </div>
                 </div>
             `).join('');
@@ -1237,17 +1278,16 @@
                 categories.map(c => `<option value="${c}">${c}</option>`).join('');
         }
 
-        function editTransaction(id) {
+        function duplicateTransaction(id) {
             const transaction = transactions.find(t => t.id === id);
             if (!transaction) return;
             
+            // Preenche o formulário com os dados da transação (para duplicar)
             document.getElementById('type').value = transaction.type;
             document.getElementById('description').value = transaction.description;
             document.getElementById('value').value = transaction.value;
             document.getElementById('category').value = transaction.category;
             document.getElementById('date').value = transaction.date;
-            
-            deleteTransaction(id, false);
             
             // Switch to dashboard
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -1256,7 +1296,51 @@
             document.querySelector('.tab-btn').classList.add('active');
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            showNotification('Editando transação', 'success');
+            showNotification('Transação copiada! Altere o que precisar e clique em "Adicionar"', 'success');
+        }
+
+        function editTransaction(id) {
+            const transaction = transactions.find(t => t.id === id);
+            if (!transaction) return;
+            
+            // Marca que está editando
+            editingId = id;
+            
+            // Preenche o formulário
+            document.getElementById('type').value = transaction.type;
+            document.getElementById('description').value = transaction.description;
+            document.getElementById('value').value = transaction.value;
+            document.getElementById('category').value = transaction.category;
+            document.getElementById('date').value = transaction.date;
+            
+            // Muda o texto do botão e mostra botão cancelar
+            document.querySelector('#transactionForm button[type="submit"]').innerHTML = '💾 Salvar Alterações';
+            document.getElementById('cancelEditBtn').style.display = 'block';
+            
+            // Switch to dashboard
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('dashboard').classList.add('active');
+            document.querySelector('.tab-btn').classList.add('active');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            showNotification('Editando transação - clique em "Salvar Alterações"', 'success');
+        }
+        
+        function cancelEdit() {
+            // Cancela a edição
+            editingId = null;
+            
+            // Reseta o formulário (mantém a data)
+            document.getElementById('description').value = '';
+            document.getElementById('value').value = '';
+            // NÃO limpa a data - mantém a mesma
+            
+            // Volta o texto do botão e esconde botão cancelar
+            document.querySelector('#transactionForm button[type="submit"]').innerHTML = '✅ Adicionar Transação';
+            document.getElementById('cancelEditBtn').style.display = 'none';
+            
+            showNotification('Edição cancelada', 'success');
         }
 
         function deleteTransaction(id, showMsg = true) {
@@ -1309,29 +1393,355 @@
         }
 
         function exportExcel() {
-            if (transactions.length === 0) {
-                showNotification('Nenhuma transação', 'error');
-                return;
+    if (transactions.length === 0) {
+        showNotification('Nenhuma transação', 'error');
+        return;
+    }
+    
+    // Criar estrutura HTML igual à planilha original com cores e formatação
+    const months = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 
+                    'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
+    
+    const years = [2025, 2026];
+    let allSheetsHTML = '';
+    
+    // Criar aba para cada ano
+    years.forEach(year => {
+        let sheetHTML = `<table border="1">`;
+        
+        // LINHA 1: Cabeçalho com meses (mesclado, fundo azul escuro)
+        sheetHTML += `<tr>`;
+        months.forEach(month => {
+            sheetHTML += `<th colspan="5" style="background-color: #4472C4; color: white; text-align: center; font-weight: bold; font-size: 11pt; border: 1px solid #000;">${month}</th>`;
+            sheetHTML += `<td style="background-color: #FFFFFF; border: none;"></td>`;
+        });
+        sheetHTML += `</tr>`;
+        
+        // LINHA 2: Subcabeçalhos (Data, Entrada, Saída, Diário, Saldo)
+        sheetHTML += `<tr>`;
+        for(let i = 0; i < 12; i++) {
+            sheetHTML += `<th style="background-color: #4472C4; color: white; font-weight: bold; border: 1px solid #000;">Data</th>`;
+            sheetHTML += `<th style="background-color: #4472C4; color: white; font-weight: bold; border: 1px solid #000;">Entrada</th>`;
+            sheetHTML += `<th style="background-color: #4472C4; color: white; font-weight: bold; border: 1px solid #000;">Saída</th>`;
+            sheetHTML += `<th style="background-color: #4472C4; color: white; font-weight: bold; border: 1px solid #000;">Diário</th>`;
+            sheetHTML += `<th style="background-color: #4472C4; color: white; font-weight: bold; border: 1px solid #000;">Saldo</th>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+        }
+        sheetHTML += `</tr>`;
+        
+        // LINHAS 3-33: Dias de 1 a 31 (fundo amarelo claro)
+        // Array para armazenar saldo final de cada mês
+        const monthlyFinalBalance = new Array(12).fill(0);
+        
+        // Primeiro, calcular saldo final de cada mês
+        for(let monthIndex = 0; monthIndex < 12; monthIndex++) {
+            let monthBalance = monthIndex > 0 ? monthlyFinalBalance[monthIndex - 1] : 0; // Começa com saldo do mês anterior
+            
+            for(let day = 1; day <= 31; day++) {
+                const dateStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const testDate = new Date(year, monthIndex, day);
+                const dayExists = testDate.getMonth() === monthIndex && testDate.getDate() === day;
+                
+                if (dayExists) {
+                    const dayTransactions = transactions.filter(t => t.date === dateStr);
+                    const dayIncome = dayTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.value, 0);
+                    const dayExpense = dayTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.value, 0);
+                    monthBalance += (dayIncome - dayExpense);
+                }
             }
             
-            let html = '<table><thead><tr><th>Data</th><th>Tipo</th><th>Descrição</th><th>Categoria</th><th>Valor</th></tr></thead><tbody>';
+            monthlyFinalBalance[monthIndex] = monthBalance;
+        }
+        
+        // Agora gerar as linhas da tabela
+        for(let day = 1; day <= 31; day++) {
+            sheetHTML += `<tr>`;
             
-            transactions.forEach(t => {
-                html += `<tr><td>${t.date}</td><td>${t.type === 'income' ? 'Entrada' : 'Saída'}</td><td>${t.description}</td><td>${t.category}</td><td>${t.value}</td></tr>`;
+            for(let monthIndex = 0; monthIndex < 12; monthIndex++) {
+                const dateStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                // Verificar se o dia existe nesse mês
+                const testDate = new Date(year, monthIndex, day);
+                const dayExists = testDate.getMonth() === monthIndex && testDate.getDate() === day;
+                
+                // Saldo inicial do mês (saldo final do mês anterior)
+                let monthStartBalance = monthIndex > 0 ? monthlyFinalBalance[monthIndex - 1] : 0;
+                
+                if (!dayExists) {
+                    // Dia não existe neste mês - mostrar saldo final do mês
+                    sheetHTML += `<td style="background-color: #FFF2CC; text-align: center; border: 1px solid #000;">${day}</td>`;
+                    sheetHTML += `<td style="background-color: #FFF2CC; border: 1px solid #000;"></td>`;
+                    sheetHTML += `<td style="background-color: #FFF2CC; border: 1px solid #000;"></td>`;
+                    sheetHTML += `<td style="background-color: #FFF2CC; border: 1px solid #000;"></td>`;
+                    sheetHTML += `<td style="background-color: #FFF2CC; text-align: right; font-weight: bold; border: 1px solid #000;">R$ ${monthlyFinalBalance[monthIndex].toFixed(2)}</td>`;
+                    sheetHTML += `<td style="border: none;"></td>`;
+                    continue;
+                }
+                
+                // Calcular saldo acumulado até este dia do mês
+                let dayRunningBalance = monthStartBalance;
+                for(let d = 1; d <= day; d++) {
+                    const dStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                    const dTest = new Date(year, monthIndex, d);
+                    
+                    if (dTest.getMonth() === monthIndex && dTest.getDate() === d) {
+                        const dTrans = transactions.filter(t => t.date === dStr);
+                        const dIncome = dTrans.filter(t => t.type === 'income').reduce((sum, t) => sum + t.value, 0);
+                        const dExpense = dTrans.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.value, 0);
+                        dayRunningBalance += (dIncome - dExpense);
+                    }
+                }
+                
+                // Filtrar transações do dia atual
+                const dayTransactions = transactions.filter(t => t.date === dateStr);
+                const dayIncome = dayTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.value, 0);
+                const dayExpense = dayTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.value, 0);
+                const dayBalance = dayIncome - dayExpense;
+                
+                sheetHTML += `<td style="background-color: #FFF2CC; text-align: center; border: 1px solid #000;">${day}</td>`;
+                sheetHTML += `<td style="background-color: #FFF2CC; text-align: right; border: 1px solid #000;">${dayIncome > 0 ? 'R$ ' + dayIncome.toFixed(2) : ''}</td>`;
+                sheetHTML += `<td style="background-color: #FFF2CC; text-align: right; border: 1px solid #000;">${dayExpense > 0 ? 'R$ ' + dayExpense.toFixed(2) : ''}</td>`;
+                sheetHTML += `<td style="background-color: #FFF2CC; text-align: right; border: 1px solid #000;">${dayBalance !== 0 ? 'R$ ' + dayBalance.toFixed(2) : ''}</td>`;
+                sheetHTML += `<td style="background-color: #FFF2CC; text-align: right; font-weight: bold; border: 1px solid #000;">R$ ${dayRunningBalance.toFixed(2)}</td>`;
+                sheetHTML += `<td style="border: none;"></td>`;
+            }
+            
+            sheetHTML += `</tr>`;
+        }
+        
+        // Linha vazia
+        sheetHTML += `<tr>${'<td style="border: none;"></td>'.repeat(72)}</tr>`;
+        sheetHTML += `<tr>${'<td style="border: none;"></td>'.repeat(72)}</tr>`;
+        
+        // LINHA RESUMO: ENTRADAS, SAÍDAS, DIÁRIO (fundo cinza claro)
+        sheetHTML += `<tr><td style="border: none;"></td>`;
+        for(let monthIndex = 0; monthIndex < 12; monthIndex++) {
+            sheetHTML += `<th style="background-color: #D9D9D9; font-weight: bold; text-align: center; border: 1px solid #000;">ENTRADAS</th>`;
+            sheetHTML += `<th style="background-color: #D9D9D9; font-weight: bold; text-align: center; border: 1px solid #000;">SAÍDAS</th>`;
+            sheetHTML += `<th style="background-color: #D9D9D9; font-weight: bold; text-align: center; border: 1px solid #000;">DIÁRIO</th>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+        }
+        sheetHTML += `</tr>`;
+        
+        // Valores do resumo
+        sheetHTML += `<tr><td style="border: none;"></td>`;
+        for(let monthIndex = 0; monthIndex < 12; monthIndex++) {
+            const monthTransactions = transactions.filter(t => {
+                const date = new Date(t.date);
+                return date.getFullYear() === year && date.getMonth() === monthIndex;
             });
             
-            html += '</tbody></table>';
+            const monthIncome = monthTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.value, 0);
+            const monthExpense = monthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.value, 0);
+            const monthBalance = monthIncome - monthExpense;
             
-            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            
-            link.setAttribute('href', url);
-            link.setAttribute('download', `financas_${new Date().toISOString().split('T')[0]}.xls`);
-            link.click();
-            
-            showNotification('Excel exportado!', 'success');
+            sheetHTML += `<td style="background-color: #D9D9D9; text-align: right; font-weight: bold; border: 1px solid #000;">R$ ${monthIncome.toFixed(2)}</td>`;
+            sheetHTML += `<td style="background-color: #D9D9D9; text-align: right; font-weight: bold; border: 1px solid #000;">R$ ${monthExpense.toFixed(2)}</td>`;
+            sheetHTML += `<td style="background-color: #D9D9D9; text-align: right; font-weight: bold; border: 1px solid #000;">R$ ${monthBalance.toFixed(2)}</td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
         }
+        sheetHTML += `</tr>`;
+        
+        // Linha vazia
+        sheetHTML += `<tr>${'<td style="border: none;"></td>'.repeat(72)}</tr>`;
+        
+        // LINHA: Saída Total (fundo vermelho claro)
+        sheetHTML += `<tr><td colspan="3" style="border: none;"></td>`;
+        for(let monthIndex = 0; monthIndex < 12; monthIndex++) {
+            sheetHTML += `<th style="background-color: #F4B084; font-weight: bold; text-align: center; border: 1px solid #000;">Saída Total</th>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+        }
+        sheetHTML += `</tr>`;
+        
+        // Valores Saída Total
+        sheetHTML += `<tr><td colspan="3" style="border: none;"></td>`;
+        for(let monthIndex = 0; monthIndex < 12; monthIndex++) {
+            const monthTransactions = transactions.filter(t => {
+                const date = new Date(t.date);
+                return date.getFullYear() === year && date.getMonth() === monthIndex;
+            });
+            
+            const monthExpense = monthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.value, 0);
+            
+            sheetHTML += `<td style="background-color: #F4B084; text-align: right; font-weight: bold; border: 1px solid #000;">R$ ${monthExpense.toFixed(2)}</td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+        }
+        sheetHTML += `</tr>`;
+        
+        // Linha vazia
+        sheetHTML += `<tr>${'<td style="border: none;"></td>'.repeat(72)}</tr>`;
+        
+        // LINHA: Performance (fundo azul claro)
+        sheetHTML += `<tr><td colspan="3" style="border: none;"></td>`;
+        for(let monthIndex = 0; monthIndex < 12; monthIndex++) {
+            sheetHTML += `<th style="background-color: #B4C7E7; font-weight: bold; text-align: center; border: 1px solid #000;">Performance</th>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+        }
+        sheetHTML += `</tr>`;
+        
+        // Valores Performance
+        sheetHTML += `<tr><td colspan="3" style="border: none;"></td>`;
+        for(let monthIndex = 0; monthIndex < 12; monthIndex++) {
+            const monthTransactions = transactions.filter(t => {
+                const date = new Date(t.date);
+                return date.getFullYear() === year && date.getMonth() === monthIndex;
+            });
+            
+            const monthIncome = monthTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.value, 0);
+            const monthExpense = monthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.value, 0);
+            const performance = monthIncome - monthExpense;
+            
+            sheetHTML += `<td style="background-color: #B4C7E7; text-align: right; font-weight: bold; border: 1px solid #000;">R$ ${performance.toFixed(2)}</td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+            sheetHTML += `<td style="border: none;"></td>`;
+        }
+        sheetHTML += `</tr>`;
+        
+        sheetHTML += `</table><br><br>`;
+        allSheetsHTML += sheetHTML;
+    });
+    
+    // CRIAR ABA ECONOMIA
+    let economyHTML = `<h2>Economia</h2><table border="1">`;
+    
+    // Cabeçalho
+    economyHTML += `<tr>
+        <td style="border: none;"></td>
+        <th style="background-color: #4472C4; color: white; font-weight: bold; text-align: center; border: 1px solid #000;">2025</th>
+        <th style="background-color: #4472C4; color: white; font-weight: bold; text-align: center; border: 1px solid #000;">Entradas</th>
+        <th style="background-color: #A9D08E; color: white; font-weight: bold; text-align: center; border: 1px solid #000;">Economia</th>
+        <th style="background-color: #4472C4; color: white; font-weight: bold; text-align: center; border: 1px solid #000;">%</th>
+        <td style="border: none;"></td>
+        <th style="background-color: #4472C4; color: white; font-weight: bold; text-align: center; border: 1px solid #000;">2026</th>
+        <th style="background-color: #4472C4; color: white; font-weight: bold; text-align: center; border: 1px solid #000;">Entradas</th>
+        <th style="background-color: #A9D08E; color: white; font-weight: bold; text-align: center; border: 1px solid #000;">Economia</th>
+        <th style="background-color: #4472C4; color: white; font-weight: bold; text-align: center; border: 1px solid #000;">%</th>
+    </tr>`;
+    
+    const monthsShort = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+    
+    let total2025Income = 0, total2025Economy = 0;
+    let total2026Income = 0, total2026Economy = 0;
+    
+    monthsShort.forEach((monthShort, index) => {
+        // 2025
+        const month2025Trans = transactions.filter(t => {
+            const date = new Date(t.date);
+            return date.getFullYear() === 2025 && date.getMonth() === index;
+        });
+        const income2025 = month2025Trans.filter(t => t.type === 'income').reduce((sum, t) => sum + t.value, 0);
+        const expense2025 = month2025Trans.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.value, 0);
+        const economy2025 = income2025 - expense2025;
+        const percent2025 = income2025 > 0 ? ((economy2025 / income2025) * 100).toFixed(1) : '0';
+        
+        total2025Income += income2025;
+        total2025Economy += economy2025;
+        
+        // 2026
+        const month2026Trans = transactions.filter(t => {
+            const date = new Date(t.date);
+            return date.getFullYear() === 2026 && date.getMonth() === index;
+        });
+        const income2026 = month2026Trans.filter(t => t.type === 'income').reduce((sum, t) => sum + t.value, 0);
+        const expense2026 = month2026Trans.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.value, 0);
+        const economy2026 = income2026 - expense2026;
+        const percent2026 = income2026 > 0 ? ((economy2026 / income2026) * 100).toFixed(1) : '0';
+        
+        total2026Income += income2026;
+        total2026Economy += economy2026;
+        
+        economyHTML += `<tr>
+            <td style="border: none;"></td>
+            <th style="background-color: #D9D9D9; font-weight: bold; text-align: center; border: 1px solid #000;">${monthShort}</th>
+            <td style="text-align: right; border: 1px solid #000;">R$ ${income2025.toFixed(2)}</td>
+            <td style="background-color: #A9D08E; text-align: right; border: 1px solid #000;">R$ ${economy2025.toFixed(2)}</td>
+            <td style="text-align: right; border: 1px solid #000;">${percent2025}%</td>
+            <td style="border: none;"></td>
+            <th style="background-color: #D9D9D9; font-weight: bold; text-align: center; border: 1px solid #000;">${monthShort}</th>
+            <td style="text-align: right; border: 1px solid #000;">R$ ${income2026.toFixed(2)}</td>
+            <td style="background-color: #A9D08E; text-align: right; border: 1px solid #000;">R$ ${economy2026.toFixed(2)}</td>
+            <td style="text-align: right; border: 1px solid #000;">${percent2026}%</td>
+        </tr>`;
+    });
+    
+    // Linha vazia
+    economyHTML += `<tr>${'<td style="border: none;"></td>'.repeat(10)}</tr>`;
+    
+    // Linha TOTAL (fundo laranja)
+    const totalPercent2025 = total2025Income > 0 ? ((total2025Economy / total2025Income) * 100).toFixed(1) : '0';
+    const totalPercent2026 = total2026Income > 0 ? ((total2026Economy / total2026Income) * 100).toFixed(1) : '0';
+    
+    economyHTML += `<tr>
+        <td style="border: none;"></td>
+        <th style="background-color: #F4B084; font-weight: bold; text-align: center; border: 1px solid #000;">TOTAL</th>
+        <th style="background-color: #F4B084; font-weight: bold; text-align: right; border: 1px solid #000;">R$ ${total2025Income.toFixed(2)}</th>
+        <th style="background-color: #F4B084; font-weight: bold; text-align: right; border: 1px solid #000;">R$ ${total2025Economy.toFixed(2)}</th>
+        <th style="background-color: #F4B084; font-weight: bold; text-align: right; border: 1px solid #000;">${totalPercent2025}%</th>
+        <td style="border: none;"></td>
+        <th style="background-color: #F4B084; font-weight: bold; text-align: center; border: 1px solid #000;">TOTAL</th>
+        <th style="background-color: #F4B084; font-weight: bold; text-align: right; border: 1px solid #000;">R$ ${total2026Income.toFixed(2)}</th>
+        <th style="background-color: #F4B084; font-weight: bold; text-align: right; border: 1px solid #000;">R$ ${total2026Economy.toFixed(2)}</th>
+        <th style="background-color: #F4B084; font-weight: bold; text-align: right; border: 1px solid #000;">${totalPercent2026}%</th>
+    </tr>`;
+    
+    economyHTML += `</table>`;
+    
+    allSheetsHTML += economyHTML;
+    
+    // Criar blob e download
+    const fullHTML = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">
+        <head>
+            <meta charset="UTF-8">
+            <xml>
+                <x:ExcelWorkbook>
+                    <x:ExcelWorksheets>
+                        <x:ExcelWorksheet>
+                            <x:Name>Termômetro</x:Name>
+                            <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+                        </x:ExcelWorksheet>
+                    </x:ExcelWorksheets>
+                </x:ExcelWorkbook>
+            </xml>
+        </head>
+        <body>${allSheetsHTML}</body>
+        </html>
+    `;
+    
+    const blob = new Blob([fullHTML], { 
+        type: 'application/vnd.ms-excel;charset=utf-8;' 
+    });
+    
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Termômetro_${new Date().toISOString().split('T')[0]}.xls`);
+    link.click();
+    
+    showNotification('Excel exportado!', 'success');
+}
+
+
 
         function importData() {
             const fileInput = document.getElementById('importFile');
