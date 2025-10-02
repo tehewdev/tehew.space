@@ -764,6 +764,36 @@
             font-size: 0.9em;
         }
 
+        /* Loading Spinner */
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsivo - Header do usuário */
+        @media (max-width: 480px) {
+            header > div {
+                flex-wrap: wrap;
+            }
+            
+            #headerUserName {
+                max-width: 100px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+
         @keyframes slideUp {
             from {
                 transform: translateY(100px);
@@ -977,22 +1007,44 @@
             </div>
             
             <div class="login-content">
-                <h2>Selecione seu usuário</h2>
-                <select id="loginUserSelect" class="login-select" onkeypress="if(event.key === 'Enter') entrarComUsuario()">
-                    <option value="">Escolha um usuário...</option>
-                </select>
+                <h2 id="loginTitle">Selecione seu usuário</h2>
                 
-                <button class="btn-login" onclick="entrarComUsuario()">
-                    🚀 Entrar
-                </button>
-                
-                <div class="login-divider">
-                    <span>ou</span>
+                <div id="loginLoading" style="text-align: center; padding: 20px; display: none;">
+                    <div class="loading-spinner"></div>
+                    <p style="color: #666; margin-top: 10px;">Carregando usuários...</p>
                 </div>
                 
-                <button class="btn-new-user" onclick="criarUsuarioLogin()">
-                    ➕ Criar Novo Usuário
-                </button>
+                <!-- Formulário de Seleção -->
+                <div id="loginForm">
+                    <select id="loginUserSelect" class="login-select" onkeypress="if(event.key === 'Enter') entrarComUsuario()">
+                        <option value="">Escolha um usuário...</option>
+                    </select>
+                    
+                    <button class="btn-login" onclick="entrarComUsuario()">
+                        🚀 Entrar
+                    </button>
+                    
+                    <div class="login-divider">
+                        <span>ou</span>
+                    </div>
+                    
+                    <button class="btn-new-user" onclick="mostrarFormularioCriarUsuario()">
+                        ➕ Criar Novo Usuário
+                    </button>
+                </div>
+                
+                <!-- Formulário de Criação de Usuário -->
+                <div id="createUserForm" style="display: none;">
+                    <input type="text" id="newUserNameInput" class="login-select" placeholder="Digite o nome do novo usuário" style="margin-bottom: 15px;" maxlength="50" autocomplete="off">
+                    
+                    <button class="btn-login" onclick="criarUsuarioLoginInline()">
+                        ✅ Criar Usuário
+                    </button>
+                    
+                    <button class="btn-new-user" onclick="voltarParaSelecao()" style="margin-top: 10px;">
+                        ← Voltar
+                    </button>
+                </div>
             </div>
             
             <div class="login-footer">
@@ -1003,14 +1055,20 @@
 
     <div class="container" id="mainApp" style="display: none;">
         <header>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px;">
+                <div style="flex: 1;">
                     <h1>💰 Controle Financeiro</h1>
                     <p>Organize suas finanças facilmente</p>
                 </div>
-                <button onclick="sairDoSistema()" style="background: rgba(255,255,255,0.2); border: 2px solid white; color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9em;" title="Sair e trocar de usuário">
-                    🚪 Sair
-                </button>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="text-align: right;">
+                        <div style="font-size: 0.75em; opacity: 0.8;">Usuário</div>
+                        <div id="headerUserName" style="font-weight: 700; font-size: 1em;">-</div>
+                    </div>
+                    <button onclick="sairDoSistema()" style="background: rgba(255,255,255,0.2); border: 2px solid white; color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9em; white-space: nowrap;" title="Sair e trocar de usuário">
+                        🚪 Sair
+                    </button>
+                </div>
             </div>
         </header>
 
@@ -2977,7 +3035,14 @@
 
         // ===== SISTEMA DE LOGIN =====
         async function carregarUsuariosLogin() {
+            const loadingDiv = document.getElementById('loginLoading');
+            const formDiv = document.getElementById('loginForm');
+            
             try {
+                // Mostrar loading
+                loadingDiv.style.display = 'block';
+                formDiv.style.display = 'none';
+                
                 const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/b/${JSONBIN_CONFIG.BIN_ID}/latest`, {
                     method: 'GET',
                     headers: {
@@ -3000,9 +3065,15 @@
                 });
 
                 console.log('✅ Usuários carregados:', usernames);
+                
+                // Esconder loading
+                loadingDiv.style.display = 'none';
+                formDiv.style.display = 'block';
             } catch (error) {
                 console.error('❌ Erro ao carregar usuários:', error);
                 showNotification('⚠️ Erro ao carregar usuários da nuvem', 'error');
+                loadingDiv.style.display = 'none';
+                formDiv.style.display = 'block';
             }
         }
 
@@ -3033,6 +3104,9 @@
                 updateDashboard();
                 atualizarInfoUsuario();
                 
+                // Atualizar nome no header
+                document.getElementById('headerUserName').textContent = username;
+                
                 showNotification(`✅ Bem-vindo, ${username}!`, 'success');
             } catch (error) {
                 console.error('❌ Erro ao entrar:', error);
@@ -3040,13 +3114,27 @@
             }
         }
 
-        async function criarUsuarioLogin() {
-            const nome = await customPrompt('Digite o nome do novo usuário:');
+        function mostrarFormularioCriarUsuario() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('createUserForm').style.display = 'block';
+            document.getElementById('loginTitle').textContent = 'Criar novo usuário';
+            document.getElementById('newUserNameInput').value = '';
+            document.getElementById('newUserNameInput').focus();
+        }
+
+        function voltarParaSelecao() {
+            document.getElementById('createUserForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('loginTitle').textContent = 'Selecione seu usuário';
+        }
+
+        async function criarUsuarioLoginInline() {
+            const input = document.getElementById('newUserNameInput');
+            const nome = input.value;
             
             if (!nome || nome.trim() === '') {
-                if (nome !== null) {
-                    showNotification('❌ Nome inválido', 'error');
-                }
+                showNotification('❌ Nome inválido', 'error');
+                input.focus();
                 return;
             }
             
@@ -3065,6 +3153,7 @@
                 
                 if (usuarios[nomeFormatado]) {
                     showNotification('⚠️ Usuário já existe!', 'error');
+                    input.focus();
                     return;
                 }
                 
@@ -3083,6 +3172,11 @@
 
                 if (updateResponse.ok) {
                     showNotification(`✅ Usuário "${nomeFormatado}" criado com sucesso!`, 'success');
+                    
+                    // Voltar para tela de seleção
+                    voltarParaSelecao();
+                    
+                    // Recarregar lista de usuários
                     await carregarUsuariosLogin();
                     
                     // Selecionar o novo usuário automaticamente
@@ -3095,6 +3189,18 @@
                 showNotification('❌ Erro ao criar usuário', 'error');
             }
         }
+        
+        // Permitir criar usuário com Enter
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('newUserNameInput');
+            if (input) {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        criarUsuarioLoginInline();
+                    }
+                });
+            }
+        });
 
         function sairDoSistema() {
             // Esconder app principal
@@ -3102,6 +3208,9 @@
             
             // Mostrar tela de login
             document.getElementById('loginScreen').style.display = 'flex';
+            
+            // Garantir que está na tela de seleção (não de criar usuário)
+            voltarParaSelecao();
             
             // Limpar seleção
             document.getElementById('loginUserSelect').value = '';
