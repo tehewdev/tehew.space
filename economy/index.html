@@ -885,13 +885,44 @@
         <!-- Reports Tab -->
         <div id="reports" class="tab-content">
             <div class="month-selector">
-                <select id="reportsYear" onchange="updateReports()" style="grid-column: 1 / -1;">
+                <select id="reportsYear" onchange="updateReports()">
                     <option value="2025">2025</option>
                     <option value="2026">2026</option>
+                </select>
+                <select id="reportsMonth" onchange="updateReports()">
+                    <option value="all">Ano Completo</option>
+                    <option value="0">Janeiro</option>
+                    <option value="1">Fevereiro</option>
+                    <option value="2">Março</option>
+                    <option value="3">Abril</option>
+                    <option value="4">Maio</option>
+                    <option value="5">Junho</option>
+                    <option value="6">Julho</option>
+                    <option value="7">Agosto</option>
+                    <option value="8">Setembro</option>
+                    <option value="9">Outubro</option>
+                    <option value="10">Novembro</option>
+                    <option value="11">Dezembro</option>
                 </select>
             </div>
 
             <div class="stats-grid" id="reportsContent"></div>
+            
+            <!-- Tabela detalhada mensal (aparece apenas quando um mês específico é selecionado) -->
+            <div class="table-container" id="reportsMonthlyDetail" style="display: none; margin-top: 20px;">
+                <table id="reportsMonthlyTable">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Entrada</th>
+                            <th>Saída</th>
+                            <th>Diário</th>
+                            <th>Saldo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportsMonthlyTableBody"></tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Users Tab -->
@@ -1835,10 +1866,21 @@
 
         function updateReports() {
             const year = parseInt(document.getElementById('reportsYear').value);
+            const monthValue = document.getElementById('reportsMonth').value;
             const container = document.getElementById('reportsContent');
+            const monthlyDetailContainer = document.getElementById('reportsMonthlyDetail');
             
             const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
                           'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            
+            // Se um mês específico foi selecionado, mostrar visão detalhada
+            if (monthValue !== 'all') {
+                const month = parseInt(monthValue);
+                updateReportsMonthlyDetail(year, month);
+                monthlyDetailContainer.style.display = 'block';
+            } else {
+                monthlyDetailContainer.style.display = 'none';
+            }
             
             let html = '<div class="stat-card"><h3>📊 Resumo ' + year + '</h3>';
             
@@ -1874,9 +1916,19 @@
             
             html += '</div>';
             
-            // Category statistics
+            // Category statistics - filtrar por mês se necessário
             const categories = {};
-            transactions.forEach(t => {
+            const categoryTransactions = monthValue !== 'all' 
+                ? transactions.filter(t => {
+                    const date = new Date(t.date);
+                    return date.getFullYear() === year && date.getMonth() === parseInt(monthValue);
+                })
+                : transactions.filter(t => {
+                    const date = new Date(t.date);
+                    return date.getFullYear() === year;
+                });
+                
+            categoryTransactions.forEach(t => {
                 if (!categories[t.category]) {
                     categories[t.category] = { income: 0, expense: 0 };
                 }
@@ -1889,46 +1941,94 @@
             
             html += '<div class="stat-card"><h3>📁 Por Categoria</h3>';
             
-            Object.entries(categories).forEach(([category, values]) => {
-                const total = values.income + values.expense;
-                const maxValue = Math.max(...Object.values(categories).map(v => v.income + v.expense));
-                const percentage = (total / maxValue * 100);
-                
-                html += `
-                    <div class="stat-item">
-                        <div style="flex: 1">
-                            <div><strong>${category}</strong></div>
-                            <div class="category-bar">
-                                <div class="category-bar-fill" style="width: ${percentage}%"></div>
+            if (Object.keys(categories).length > 0) {
+                Object.entries(categories).forEach(([category, values]) => {
+                    const total = values.income + values.expense;
+                    const maxValue = Math.max(...Object.values(categories).map(v => v.income + v.expense));
+                    const percentage = (total / maxValue * 100);
+                    
+                    html += `
+                        <div class="stat-item">
+                            <div style="flex: 1">
+                                <div><strong>${category}</strong></div>
+                                <div class="category-bar">
+                                    <div class="category-bar-fill" style="width: ${percentage}%"></div>
+                                </div>
                             </div>
+                            <span style="margin-left: 20px">${formatCurrency(total)}</span>
                         </div>
-                        <span style="margin-left: 20px">${formatCurrency(total)}</span>
-                    </div>
-                `;
-            });
+                    `;
+                });
+            } else {
+                html += '<p style="text-align: center; color: #666; padding: 20px;">Nenhuma transação neste período</p>';
+            }
             
             html += '</div>';
             
-            // Summary
+            // Summary - usar valores filtrados se necessário
+            const summaryIncome = monthValue !== 'all' 
+                ? categoryTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.value, 0)
+                : yearIncome;
+            const summaryExpense = monthValue !== 'all'
+                ? categoryTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.value, 0)
+                : yearExpense;
+            
             html += `
                 <div class="stat-card">
                     <h3>💼 Totais</h3>
                     <div class="stat-item">
                         <span>Entradas</span>
-                        <span style="color: var(--success)">${formatCurrency(yearIncome)}</span>
+                        <span style="color: var(--success)">${formatCurrency(summaryIncome)}</span>
                     </div>
                     <div class="stat-item">
                         <span>Saídas</span>
-                        <span style="color: var(--danger)">${formatCurrency(yearExpense)}</span>
+                        <span style="color: var(--danger)">${formatCurrency(summaryExpense)}</span>
                     </div>
                     <div class="stat-item">
                         <span><strong>Performance</strong></span>
-                        <span style="color: ${yearIncome - yearExpense >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight: bold">${formatCurrency(yearIncome - yearExpense)}</span>
+                        <span style="color: ${summaryIncome - summaryExpense >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight: bold">${formatCurrency(summaryIncome - summaryExpense)}</span>
                     </div>
                 </div>
             `;
             
             container.innerHTML = html;
+        }
+        
+        function updateReportsMonthlyDetail(year, month) {
+            const tbody = document.getElementById('reportsMonthlyTableBody');
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            let currentBalance = 0;
+            let html = '';
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                const dayTransactions = transactions.filter(t => t.date === dateStr);
+                
+                const income = dayTransactions
+                    .filter(t => t.type === 'income')
+                    .reduce((sum, t) => sum + t.value, 0);
+                
+                const expense = dayTransactions
+                    .filter(t => t.type === 'expense')
+                    .reduce((sum, t) => sum + t.value, 0);
+                
+                const daily = income - expense;
+                currentBalance += daily;
+                
+                html += `
+                    <tr>
+                        <td>${String(day).padStart(2, '0')}</td>
+                        <td style="color: var(--success)">${formatCurrency(income)}</td>
+                        <td style="color: var(--danger)">${formatCurrency(expense)}</td>
+                        <td style="color: ${daily >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight: bold">${formatCurrency(daily)}</td>
+                        <td style="color: ${currentBalance >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight: bold">${formatCurrency(currentBalance)}</td>
+                    </tr>
+                `;
+            }
+            
+            tbody.innerHTML = html;
         }
 
         function updateCategories() {
