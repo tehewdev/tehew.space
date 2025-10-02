@@ -500,6 +500,269 @@
             border-left: 5px solid var(--danger);
         }
 
+        /* Modal Inline Customizado */
+        .custom-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s;
+        }
+
+        .custom-modal.active {
+            display: flex;
+        }
+
+        .custom-modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px 25px;
+            max-width: 90%;
+            width: 400px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s;
+        }
+
+        .modal-title {
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            color: var(--dark);
+            text-align: center;
+        }
+
+        .modal-message {
+            font-size: 1em;
+            margin-bottom: 20px;
+            color: #666;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .modal-buttons .btn {
+            flex: 1;
+            padding: 14px;
+            font-size: 1em;
+            min-height: 50px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Tela de Login */
+        .login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: loginSlideIn 0.5s ease-out;
+        }
+
+        @keyframes loginSlideIn {
+            from {
+                transform: translateY(-30px) scale(0.95);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .login-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .login-header h1 {
+            font-size: 2em;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 1em;
+        }
+
+        .login-content {
+            margin-bottom: 25px;
+        }
+
+        .login-content h2 {
+            font-size: 1.3em;
+            color: var(--dark);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .login-select {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            background: white;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .login-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .login-divider {
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .login-divider::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .login-divider span {
+            background: white;
+            padding: 0 15px;
+            color: #999;
+            font-size: 0.9em;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-new-user {
+            width: 100%;
+            padding: 16px;
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-new-user:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn-new-user:active {
+            transform: translateY(0);
+        }
+
+        .login-footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .login-footer p {
+            color: #999;
+            font-size: 0.9em;
+        }
+
         @keyframes slideUp {
             from {
                 transform: translateY(100px);
@@ -703,10 +966,51 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Tela de Login/Seleção de Usuário -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="login-icon">💰</div>
+                <h1>Controle Financeiro</h1>
+                <p>Organize suas finanças facilmente</p>
+            </div>
+            
+            <div class="login-content">
+                <h2>Selecione seu usuário</h2>
+                <select id="loginUserSelect" class="login-select" onkeypress="if(event.key === 'Enter') entrarComUsuario()">
+                    <option value="">Escolha um usuário...</option>
+                </select>
+                
+                <button class="btn-login" onclick="entrarComUsuario()">
+                    🚀 Entrar
+                </button>
+                
+                <div class="login-divider">
+                    <span>ou</span>
+                </div>
+                
+                <button class="btn-new-user" onclick="criarUsuarioLogin()">
+                    ➕ Criar Novo Usuário
+                </button>
+            </div>
+            
+            <div class="login-footer">
+                <p>💡 Seus dados ficam salvos na nuvem</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="mainApp" style="display: none;">
         <header>
-            <h1>💰 Controle Financeiro</h1>
-            <p>Organize suas finanças facilmente</p>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1>💰 Controle Financeiro</h1>
+                    <p>Organize suas finanças facilmente</p>
+                </div>
+                <button onclick="sairDoSistema()" style="background: rgba(255,255,255,0.2); border: 2px solid white; color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9em;" title="Sair e trocar de usuário">
+                    🚪 Sair
+                </button>
+            </div>
         </header>
 
         <div class="nav-tabs">
@@ -1036,6 +1340,19 @@
 
     <div id="notification" class="notification"></div>
 
+    <!-- Modal Inline para Input/Confirm -->
+    <div id="customModal" class="custom-modal">
+        <div class="custom-modal-content">
+            <h3 id="modalTitle" class="modal-title"></h3>
+            <p id="modalMessage" class="modal-message"></p>
+            <input type="text" id="modalInput" class="modal-input" style="display: none;">
+            <div class="modal-buttons">
+                <button id="modalConfirm" class="btn btn-primary">Confirmar</button>
+                <button id="modalCancel" class="btn btn-secondary">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ===== CONFIGURAÇÃO JSONBIN.IO =====
         const JSONBIN_CONFIG = {
@@ -1205,10 +1522,12 @@
 
         // Criar novo usuário
         async function criarNovoUsuario() {
-            const nome = prompt('Digite o nome do novo usuário:');
+            const nome = await customPrompt('Digite o nome do novo usuário:');
             
             if (!nome || nome.trim() === '') {
-                showNotification('❌ Nome inválido', 'error');
+                if (nome !== null) {
+                    showNotification('❌ Nome inválido', 'error');
+                }
                 return;
             }
             
@@ -1331,10 +1650,12 @@
                 return;
             }
 
-            const novoNome = prompt(`Digite o novo nome para "${currentUserName}":`, currentUserName);
+            const novoNome = await customPrompt(`Digite o novo nome para "${currentUserName}":`, currentUserName);
             
             if (!novoNome || novoNome.trim() === '') {
-                showNotification('❌ Nome inválido', 'error');
+                if (novoNome !== null) {
+                    showNotification('❌ Nome inválido', 'error');
+                }
                 return;
             }
 
@@ -1404,14 +1725,25 @@
                 return;
             }
 
-            const confirmacao = confirm(`⚠️ Tem certeza que deseja DELETAR o usuário "${currentUserName}"?\n\n⚠️ ATENÇÃO: Todos os dados deste usuário serão APAGADOS permanentemente!\n\nEsta ação NÃO pode ser desfeita!`);
+            const confirmacao = await customConfirm(
+                `⚠️ Tem certeza que deseja DELETAR o usuário "${currentUserName}"?\n\n⚠️ ATENÇÃO: Todos os dados deste usuário serão APAGADOS permanentemente!\n\nEsta ação NÃO pode ser desfeita!`,
+                '⚠️ Confirmar Exclusão'
+            );
             
             if (!confirmacao) return;
 
             // Segunda confirmação de segurança
-            const confirmacao2 = confirm(`🔴 ÚLTIMA CONFIRMAÇÃO!\n\nDeletar usuário "${currentUserName}" e TODOS os seus dados?\n\nDigite "SIM" para confirmar (só clique OK não é suficiente).`);
+            const confirmacaoFinal = await customPrompt(
+                `🔴 ÚLTIMA CONFIRMAÇÃO!\n\nDigite "SIM" (em maiúsculas) para deletar o usuário "${currentUserName}" e TODOS os seus dados:`,
+                ''
+            );
             
-            if (!confirmacao2) return;
+            if (confirmacaoFinal !== 'SIM') {
+                if (confirmacaoFinal !== null) {
+                    showNotification('❌ Confirmação incorreta. Exclusão cancelada.', 'error');
+                }
+                return;
+            }
 
             try {
                 showNotification('🔄 Deletando usuário...', 'success');
@@ -2572,6 +2904,217 @@
                 notification.style.display = 'none';
             }, 3000);
         }
+
+        // ===== SISTEMA DE MODAL INLINE =====
+        function showModal(title, message, showInput = false, defaultValue = '', confirmText = 'Confirmar', cancelText = 'Cancelar') {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('customModal');
+                const modalTitle = document.getElementById('modalTitle');
+                const modalMessage = document.getElementById('modalMessage');
+                const modalInput = document.getElementById('modalInput');
+                const modalConfirm = document.getElementById('modalConfirm');
+                const modalCancel = document.getElementById('modalCancel');
+
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                modalConfirm.textContent = confirmText;
+                modalCancel.textContent = cancelText;
+
+                if (showInput) {
+                    modalInput.style.display = 'block';
+                    modalInput.value = defaultValue;
+                    modalInput.focus();
+                } else {
+                    modalInput.style.display = 'none';
+                }
+
+                modal.classList.add('active');
+
+                const handleConfirm = () => {
+                    const value = showInput ? modalInput.value : true;
+                    cleanup();
+                    resolve(value);
+                };
+
+                const handleCancel = () => {
+                    cleanup();
+                    resolve(null);
+                };
+
+                const handleKeyPress = (e) => {
+                    if (e.key === 'Enter') {
+                        handleConfirm();
+                    } else if (e.key === 'Escape') {
+                        handleCancel();
+                    }
+                };
+
+                const cleanup = () => {
+                    modal.classList.remove('active');
+                    modalConfirm.removeEventListener('click', handleConfirm);
+                    modalCancel.removeEventListener('click', handleCancel);
+                    if (showInput) {
+                        modalInput.removeEventListener('keypress', handleKeyPress);
+                    }
+                };
+
+                modalConfirm.addEventListener('click', handleConfirm);
+                modalCancel.addEventListener('click', handleCancel);
+                if (showInput) {
+                    modalInput.addEventListener('keypress', handleKeyPress);
+                }
+            });
+        }
+
+        async function customPrompt(message, defaultValue = '') {
+            return await showModal('Digite a informação', message, true, defaultValue);
+        }
+
+        async function customConfirm(message, title = 'Confirmação') {
+            return await showModal(title, message, false);
+        }
+
+        // ===== SISTEMA DE LOGIN =====
+        async function carregarUsuariosLogin() {
+            try {
+                const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/b/${JSONBIN_CONFIG.BIN_ID}/latest`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                    }
+                });
+
+                const data = await response.json();
+                const usuarios = data.record || {};
+                const usernames = Object.keys(usuarios);
+
+                const select = document.getElementById('loginUserSelect');
+                select.innerHTML = '<option value="">Escolha um usuário...</option>';
+                
+                usernames.forEach(username => {
+                    const option = document.createElement('option');
+                    option.value = username;
+                    option.textContent = username;
+                    select.appendChild(option);
+                });
+
+                console.log('✅ Usuários carregados:', usernames);
+            } catch (error) {
+                console.error('❌ Erro ao carregar usuários:', error);
+                showNotification('⚠️ Erro ao carregar usuários da nuvem', 'error');
+            }
+        }
+
+        async function entrarComUsuario() {
+            const select = document.getElementById('loginUserSelect');
+            const username = select.value;
+
+            if (!username) {
+                showNotification('⚠️ Selecione um usuário!', 'error');
+                return;
+            }
+
+            // Definir usuário atual
+            currentUserName = username;
+            localStorage.setItem('currentUser', username);
+
+            // Carregar dados do usuário
+            try {
+                await carregarDaNuvem();
+                
+                // Esconder tela de login
+                document.getElementById('loginScreen').style.display = 'none';
+                
+                // Mostrar app principal
+                document.getElementById('mainApp').style.display = 'block';
+                
+                // Atualizar interface
+                updateDashboard();
+                atualizarInfoUsuario();
+                
+                showNotification(`✅ Bem-vindo, ${username}!`, 'success');
+            } catch (error) {
+                console.error('❌ Erro ao entrar:', error);
+                showNotification('❌ Erro ao carregar dados do usuário', 'error');
+            }
+        }
+
+        async function criarUsuarioLogin() {
+            const nome = await customPrompt('Digite o nome do novo usuário:');
+            
+            if (!nome || nome.trim() === '') {
+                if (nome !== null) {
+                    showNotification('❌ Nome inválido', 'error');
+                }
+                return;
+            }
+            
+            const nomeFormatado = nome.trim();
+            
+            try {
+                const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/b/${JSONBIN_CONFIG.BIN_ID}/latest`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                    }
+                });
+
+                const data = await response.json();
+                const usuarios = data.record || {};
+                
+                if (usuarios[nomeFormatado]) {
+                    showNotification('⚠️ Usuário já existe!', 'error');
+                    return;
+                }
+                
+                // Criar novo usuário vazio
+                usuarios[nomeFormatado] = [];
+                
+                // Salvar na nuvem
+                const updateResponse = await fetch(`${JSONBIN_CONFIG.BASE_URL}/b/${JSONBIN_CONFIG.BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_CONFIG.API_KEY
+                    },
+                    body: JSON.stringify(usuarios)
+                });
+
+                if (updateResponse.ok) {
+                    showNotification(`✅ Usuário "${nomeFormatado}" criado com sucesso!`, 'success');
+                    await carregarUsuariosLogin();
+                    
+                    // Selecionar o novo usuário automaticamente
+                    document.getElementById('loginUserSelect').value = nomeFormatado;
+                } else {
+                    throw new Error('Erro ao criar usuário');
+                }
+            } catch (error) {
+                console.error('❌ Erro ao criar usuário:', error);
+                showNotification('❌ Erro ao criar usuário', 'error');
+            }
+        }
+
+        function sairDoSistema() {
+            // Esconder app principal
+            document.getElementById('mainApp').style.display = 'none';
+            
+            // Mostrar tela de login
+            document.getElementById('loginScreen').style.display = 'flex';
+            
+            // Limpar seleção
+            document.getElementById('loginUserSelect').value = '';
+            
+            // Recarregar lista de usuários
+            carregarUsuariosLogin();
+            
+            showNotification('👋 Até logo!', 'success');
+        }
+
+        // Carregar usuários quando a página carregar
+        window.addEventListener('DOMContentLoaded', async () => {
+            await carregarUsuariosLogin();
+        });
     </script>
 </body>
 </html>
