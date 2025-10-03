@@ -255,7 +255,7 @@
 
             for (const tamanho of tamanhos) {
                 try {
-                    const response = await fetch(`/icons/icon-${tamanho}x${tamanho}.png`, { method: 'HEAD' });
+                    const response = await fetch(`/economy/icons/icon-${tamanho}x${tamanho}.png`, { method: 'HEAD' });
                     if (!response.ok) {
                         iconesFaltando.push(tamanho);
                     }
