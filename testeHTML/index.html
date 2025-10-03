@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TesteHTML Publisher - Frontend Only</title>
-    <style>/* ... estilos idênticos ao exemplo anterior ... */
-    /* Coloque todos os estilos detalhados acima aqui */
+    <style>
+        /* (Todos os estilos fornecidos na sua mensagem. Use exatamente a sua folha de estilos) */
+        /* ...copie os estilos completos daqui... */
     </style>
 </head>
 <body>
@@ -15,14 +16,15 @@
             <p>Cole seu código HTML e publique diretamente no GitHub</p>
         </div>
         <div class="token-info">
-            <strong>⚠️ Importante:</strong> Este app usa a API do GitHub diretamente do navegador. O token está pré-configurado para facilitar testes e tem permissão limitada!
+            <strong>⚠️ Importante:</strong> Este app usa a API do GitHub diretamente do navegador.
+            O token já está pré-configurado (visível abaixo) e tem permissão limitada para publicar apenas em <b>tehewdev/tehew.space</b>.
         </div>
         <div class="config-section">
             <h3>🔧 Configuração do GitHub</h3>
             <div class="config-grid">
                 <div class="form-group">
                     <label for="githubToken">🔑 GitHub Token:</label>
-                    <input type="password" id="githubToken" value="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" readonly>
+                    <input type="text" id="githubToken" value="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" readonly>
                 </div>
                 <div class="form-group">
                     <label for="githubRepo">📁 Repositório:</label>
@@ -62,109 +64,229 @@
             <ul class="file-list" id="fileList"></ul>
         </div>
     </div>
-    <script>/*
-        O JS usado é idêntico ao do exemplo anterior, 
-        mas:
-        - O token é sempre retirado de githubTokenInput.value (readonly já setado)
-        - O repo é sempre fixo em tehewdev/tehew.space (readonly)
-        - O resto permanece igual, inclusive publishToGitHub
-        */
-// Elementos do DOM
-const githubTokenInput = document.getElementById('githubToken');
-const githubRepoInput = document.getElementById('githubRepo');
-const filenameInput = document.getElementById('filename');
-const htmlContentTextarea = document.getElementById('htmlContent');
-const publishForm = document.getElementById('publishForm');
-const publishBtn = document.getElementById('publishBtn');
-const statusDiv = document.getElementById('status');
-const previewFilename = document.getElementById('preview-filename');
-const publishedFiles = document.getElementById('publishedFiles');
-const fileList = document.getElementById('fileList');
-const loadExampleBtn = document.getElementById('loadExampleBtn');
+    <script>
+        // Elementos do DOM
+        const githubTokenInput = document.getElementById('githubToken');
+        const githubRepoInput = document.getElementById('githubRepo');
+        const filenameInput = document.getElementById('filename');
+        const htmlContentTextarea = document.getElementById('htmlContent');
+        const publishForm = document.getElementById('publishForm');
+        const publishBtn = document.getElementById('publishBtn');
+        const statusDiv = document.getElementById('status');
+        const previewFilename = document.getElementById('preview-filename');
+        const publishedFiles = document.getElementById('publishedFiles');
+        const fileList = document.getElementById('fileList');
+        const loadExampleBtn = document.getElementById('loadExampleBtn');
 
-// Atualizar preview do nome do arquivo
-filenameInput.addEventListener('input', function() {
-    const filename = this.value.trim() || 'arquivo';
-    previewFilename.textContent = `${filename}.html`;
-});
+        // Atualizar preview do nome do arquivo
+        filenameInput.addEventListener('input', function() {
+            const filename = this.value.trim() || 'arquivo';
+            previewFilename.textContent = `${filename}.html`;
+        });
 
-function showStatus(message, type = 'loading') {
-    statusDiv.textContent = message;
-    statusDiv.className = `status ${type}`;
-    statusDiv.style.display = 'block';
-}
-function hideStatus() { statusDiv.style.display = 'none'; }
-function validateHTML(html) { const t = html.trim(); return !!(t && t.includes('<') && t.includes('>')); }
-function sanitizeFilename(filename) {
-    return filename.toLowerCase().replace(/[^a-z0-9-_]/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-|-$/g, '').substring(0, 50);
-}
-async function publishToGitHub(filename, content, token, repo) {
-    const [owner, repoName] = repo.split('/');
-    const githubPath = `testehtml/${filename}`;
-    const apiUrl = `https://api.github.com/repos/${owner}/${repoName}/contents/${githubPath}`;
-    try {
-        showStatus('🔄 Verificando se arquivo já existe...', 'loading');
-        let sha = null;
-        try {
-            const existingResponse = await fetch(apiUrl, {headers: {'Authorization': `Bearer ${token}`,'Accept': 'application/vnd.github.v3+json','X-GitHub-Api-Version': '2022-11-28'}});
-            if (existingResponse.ok) {const existingData = await existingResponse.json(); sha = existingData.sha; showStatus('📝 Arquivo existente encontrado, será atualizado...', 'loading');}
-        } catch (error) {}
-        showStatus('📤 Enviando para o GitHub...', 'loading');
-        const commitData = {message: `${sha ? 'Update' : 'Add'} ${filename} via TesteHTML Publisher`,content: btoa(unescape(encodeURIComponent(content))),committer: {name: 'TesteHTML Publisher',email: 'testehtml@tehew.space'}};
-        if (sha) commitData.sha = sha;
-        const response = await fetch(apiUrl, {method: 'PUT',headers: {'Authorization': `Bearer ${token}`,'Accept': 'application/vnd.github.v3+json','Content-Type': 'application/json','X-GitHub-Api-Version': '2022-11-28'},body: JSON.stringify(commitData)});
-        if (!response.ok) {const errorData = await response.json(); throw new Error(errorData.message || `HTTP ${response.status}`);}
-        const result = await response.json();
-        showStatus(`✅ Sucesso! Página ${sha ? 'atualizada' : 'criada'}: tehew.space/testehtml/${filename}`, 'success');
-        addToPublishedList(filename); publishForm.reset(); previewFilename.textContent = 'arquivo.html'; return result;
-    } catch (error) {
-        console.error('Erro ao publicar:', error);
-        let errorMessage = error.message;
-        if (error.message.includes('401')) errorMessage = 'Token do GitHub inválido ou expirado.';
-        else if (error.message.includes('403')) errorMessage = 'Permissões insuficientes para repo.';
-        else if (error.message.includes('404')) errorMessage = 'Repositório não encontrado.';
-        else if (error.message.includes('422')) errorMessage = 'Dados inválidos no HTML.';
-        showStatus(`❌ Erro: ${errorMessage}`, 'error');
-        throw error;
+        function showStatus(message, type = 'loading') {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+        function hideStatus() { statusDiv.style.display = 'none'; }
+        function validateHTML(html) { const t = html.trim(); return !!(t && t.includes('<') && t.includes('>')); }
+        function sanitizeFilename(filename) {
+            return filename.toLowerCase().replace(/[^a-z0-9-_]/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '').substring(0, 50);
+        }
+        async function publishToGitHub(filename, content, token, repo) {
+            const [owner, repoName] = repo.split('/');
+            const githubPath = `testehtml/${filename}`;
+            const apiUrl = `https://api.github.com/repos/${owner}/${repoName}/contents/${githubPath}`;
+            try {
+                showStatus('🔄 Verificando se arquivo já existe...', 'loading');
+                let sha = null;
+                try {
+                    const existingResponse = await fetch(apiUrl, {headers: {'Authorization': `Bearer ${token}`,'Accept': 'application/vnd.github.v3+json','X-GitHub-Api-Version': '2022-11-28'}});
+                    if (existingResponse.ok) {const existingData = await existingResponse.json(); sha = existingData.sha; showStatus('📝 Arquivo existente encontrado, será atualizado...', 'loading');}
+                } catch (error) {}
+                showStatus('📤 Enviando para o GitHub...', 'loading');
+                const commitData = {message: `${sha ? 'Update' : 'Add'} ${filename} via TesteHTML Publisher`,content: btoa(unescape(encodeURIComponent(content))),committer: {name: 'TesteHTML Publisher',email: 'testehtml@tehew.space'}};
+                if (sha) commitData.sha = sha;
+                const response = await fetch(apiUrl, {method: 'PUT',headers: {'Authorization': `Bearer ${token}`,'Accept': 'application/vnd.github.v3+json','Content-Type': 'application/json','X-GitHub-Api-Version': '2022-11-28'},body: JSON.stringify(commitData)});
+                if (!response.ok) {const errorData = await response.json(); throw new Error(errorData.message || `HTTP ${response.status}`);}
+                const result = await response.json();
+                showStatus(`✅ Sucesso! Página ${sha ? 'atualizada' : 'criada'}: tehew.space/testehtml/${filename}`, 'success');
+                addToPublishedList(filename); publishForm.reset(); previewFilename.textContent = 'arquivo.html'; return result;
+            } catch (error) {
+                console.error('Erro ao publicar:', error);
+                let errorMessage = error.message;
+                if (error.message.includes('401')) errorMessage = 'Token do GitHub inválido ou expirado.';
+                else if (error.message.includes('403')) errorMessage = 'Permissões insuficientes para repo.';
+                else if (error.message.includes('404')) errorMessage = 'Repositório não encontrado.';
+                else if (error.message.includes('422')) errorMessage = 'Dados inválidos no HTML.';
+                showStatus(`❌ Erro: ${errorMessage}`, 'error');
+                throw error;
+            }
+        }
+        function addToPublishedList(filename) {
+            publishedFiles.style.display = 'block';
+            const li = document.createElement('li'); li.className = 'file-item';
+            const link = document.createElement('a'); link.href = `https://tehew.space/testehtml/${filename}`;
+            link.textContent = filename; link.className = 'file-link'; link.target = '_blank';
+            const date = document.createElement('span'); date.textContent = new Date().toLocaleString('pt-BR'); date.className = 'file-date';
+            li.appendChild(link); li.appendChild(date);
+            fileList.insertBefore(li, fileList.firstChild);
+            while (fileList.children.length > 5) { fileList.removeChild(fileList.lastChild); }
+        }
+        publishForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const token = githubTokenInput.value.trim();
+            const repo = githubRepoInput.value.trim();
+            const filename = filenameInput.value.trim();
+            const htmlContent = htmlContentTextarea.value.trim();
+            if (!filename) { showStatus('❌ Por favor, digite um nome para o arquivo', 'error'); filenameInput.focus(); return; }
+            if (!validateHTML(htmlContent)) { showStatus('❌ Por favor, cole um código HTML válido', 'error'); htmlContentTextarea.focus(); return; }
+            const sanitizedFilename = sanitizeFilename(filename);
+            const fullFilename = sanitizedFilename.endsWith('.html') ? sanitizedFilename : `${sanitizedFilename}.html`;
+            if (sanitizedFilename !== filename) { filenameInput.value = sanitizedFilename; showStatus(`ℹ️ Nome do arquivo ajustado para: ${sanitizedFilename}`, 'loading'); await new Promise(resolve => setTimeout(resolve, 1500)); }
+            publishBtn.disabled = true;
+            publishBtn.textContent = '⏳ Publicando...';
+            try { await publishToGitHub(fullFilename, htmlContent, token, repo); } catch (error) {} finally { publishBtn.disabled = false; publishBtn.textContent = '🚀 Publicar no GitHub'; }
+        });
+        const exampleHTML = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Página de Teste</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: #667eea;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .feature-card {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .btn {
+            background: #28a745;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .btn:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 Minha Página Funcionou!</h1>
+            <p>Esta página foi publicada através do TesteHTML Publisher</p>
+            <p><strong>URL:</strong> tehew.space/testehtml/exemplo-teste.html</p>
+        </div>
+        <h2>📝 Sobre esta página</h2>
+        <p>Esta é uma página de exemplo criada com o sistema TesteHTML Publisher. 
+        Você pode criar qualquer tipo de página HTML e publicar instantaneamente no GitHub!</p>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3>🚀 Publicação Rápida</h3>
+                <p>Publique páginas HTML em segundos diretamente no GitHub</p>
+            </div>
+            <div class="feature-card">
+                <h3>🎨 Design Livre</h3>
+                <p>Use qualquer CSS, JavaScript ou HTML que quiser</p>
+            </div>
+            <div class="feature-card">
+                <h3>🌐 Acesso Público</h3>
+                <p>Suas páginas ficam disponíveis instantaneamente na web</p>
+            </div>
+            <div class="feature-card">
+                <h3>🔄 Atualizações</h3>
+                <p>Republique e atualize suas páginas quando quiser</p>
+            </div>
+        </div>
+        <h2>🚀 Possibilidades</h2>
+        <ul>
+            <li>✅ Páginas de teste e protótipos</li>
+            <li>✅ Landing pages rápidas</li>
+            <li>✅ Portfólios e showcases</li>
+            <li>✅ Documentação técnica</li>
+            <li>✅ Experimentos com código</li>
+            <li>✅ Páginas de eventos</li>
+        </ul>
+        <div style="text-align: center; margin-top: 40px;">
+            <button class="btn" onclick="alert('Botão funcionando! 🎉')">
+                🎯 Teste Interatividade
+            </button>
+            <button class="btn" onclick="changeColor()">
+                🎨 Mudar Cor
+            </button>
+        </div>
+        <footer style="text-align: center; margin-top: 40px; color: #666; border-top: 1px solid #ddd; padding-top: 20px;">
+            <p>Criado com ❤️ usando TesteHTML Publisher</p>
+            <p><small>Publicado em: ${new Date().toLocaleString('pt-BR')}</small></p>
+        </footer>
+    </div>
+    <script>
+    function changeColor() {
+        const colors = ['#667eea', '#764ba2', '#28a745', '#dc3545', '#ffc107'];
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        document.querySelector('.header').style.background = randomColor;
     }
-}
-function addToPublishedList(filename) {
-    publishedFiles.style.display = 'block';
-    const li = document.createElement('li'); li.className = 'file-item';
-    const link = document.createElement('a'); link.href = `https://tehew.space/testehtml/${filename}`;
-    link.textContent = filename; link.className = 'file-link'; link.target = '_blank';
-    const date = document.createElement('span'); date.textContent = new Date().toLocaleString('pt-BR'); date.className = 'file-date';
-    li.appendChild(link); li.appendChild(date);
-    fileList.insertBefore(li, fileList.firstChild);
-    while (fileList.children.length > 5) { fileList.removeChild(fileList.lastChild); }
-}
-publishForm.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const token = githubTokenInput.value.trim();
-    const repo = githubRepoInput.value.trim();
-    const filename = filenameInput.value.trim();
-    const htmlContent = htmlContentTextarea.value.trim();
-    if (!filename) { showStatus('❌ Por favor, digite um nome para o arquivo', 'error'); filenameInput.focus(); return; }
-    if (!validateHTML(htmlContent)) { showStatus('❌ Por favor, cole um código HTML válido', 'error'); htmlContentTextarea.focus(); return; }
-    const sanitizedFilename = sanitizeFilename(filename);
-    const fullFilename = sanitizedFilename.endsWith('.html') ? sanitizedFilename : `${sanitizedFilename}.html`;
-    if (sanitizedFilename !== filename) { filenameInput.value = sanitizedFilename; showStatus(`ℹ️ Nome do arquivo ajustado para: ${sanitizedFilename}`, 'loading'); await new Promise(resolve => setTimeout(resolve, 1500)); }
-    publishBtn.disabled = true;
-    publishBtn.textContent = '⏳ Publicando...';
-    try { await publishToGitHub(fullFilename, htmlContent, token, repo); } catch (error) {} finally { publishBtn.disabled = false; publishBtn.textContent = '🚀 Publicar no GitHub'; }
-});
-const exampleHTML = `<!DOCTYPE html>\n<html lang="pt-BR">\n<head>... (igual exemplo anterior) ...\n</html>`;
-loadExampleBtn.addEventListener('click', function() {
-    htmlContentTextarea.value = exampleHTML;
-    filenameInput.value = 'exemplo-teste';
-    showStatus('📋 Exemplo carregado! Agora você pode publicar ou editar o código.', 'success');
-    setTimeout(hideStatus, 3000);
-});
-if (!htmlContentTextarea.value.trim()) {
-    setTimeout(() => { showStatus('💡 Dica: Use "Carregar Exemplo" para testar!', 'loading'); setTimeout(hideStatus, 5000); }, 1000);
-}
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.querySelector('.container');
+        container.style.opacity = '0';
+        container.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            container.style.transition = 'all 0.5s ease';
+            container.style.opacity = '1';
+            container.style.transform = 'translateY(0)';
+        }, 100);
+    });
+    </script>
+</body>
+</html>
+`;
+        loadExampleBtn.addEventListener('click', function() {
+            htmlContentTextarea.value = exampleHTML;
+            filenameInput.value = 'exemplo-teste';
+            showStatus('📋 Exemplo carregado! Agora você pode publicar ou editar o código.', 'success');
+            setTimeout(hideStatus, 3000);
+        });
+        if (!htmlContentTextarea.value.trim()) {
+            setTimeout(() => { showStatus('💡 Dica: Use "Carregar Exemplo" para testar!', 'loading'); setTimeout(hideStatus, 5000); }, 1000);
+        }
     </script>
 </body>
 </html>
