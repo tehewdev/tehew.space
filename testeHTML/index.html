@@ -27,8 +27,8 @@
     <h1>🚀 TesteHTML Publisher (Token via jsonbin.io)</h1>
     <div class="token-info">
       <strong>⚠️ Token via Bin protegida jsonbin.io</strong><br>
-      Bin: <code>68df47fa43b1c97be95892bc</code> | Access Key protegida<br>
-      Pasta garantida: <b>testeHTML/</b>
+      Bin: <code>68df49ae43b1c97be95893d1</code> | Access Key usada no JS<br>
+      Sempre publica em: <b>testeHTML/</b>.
     </div>
     <form id="publishForm">
       <label for="filename">Nome do arquivo (.html):</label>
@@ -49,7 +49,6 @@ const repoOwner   = 'tehewdev';
 const repoName    = 'tehew.space';
 const folder      = 'testeHTML';
 const BIN_ID      = '68df49ae43b1c97be95893d1';
-// === ATENÇÃO Use Access Key private! Nunca exponha publicamente em produção real
 const ACCESS_KEY  = '$2a$10$f9KK7vSowGnJI5elo/dAPurqjZAJ3bJaWnsinl/caDfgIcNt28kNi';
 
 let githubToken = null;
@@ -66,11 +65,11 @@ async function loadToken() {
       }
     });
     const j = await res.json();
-    console.log("Resposta bin:", j); // debug
-    // jsonbin.io v3 padrão: token esperado em j.record.github_token
-    githubToken = j && j.record && j.record.github_token;
+    console.log("Resposta bin:", j); // debug no console
+    // Agora busca direto j.github_token
+    githubToken = j.github_token;
     if (!githubToken) {
-      showStatus("Token não encontrado - verifique se o JSON está assim:<br>{ \"github_token\": \"SUATOKEN\" }",'error');
+      showStatus("Token não encontrado - verifique se a bin tem: { \"github_token\": \"token_aqui\" }",'error');
       return;
     }
     showStatus('Token carregado com sucesso!','success');
@@ -103,7 +102,7 @@ async function publicar(){
   }
   const sanitized = sanitize(filename);
   const path = `${folder}/${sanitized}`;
-  const url  = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`;
+  const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`;
   showStatus('Publicando...','loading');
 
   let sha=null;
