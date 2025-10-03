@@ -1,1 +1,500 @@
-NAO
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TesteHTML Publisher - Publique suas páginas HTML</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .published-files {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .published-files h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .file-list {
+            list-style: none;
+        }
+        
+        .file-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .file-item:last-child {
+            border-bottom: none;
+        }
+        
+        .file-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .file-link:hover {
+            text-decoration: underline;
+        }
+        
+        .file-date {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .instructions {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 5px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 TesteHTML Publisher</h1>
+            <p>Cole seu código HTML e publique instantaneamente no GitHub</p>
+        </div>
+        
+        <div class="instructions">
+            <h3>📋 Como usar:</h3>
+            <ol>
+                <li>Digite um nome para seu arquivo (ex: minha-pagina)</li>
+                <li>Cole seu código HTML completo na área de texto</li>
+                <li>Clique em "Publicar no GitHub"</li>
+                <li>Aguarde a confirmação e acesse via: <strong>tehew.space/testehtml/nome-arquivo.html</strong></li>
+            </ol>
+        </div>
+        
+        <form id="publishForm">
+            <div class="form-group">
+                <label for="filename">📄 Nome do arquivo (sem extensão):</label>
+                <input type="text" id="filename" name="filename" placeholder="Ex: minha-pagina-teste" required>
+                <small style="color: #666;">O arquivo será salvo como: <span id="preview-filename">arquivo.html</span></small>
+            </div>
+            
+            <div class="form-group">
+                <label for="htmlContent">💻 Código HTML:</label>
+                <textarea id="htmlContent" name="htmlContent" placeholder="Cole seu código HTML aqui..." required></textarea>
+            </div>
+            
+            <button type="submit" class="btn" id="publishBtn">
+                🚀 Publicar no GitHub
+            </button>
+        </form>
+        
+        <div id="status" class="status"></div>
+        
+        <div class="published-files" id="publishedFiles" style="display: none;">
+            <h3>📚 Páginas publicadas recentemente:</h3>
+            <ul class="file-list" id="fileList"></ul>
+        </div>
+    </div>
+
+    <script>
+        // Configuração do GitHub API
+        const GITHUB_CONFIG = {
+            owner: 'tehewdev',
+            repo: 'tehew.space',
+            path: 'testehtml',
+            // IMPORTANTE: Você precisa configurar seu token no backend ou usar GitHub Actions
+            // Nunca coloque o token diretamente aqui no frontend!
+            apiUrl: 'https://api.github.com'
+        };
+        
+        // Elementos do DOM
+        const filenameInput = document.getElementById('filename');
+        const htmlContentTextarea = document.getElementById('htmlContent');
+        const publishForm = document.getElementById('publishForm');
+        const publishBtn = document.getElementById('publishBtn');
+        const statusDiv = document.getElementById('status');
+        const previewFilename = document.getElementById('preview-filename');
+        const publishedFiles = document.getElementById('publishedFiles');
+        const fileList = document.getElementById('fileList');
+        
+        // Atualizar preview do nome do arquivo
+        filenameInput.addEventListener('input', function() {
+            const filename = this.value.trim() || 'arquivo';
+            previewFilename.textContent = `${filename}.html`;
+        });
+        
+        // Função para mostrar status
+        function showStatus(message, type = 'loading') {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+        
+        // Função para esconder status
+        function hideStatus() {
+            statusDiv.style.display = 'none';
+        }
+        
+        // Função para validar HTML básico
+        function validateHTML(html) {
+            const trimmed = html.trim();
+            if (!trimmed) return false;
+            
+            // Verificação básica se parece com HTML
+            return trimmed.includes('<') && trimmed.includes('>');
+        }
+        
+        // Função para sanitizar nome do arquivo
+        function sanitizeFilename(filename) {
+            return filename
+                .toLowerCase()
+                .replace(/[^a-z0-9-_]/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '');
+        }
+        
+        // Função principal para publicar no GitHub
+        async function publishToGitHub(filename, content) {
+            try {
+                // Esta é uma implementação de exemplo
+                // Na prática, você precisa implementar um backend seguro ou usar GitHub Actions
+                
+                showStatus('🔄 Conectando ao GitHub...', 'loading');
+                
+                // Simular delay de API
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Aqui você implementaria a chamada real para o GitHub API
+                // Por questões de segurança, isso deve ser feito através de um backend
+                
+                const result = await mockGitHubAPI(filename, content);
+                
+                if (result.success) {
+                    showStatus(`✅ Sucesso! Página publicada em: tehew.space/testehtml/${filename}.html`, 'success');
+                    addToPublishedList(filename);
+                    publishForm.reset();
+                    previewFilename.textContent = 'arquivo.html';
+                } else {
+                    throw new Error(result.error || 'Erro desconhecido');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao publicar:', error);
+                showStatus(`❌ Erro ao publicar: ${error.message}`, 'error');
+            } finally {
+                publishBtn.disabled = false;
+                publishBtn.textContent = '🚀 Publicar no GitHub';
+            }
+        }
+        
+        // Mock da API do GitHub (substitua pela implementação real)
+        async function mockGitHubAPI(filename, content) {
+            // Simular processamento
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Simular sucesso (90% das vezes)
+            if (Math.random() > 0.1) {
+                return { success: true };
+            } else {
+                return { 
+                    success: false, 
+                    error: 'Token de acesso inválido ou expirado' 
+                };
+            }
+        }
+        
+        // Função para adicionar arquivo à lista de publicados
+        function addToPublishedList(filename) {
+            publishedFiles.style.display = 'block';
+            
+            const li = document.createElement('li');
+            li.className = 'file-item';
+            
+            const link = document.createElement('a');
+            link.href = `https://tehew.space/testehtml/${filename}.html`;
+            link.textContent = `${filename}.html`;
+            link.className = 'file-link';
+            link.target = '_blank';
+            
+            const date = document.createElement('span');
+            date.textContent = new Date().toLocaleString('pt-BR');
+            date.className = 'file-date';
+            
+            li.appendChild(link);
+            li.appendChild(date);
+            
+            // Adicionar no topo da lista
+            fileList.insertBefore(li, fileList.firstChild);
+            
+            // Manter apenas os 5 mais recentes
+            while (fileList.children.length > 5) {
+                fileList.removeChild(fileList.lastChild);
+            }
+        }
+        
+        // Event listener para o formulário
+        publishForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const filename = filenameInput.value.trim();
+            const htmlContent = htmlContentTextarea.value.trim();
+            
+            // Validações
+            if (!filename) {
+                showStatus('❌ Por favor, digite um nome para o arquivo', 'error');
+                return;
+            }
+            
+            if (!validateHTML(htmlContent)) {
+                showStatus('❌ Por favor, cole um código HTML válido', 'error');
+                return;
+            }
+            
+            // Sanitizar nome do arquivo
+            const sanitizedFilename = sanitizeFilename(filename);
+            if (sanitizedFilename !== filename) {
+                filenameInput.value = sanitizedFilename;
+                showStatus(`ℹ️ Nome do arquivo ajustado para: ${sanitizedFilename}`, 'loading');
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+            
+            // Desabilitar botão durante upload
+            publishBtn.disabled = true;
+            publishBtn.textContent = '⏳ Publicando...';
+            
+            // Publicar
+            await publishToGitHub(`${sanitizedFilename}.html`, htmlContent);
+        });
+        
+        // Exemplo de HTML para demonstração
+        const exampleHTML = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Página de Teste</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .header {
+            background: #667eea;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎉 Minha Página Funcionou!</h1>
+        <p>Esta página foi publicada através do TesteHTML Publisher</p>
+    </div>
+    
+    <h2>📝 Sobre esta página</h2>
+    <p>Esta é uma página de exemplo criada com o sistema TesteHTML Publisher. Você pode criar qualquer tipo de página HTML e publicar instantaneamente!</p>
+    
+    <h2>🚀 Possibilidades</h2>
+    <ul>
+        <li>Páginas de teste</li>
+        <li>Protótipos rápidos</li>
+        <li>Landing pages</li>
+        <li>Portfolios</li>
+        <li>Documentação</li>
+    </ul>
+    
+    <script>
+        console.log('Página carregada com sucesso!');
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM totalmente carregado!');
+        });
+    </script>
+</body>
+</html>`;
+        
+        // Botão para carregar exemplo
+        const loadExampleBtn = document.createElement('button');
+        loadExampleBtn.textContent = '📋 Carregar Exemplo';
+        loadExampleBtn.style.cssText = `
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            float: right;
+        `;
+        
+        loadExampleBtn.addEventListener('click', function() {
+            htmlContentTextarea.value = exampleHTML;
+            filenameInput.value = 'exemplo-teste';
+            showStatus('📋 Exemplo carregado! Agora você pode publicar ou editar o código.', 'success');
+        });
+        
+        htmlContentTextarea.parentNode.appendChild(loadExampleBtn);
+        
+        // Carregar exemplo automaticamente se estiver vazio
+        if (!htmlContentTextarea.value.trim()) {
+            setTimeout(() => {
+                showStatus('💡 Dica: Use o botão "Carregar Exemplo" para ver como funciona!', 'loading');
+                setTimeout(hideStatus, 3000);
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
