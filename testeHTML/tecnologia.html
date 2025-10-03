@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerenciamento de Chamados - Completo</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body { font-family: 'Inter', Arial, sans-serif; background: #f7f8fa; color: #222; margin: 0; }
+    .container { max-width: 1000px; margin: 1rem auto; background: #fff; padding: 2rem; border-radius: 14px; box-shadow: 0 2px 16px #0002; }
+    h1, h2, h3 { color: #184d85; margin-bottom: 0.4em; }
+    input, select, textarea, button { font-size: 1em; margin: 6px 0; padding: 7px; border-radius: 4px; border: 1px solid #bbb; width: 100%; box-sizing: border-box;}
+    button { background: #184d85; color: #fff; border: none; font-weight: bold; cursor: pointer; transition: background 0.2s;}
+    button:hover { background: #269; }
+    .row { display: flex; gap: 1em; margin-bottom: 1em; }
+    .col { flex: 1; }
+    .card { border: 1px solid #eaeaea; border-radius: 8px; background: #f3f5f7; padding: 1em 0.5em; margin-bottom: 1em; }
+    .stat { font-size: 0.9em; color: #555; margin-top: 2px; }
+    .tab { display: none; }
+    .active { display: block; }
+    nav button { width: auto; margin-right: 8px; padding: 8px 16px;}
+    .status-open {color: #228B22; font-weight:bold;}
+    .status-progress {color: #0563B2; font-weight:bold;}
+    .status-closed {color: #BF360C; font-weight:bold;}
+    .user-list {margin-bottom:10px;}
+    textarea {min-height: 45px;}
+    @media(max-width:600px){
+      .row {flex-direction:column;}
+      .container{padding:1em;}
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Gerenciamento de Chamados - Sistema Completo</h1>
+  <nav>
+    <button onclick="showTab('usuarios')">Usuários</button>
+    <button onclick="showTab('chamados')">Chamados</button>
+    <button onclick="showTab('servicos')">Serviços</button>
+    <button onclick="showTab('minhaConta')">Minha Conta</button>
+  </nav>
+
+  <!-- USUÁRIOS -->
+  <div id="usuarios" class="tab active">
+    <h2>Usuários</h2>
+    <form id="userForm">
+      <div class="row">
+        <div class="col"><input type="text" id="username" placeholder="Nome de Usuário" required></div>
+        <div class="col"><input type="password" id="userpass" placeholder="Senha" required></div>
+        <div class="col"><select id="usertype"><option value="admin">Admin</option><option value="tecnico">Técnico</option><option value="cliente">Cliente</option></select></div>
+        <div class="col"><button type="submit">Criar Usuário</button></div>
+      </div>
+    </form>
+    <h3>Lista de Usuários</h3>
+    <div class="user-list" id="userList"></div>
+  </div>
+
+  <!-- CHAMADOS -->
+  <div id="chamados" class="tab">
+    <h2>Chamados</h2>
+    <form id="ticketForm">
+      <div class="row">
+        <div class="col"><select id="ticketUser"></select></div>
+        <div class="col"><select id="ticketService"></select></div>
+        <div class="col"><input type="text" id="ticketTitle" placeholder="Assunto/Resumo" required></div>
+      </div>
+      <textarea id="ticketDesc" placeholder="Descrição detalhada" required></textarea>
+      <input type="text" id="ticketGps" placeholder="Coordenada GP (latitude, longitude)">
+      <button type="submit">Criar Chamado</button>
+    </form>
+    <h3>Meus Chamados</h3>
+    <div id="ticketList"></div>
+  </div>
+
+  <!-- SERVIÇOS -->
+  <div id="servicos" class="tab">
+    <h2>Tipos de Serviço</h2>
+    <form id="serviceForm">
+      <div class="row">
+        <div class="col"><input type="text" id="serviceName" placeholder="Nome do Serviço" required></div>
+        <div class="col"><button type="submit">Adicionar Serviço</button></div>
+      </div>
+    </form>
+    <div id="serviceList"></div>
+  </div>
+
+  <!-- MINHA CONTA -->
+  <div id="minhaConta" class="tab">
+    <h2>Minha Conta</h2>
+    <div id="accountInfo"></div>
+    <h3>Marcação de Início / Anotações</h3>
+    <button onclick="marcarInicioAtendimento()">Marcar início do atendimento</button>
+    <form id="noteForm">
+      <textarea id="noteText" placeholder="Anotação do atendimento"></textarea>
+      <button type="submit">Salvar Anotação</button>
+    </form>
+    <div id="noteList"></div>
+  </div>
+</div>
+<script>
+  // --- LocalStorage Helpers ---
+  function getItem(key, def){ return JSON.parse(localStorage.getItem(key)||JSON.stringify(def)); }
+  function setItem(key,val){ localStorage.setItem(key,JSON.stringify(val)); }
+
+  // --- Usuários ---
+  let users = getItem('users', []);
+  let currentUser = getItem('currentUser', null);
+
+  function refreshUserList(){
+    let out = users.map(u => `<div><b>${u.nome}</b> (${u.tipo})</div>`).join('');
+    document.getElementById('userList').innerHTML = out || 'Nenhum usuário criado ainda.';
+    // popules selects
+    let options = users.map(u => `<option value="${u.nome}">${u.nome}</option>`).join('');
+    document.getElementById('ticketUser').innerHTML = options;
+  }
+  document.getElementById('userForm').onsubmit = function(e){
+    e.preventDefault();
+    let nome = document.getElementById('username').value.trim();
+    let senha = document.getElementById('userpass').value.trim();
+    let tipo = document.getElementById('usertype').value;
+    if(users.some(u=>u.nome===nome)){
+      alert('Usuário já existe!');
+      return;
+    }
+    users.push({nome,senha,tipo});
+    setItem('users',users);
+    refreshUserList();
+    document.getElementById('userForm').reset();
+  };
+
+  // --- Serviços ---
+  let services = getItem('services', ['Entrega','Conserto','Instalação','Manutenção']);
+  function refreshServiceList(){
+    let out = services.map((s,i)=>`<div>${i+1}. ${s}</div>`).join('');
+    document.getElementById('serviceList').innerHTML = out;
+    let options = services.map(s=>`<option value="${s}">${s}</option>`).join('');
+    document.getElementById('ticketService').innerHTML = options;
+  }
+  document.getElementById('serviceForm').onsubmit = function(e){
+    e.preventDefault();
+    let nome = document.getElementById('serviceName').value.trim();
+    if(!nome || services.includes(nome)) return alert('Nome inválido ou já existe!');
+    services.push(nome);
+    setItem('services',services);
+    refreshServiceList();
+    document.getElementById('serviceForm').reset();
+  };
+
+  // --- Chamados ---
+  let tickets = getItem('tickets', []);
+  function refreshTicketList(){
+    let meu = currentUser ? tickets.filter(t=>t.user===currentUser.nome || currentUser.tipo==='admin') : [];
+    let out = meu.length ? 
+      meu.map((t,i)=>`
+      <div class="card">
+        <div><b>${t.titulo}</b> <span class="stat">(${t.servico})</span></div>
+        <div class="stat">Cliente: ${t.user} | Criado em: ${t.data} | Status: <span class="status-${t.status}">${t.status}</span></div>
+        <div>${t.desc}</div>
+        ${t.gps?`<div class="stat">GP: ${t.gps}</div>`:''}
+        <div class="row">
+          ${t.status==='open'?`
+          <div class="col"><button onclick="updateTicketStatus(${t.id},'progress')">Iniciar Atendimento</button></div>
+          <div class="col"><button onclick="updateTicketStatus(${t.id},'closed')">Finalizar Chamado</button></div>
+          `:''}
+          ${t.status==='progress'?`
+          <div class="col"><button onclick="updateTicketStatus(${t.id},'closed')">Finalizar Chamado</button></div>
+          `:''}
+        </div>
+      </div>`).join(''):'Nenhum chamado encontrado.';
+    document.getElementById('ticketList').innerHTML = out;
+  }
+  document.getElementById('ticketForm').onsubmit = function(e){
+    e.preventDefault();
+    let user = document.getElementById('ticketUser').value;
+    let servico = document.getElementById('ticketService').value;
+    let titulo = document.getElementById('ticketTitle').value.trim();
+    let desc = document.getElementById('ticketDesc').value.trim();
+    let gps = document.getElementById('ticketGps').value.trim();
+    tickets.push({ id:Date.now(), user, servico, titulo, desc, gps, status:'open', data:new Date().toLocaleString() });
+    setItem('tickets',tickets);
+    refreshTicketList();
+    document.getElementById('ticketForm').reset();
+  };
+  function updateTicketStatus(id, status){
+    let idx = tickets.findIndex(t=>t.id===id);
+    if(idx>-1){ tickets[idx].status=status; setItem('tickets',tickets); refreshTicketList(); }
+  }
+
+  // --- Conta / Notas / GP Marcação ---
+  function refreshAccount(){
+    let info = currentUser ? `<b>${currentUser.nome}</b> (${currentUser.tipo})` : 'Nenhum usuário logado.';
+    document.getElementById('accountInfo').innerHTML=info;
+    refreshNoteList();
+  }
+  function marcarInicioAtendimento(){
+    alert('Início marcado!
+Data: '+new Date().toLocaleString());
+    // Opcional: salvar evento no historico
+  }
+  // Notas/Anotações
+  let notes = getItem('notes', []);
+  function refreshNoteList(){
+    let mine = currentUser ? notes.filter(n=>n.user===currentUser.nome) : [];
+    document.getElementById('noteList').innerHTML = (mine.length ?
+      mine.map(n=> `<div class="card">${n.text} <div class="stat">${n.date} ${n.gps?`| GP: ${n.gps}`:''}</div></div>`).join('') : 'Nenhuma anotação.');
+  }
+  document.getElementById('noteForm').onsubmit = function(e){
+    e.preventDefault();
+    let text = document.getElementById('noteText').value.trim();
+    let gps = '';
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(function(pos){
+        gps = pos.coords.latitude+', '+pos.coords.longitude;
+        notes.push({user:currentUser.nome,text,date:new Date().toLocaleString(),gps});
+        setItem('notes',notes);
+        refreshNoteList();
+        document.getElementById('noteForm').reset();
+      }, function(){ // Fallback
+        notes.push({user:currentUser.nome,text,date:new Date().toLocaleString(),gps:''});
+        setItem('notes',notes);
+        refreshNoteList();
+        document.getElementById('noteForm').reset();
+      });
+    } else {
+      notes.push({user:currentUser.nome,text,date:new Date().toLocaleString(),gps});
+      setItem('notes',notes);
+      refreshNoteList();
+      document.getElementById('noteForm').reset();
+    }
+  };
+
+  // --- Login Simples ---
+  function loginPrompt(){
+    let nome = prompt('Usuário:');
+    let senha = prompt('Senha:');
+    let u = users.find(u=>u.nome===nome&&u.senha===senha);
+    if(u){ currentUser=u; setItem('currentUser',u); refreshAccount(); refreshTicketList(); alert('Login realizado!'); }
+    else{ alert('Usuário ou senha inválidos!'); loginPrompt(); }
+  }
+  // --- Navegação Tabs ---
+  function showTab(tab){
+    for(let t of document.querySelectorAll('.tab')) t.classList.remove('active');
+    document.getElementById(tab).classList.add('active');
+  }
+
+  // --- Inicialização ---
+  refreshUserList();
+  refreshServiceList();
+  refreshTicketList();
+  refreshAccount();
+  if (!currentUser) setTimeout(loginPrompt,100);
+
+</script>
+</body>
+</html>
