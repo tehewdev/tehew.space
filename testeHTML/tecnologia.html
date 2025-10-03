@@ -1,254 +1,1941 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Gerenciamento de Chamados - Completo</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema Completo de Gerenciamento de Chamados</title>
   <style>
-    body { font-family: 'Inter', Arial, sans-serif; background: #f7f8fa; color: #222; margin: 0; }
-    .container { max-width: 1000px; margin: 1rem auto; background: #fff; padding: 2rem; border-radius: 14px; box-shadow: 0 2px 16px #0002; }
-    h1, h2, h3 { color: #184d85; margin-bottom: 0.4em; }
-    input, select, textarea, button { font-size: 1em; margin: 6px 0; padding: 7px; border-radius: 4px; border: 1px solid #bbb; width: 100%; box-sizing: border-box;}
-    button { background: #184d85; color: #fff; border: none; font-weight: bold; cursor: pointer; transition: background 0.2s;}
-    button:hover { background: #269; }
-    .row { display: flex; gap: 1em; margin-bottom: 1em; }
-    .col { flex: 1; }
-    .card { border: 1px solid #eaeaea; border-radius: 8px; background: #f3f5f7; padding: 1em 0.5em; margin-bottom: 1em; }
-    .stat { font-size: 0.9em; color: #555; margin-top: 2px; }
-    .tab { display: none; }
-    .active { display: block; }
-    nav button { width: auto; margin-right: 8px; padding: 8px 16px;}
-    .status-open {color: #228B22; font-weight:bold;}
-    .status-progress {color: #0563B2; font-weight:bold;}
-    .status-closed {color: #BF360C; font-weight:bold;}
-    .user-list {margin-bottom:10px;}
-    textarea {min-height: 45px;}
-    @media(max-width:600px){
-      .row {flex-direction:column;}
-      .container{padding:1em;}
+    /* ======================== RESET & BASE ======================== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #1e40af;
+      --primary-dark: #1e3a8a;
+      --secondary: #64748b;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --info: #3b82f6;
+      --bg-main: #f8fafc;
+      --bg-card: #ffffff;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --border: #e2e8f0;
+      --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    body.dark-mode {
+      --bg-main: #0f172a;
+      --bg-card: #1e293b;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --border: #334155;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-main);
+      color: var(--text-primary);
+      line-height: 1.6;
+      transition: all 0.3s ease;
+    }
+
+    /* ======================== LAYOUT ======================== */
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 260px;
+      background: var(--bg-card);
+      border-right: 1px solid var(--border);
+      padding: 1.5rem;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar.collapsed {
+      width: 70px;
+    }
+
+    .main-content {
+      flex: 1;
+      margin-left: 260px;
+      transition: all 0.3s ease;
+    }
+
+    .main-content.expanded {
+      margin-left: 70px;
+    }
+
+    .topbar {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow);
+    }
+
+    .content-area {
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* ======================== SIDEBAR ======================== */
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-menu {
+      list-style: none;
+    }
+
+    .nav-item {
+      margin-bottom: 0.5rem;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .nav-link:hover {
+      background: var(--bg-main);
+      color: var(--primary);
+    }
+
+    .nav-link.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    .nav-icon {
+      font-size: 1.2rem;
+    }
+
+    /* ======================== CARDS ======================== */
+    .card {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--border);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* ======================== STATS GRID ======================== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      border-left: 4px solid var(--primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stat-card.success { border-left-color: var(--success); }
+    .stat-card.warning { border-left-color: var(--warning); }
+    .stat-card.danger { border-left-color: var(--danger); }
+    .stat-card.info { border-left-color: var(--info); }
+
+    .stat-info h3 {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-info p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .stat-icon {
+      font-size: 3rem;
+      opacity: 0.2;
+    }
+
+    /* ======================== FORMS ======================== */
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .form-control, .form-select, .form-textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+
+    .form-control:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+    }
+
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    /* ======================== BUTTONS ======================== */
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-warning {
+      background: var(--warning);
+      color: white;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .btn-sm {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+    }
+
+    /* ======================== TABLE ======================== */
+    .table-container {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .table thead {
+      background: var(--bg-main);
+    }
+
+    .table th {
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-primary);
+      border-bottom: 2px solid var(--border);
+    }
+
+    .table td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .table tbody tr:hover {
+      background: var(--bg-main);
+    }
+
+    /* ======================== BADGES ======================== */
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge-open {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge-progress {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .badge-closed {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .badge-high {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .badge-medium {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge-low {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    /* ======================== MODAL ======================== */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 800px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      animation: modalSlideIn 0.3s ease;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+    }
+
+    /* ======================== TICKET CARD ======================== */
+    .ticket-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .ticket-card:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
+    }
+
+    .ticket-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 1rem;
+    }
+
+    .ticket-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .ticket-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+
+    .ticket-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    /* ======================== CHAT/COMMENTS ======================== */
+    .comments-section {
+      margin-top: 2rem;
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+    }
+
+    .comment {
+      background: var(--bg-main);
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .comment-author {
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    /* ======================== SEARCH & FILTERS ======================== */
+    .search-bar {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    /* ======================== TIMELINE ======================== */
+    .timeline {
+      position: relative;
+      padding-left: 2rem;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -2.4rem;
+      top: 0.5rem;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 3px solid var(--bg-card);
+    }
+
+    .timeline-content {
+      background: var(--bg-main);
+      padding: 1rem;
+      border-radius: 8px;
+    }
+
+    .timeline-date {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    /* ======================== CHART PLACEHOLDER ======================== */
+    .chart-container {
+      height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-main);
+      border-radius: 8px;
+      color: var(--text-secondary);
+    }
+
+    /* ======================== UTILITIES ======================== */
+    .hidden { display: none !important; }
+    .text-center { text-align: center; }
+    .mb-1 { margin-bottom: 0.5rem; }
+    .mb-2 { margin-bottom: 1rem; }
+    .mb-3 { margin-bottom: 1.5rem; }
+    .mt-2 { margin-top: 1rem; }
+    .flex { display: flex; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .gap-1 { gap: 0.5rem; }
+    .gap-2 { gap: 1rem; }
+
+    /* ======================== NOTIFICATIONS ======================== */
+    .notifications {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 2000;
+      max-width: 400px;
+    }
+
+    .notification {
+      background: var(--bg-card);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      box-shadow: var(--shadow-lg);
+      border-left: 4px solid var(--info);
+      animation: slideIn 0.3s ease;
+    }
+
+    .notification.success { border-left-color: var(--success); }
+    .notification.error { border-left-color: var(--danger); }
+    .notification.warning { border-left-color: var(--warning); }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* ======================== RESPONSIVE ======================== */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        z-index: 999;
+      }
+
+      .sidebar.mobile-open {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ======================== LOGIN PAGE ======================== */
+    .login-container {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .login-card {
+      background: white;
+      border-radius: 12px;
+      padding: 3rem;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+    }
+
+    .login-title {
+      font-size: 2rem;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #1e293b;
+    }
+
+    /* ======================== PRIORITY COLORS ======================== */
+    .priority-high { color: var(--danger); }
+    .priority-medium { color: var(--warning); }
+    .priority-low { color: var(--info); }
+
+    /* ======================== TABS ======================== */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+
+    .tab {
+      padding: 0.75rem 1.5rem;
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .tab:hover {
+      color: var(--primary);
     }
   </style>
 </head>
 <body>
-<div class="container">
-  <h1>Gerenciamento de Chamados - Sistema Completo</h1>
-  <nav>
-    <button onclick="showTab('usuarios')">Usuários</button>
-    <button onclick="showTab('chamados')">Chamados</button>
-    <button onclick="showTab('servicos')">Serviços</button>
-    <button onclick="showTab('minhaConta')">Minha Conta</button>
-  </nav>
+  <!-- NOTIFICATIONS -->
+  <div id="notifications" class="notifications"></div>
 
-  <!-- USUÁRIOS -->
-  <div id="usuarios" class="tab active">
-    <h2>Usuários</h2>
-    <form id="userForm">
-      <div class="row">
-        <div class="col"><input type="text" id="username" placeholder="Nome de Usuário" required></div>
-        <div class="col"><input type="password" id="userpass" placeholder="Senha" required></div>
-        <div class="col"><select id="usertype"><option value="admin">Admin</option><option value="tecnico">Técnico</option><option value="cliente">Cliente</option></select></div>
-        <div class="col"><button type="submit">Criar Usuário</button></div>
-      </div>
-    </form>
-    <h3>Lista de Usuários</h3>
-    <div class="user-list" id="userList"></div>
-  </div>
-
-  <!-- CHAMADOS -->
-  <div id="chamados" class="tab">
-    <h2>Chamados</h2>
-    <form id="ticketForm">
-      <div class="row">
-        <div class="col"><select id="ticketUser"></select></div>
-        <div class="col"><select id="ticketService"></select></div>
-        <div class="col"><input type="text" id="ticketTitle" placeholder="Assunto/Resumo" required></div>
-      </div>
-      <textarea id="ticketDesc" placeholder="Descrição detalhada" required></textarea>
-      <input type="text" id="ticketGps" placeholder="Coordenada GP (latitude, longitude)">
-      <button type="submit">Criar Chamado</button>
-    </form>
-    <h3>Meus Chamados</h3>
-    <div id="ticketList"></div>
-  </div>
-
-  <!-- SERVIÇOS -->
-  <div id="servicos" class="tab">
-    <h2>Tipos de Serviço</h2>
-    <form id="serviceForm">
-      <div class="row">
-        <div class="col"><input type="text" id="serviceName" placeholder="Nome do Serviço" required></div>
-        <div class="col"><button type="submit">Adicionar Serviço</button></div>
-      </div>
-    </form>
-    <div id="serviceList"></div>
-  </div>
-
-  <!-- MINHA CONTA -->
-  <div id="minhaConta" class="tab">
-    <h2>Minha Conta</h2>
-    <div id="accountInfo"></div>
-    <h3>Marcação de Início / Anotações</h3>
-    <button onclick="marcarInicioAtendimento()">Marcar início do atendimento</button>
-    <form id="noteForm">
-      <textarea id="noteText" placeholder="Anotação do atendimento"></textarea>
-      <button type="submit">Salvar Anotação</button>
-    </form>
-    <div id="noteList"></div>
-  </div>
-</div>
-<script>
-  // --- LocalStorage Helpers ---
-  function getItem(key, def){ return JSON.parse(localStorage.getItem(key)||JSON.stringify(def)); }
-  function setItem(key,val){ localStorage.setItem(key,JSON.stringify(val)); }
-
-  // --- Usuários ---
-  let users = getItem('users', []);
-  let currentUser = getItem('currentUser', null);
-
-  function refreshUserList(){
-    let out = users.map(u => `<div><b>${u.nome}</b> (${u.tipo})</div>`).join('');
-    document.getElementById('userList').innerHTML = out || 'Nenhum usuário criado ainda.';
-    // popules selects
-    let options = users.map(u => `<option value="${u.nome}">${u.nome}</option>`).join('');
-    document.getElementById('ticketUser').innerHTML = options;
-  }
-  document.getElementById('userForm').onsubmit = function(e){
-    e.preventDefault();
-    let nome = document.getElementById('username').value.trim();
-    let senha = document.getElementById('userpass').value.trim();
-    let tipo = document.getElementById('usertype').value;
-    if(users.some(u=>u.nome===nome)){
-      alert('Usuário já existe!');
-      return;
-    }
-    users.push({nome,senha,tipo});
-    setItem('users',users);
-    refreshUserList();
-    document.getElementById('userForm').reset();
-  };
-
-  // --- Serviços ---
-  let services = getItem('services', ['Entrega','Conserto','Instalação','Manutenção']);
-  function refreshServiceList(){
-    let out = services.map((s,i)=>`<div>${i+1}. ${s}</div>`).join('');
-    document.getElementById('serviceList').innerHTML = out;
-    let options = services.map(s=>`<option value="${s}">${s}</option>`).join('');
-    document.getElementById('ticketService').innerHTML = options;
-  }
-  document.getElementById('serviceForm').onsubmit = function(e){
-    e.preventDefault();
-    let nome = document.getElementById('serviceName').value.trim();
-    if(!nome || services.includes(nome)) return alert('Nome inválido ou já existe!');
-    services.push(nome);
-    setItem('services',services);
-    refreshServiceList();
-    document.getElementById('serviceForm').reset();
-  };
-
-  // --- Chamados ---
-  let tickets = getItem('tickets', []);
-  function refreshTicketList(){
-    let meu = currentUser ? tickets.filter(t=>t.user===currentUser.nome || currentUser.tipo==='admin') : [];
-    let out = meu.length ? 
-      meu.map((t,i)=>`
-      <div class="card">
-        <div><b>${t.titulo}</b> <span class="stat">(${t.servico})</span></div>
-        <div class="stat">Cliente: ${t.user} | Criado em: ${t.data} | Status: <span class="status-${t.status}">${t.status}</span></div>
-        <div>${t.desc}</div>
-        ${t.gps?`<div class="stat">GP: ${t.gps}</div>`:''}
-        <div class="row">
-          ${t.status==='open'?`
-          <div class="col"><button onclick="updateTicketStatus(${t.id},'progress')">Iniciar Atendimento</button></div>
-          <div class="col"><button onclick="updateTicketStatus(${t.id},'closed')">Finalizar Chamado</button></div>
-          `:''}
-          ${t.status==='progress'?`
-          <div class="col"><button onclick="updateTicketStatus(${t.id},'closed')">Finalizar Chamado</button></div>
-          `:''}
+  <!-- LOGIN SCREEN -->
+  <div id="loginScreen" class="login-container">
+    <div class="login-card">
+      <h1 class="login-title">🎫 Sistema de Chamados</h1>
+      <form id="loginForm">
+        <div class="form-group">
+          <label class="form-label">Usuário</label>
+          <input type="text" id="loginUsername" class="form-control" placeholder="Digite seu usuário" required>
         </div>
-      </div>`).join(''):'Nenhum chamado encontrado.';
-    document.getElementById('ticketList').innerHTML = out;
-  }
-  document.getElementById('ticketForm').onsubmit = function(e){
-    e.preventDefault();
-    let user = document.getElementById('ticketUser').value;
-    let servico = document.getElementById('ticketService').value;
-    let titulo = document.getElementById('ticketTitle').value.trim();
-    let desc = document.getElementById('ticketDesc').value.trim();
-    let gps = document.getElementById('ticketGps').value.trim();
-    tickets.push({ id:Date.now(), user, servico, titulo, desc, gps, status:'open', data:new Date().toLocaleString() });
-    setItem('tickets',tickets);
-    refreshTicketList();
-    document.getElementById('ticketForm').reset();
-  };
-  function updateTicketStatus(id, status){
-    let idx = tickets.findIndex(t=>t.id===id);
-    if(idx>-1){ tickets[idx].status=status; setItem('tickets',tickets); refreshTicketList(); }
-  }
+        <div class="form-group">
+          <label class="form-label">Senha</label>
+          <input type="password" id="loginPassword" class="form-control" placeholder="Digite sua senha" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Entrar</button>
+      </form>
+      <div style="text-align: center; margin-top: 1rem; color: #64748b; font-size: 0.875rem;">
+        <p>Usuário padrão: <strong>admin</strong> / Senha: <strong>admin</strong></p>
+      </div>
+    </div>
+  </div>
 
-  // --- Conta / Notas / GP Marcação ---
-  function refreshAccount(){
-    let info = currentUser ? `<b>${currentUser.nome}</b> (${currentUser.tipo})` : 'Nenhum usuário logado.';
-    document.getElementById('accountInfo').innerHTML=info;
-    refreshNoteList();
-  }
-  function marcarInicioAtendimento(){
-    alert('Início marcado!
-Data: '+new Date().toLocaleString());
-    // Opcional: salvar evento no historico
-  }
-  // Notas/Anotações
-  let notes = getItem('notes', []);
-  function refreshNoteList(){
-    let mine = currentUser ? notes.filter(n=>n.user===currentUser.nome) : [];
-    document.getElementById('noteList').innerHTML = (mine.length ?
-      mine.map(n=> `<div class="card">${n.text} <div class="stat">${n.date} ${n.gps?`| GP: ${n.gps}`:''}</div></div>`).join('') : 'Nenhuma anotação.');
-  }
-  document.getElementById('noteForm').onsubmit = function(e){
-    e.preventDefault();
-    let text = document.getElementById('noteText').value.trim();
-    let gps = '';
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(function(pos){
-        gps = pos.coords.latitude+', '+pos.coords.longitude;
-        notes.push({user:currentUser.nome,text,date:new Date().toLocaleString(),gps});
-        setItem('notes',notes);
-        refreshNoteList();
-        document.getElementById('noteForm').reset();
-      }, function(){ // Fallback
-        notes.push({user:currentUser.nome,text,date:new Date().toLocaleString(),gps:''});
-        setItem('notes',notes);
-        refreshNoteList();
-        document.getElementById('noteForm').reset();
-      });
-    } else {
-      notes.push({user:currentUser.nome,text,date:new Date().toLocaleString(),gps});
-      setItem('notes',notes);
-      refreshNoteList();
-      document.getElementById('noteForm').reset();
+  <!-- MAIN APP -->
+  <div id="mainApp" class="app-container hidden">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="logo">
+        <span>🎫</span>
+        <span id="logoText">Chamados Pro</span>
+      </div>
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a class="nav-link active" onclick="showSection('dashboard')">
+            <span class="nav-icon">📊</span>
+            <span class="nav-text">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="showSection('tickets')">
+            <span class="nav-icon">🎫</span>
+            <span class="nav-text">Chamados</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="showSection('users')">
+            <span class="nav-icon">👥</span>
+            <span class="nav-text">Usuários</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="showSection('services')">
+            <span class="nav-icon">🛠️</span>
+            <span class="nav-text">Serviços</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="showSection('reports')">
+            <span class="nav-icon">📈</span>
+            <span class="nav-text">Relatórios</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="showSection('settings')">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-text">Configurações</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content" id="mainContent">
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="flex gap-2">
+          <button class="btn btn-secondary btn-sm" onclick="toggleSidebar()">☰</button>
+          <h2 id="pageTitle">Dashboard</h2>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn-secondary btn-sm" onclick="toggleTheme()">🌓</button>
+          <button class="btn btn-secondary btn-sm" onclick="showUserMenu()">
+            <span id="currentUserName">Admin</span> 👤
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="logout()">Sair</button>
+        </div>
+      </header>
+
+      <div class="content-area">
+        <!-- DASHBOARD SECTION -->
+        <div id="dashboardSection" class="section">
+          <div class="stats-grid">
+            <div class="stat-card info">
+              <div class="stat-info">
+                <h3 id="totalTickets">0</h3>
+                <p>Total de Chamados</p>
+              </div>
+              <div class="stat-icon">🎫</div>
+            </div>
+            <div class="stat-card success">
+              <div class="stat-info">
+                <h3 id="openTickets">0</h3>
+                <p>Abertos</p>
+              </div>
+              <div class="stat-icon">✅</div>
+            </div>
+            <div class="stat-card warning">
+              <div class="stat-info">
+                <h3 id="progressTickets">0</h3>
+                <p>Em Andamento</p>
+              </div>
+              <div class="stat-icon">⏳</div>
+            </div>
+            <div class="stat-card danger">
+              <div class="stat-info">
+                <h3 id="closedTickets">0</h3>
+                <p>Fechados</p>
+              </div>
+              <div class="stat-icon">🔒</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Chamados Recentes</h3>
+              <button class="btn btn-primary btn-sm" onclick="showSection('tickets')">Ver Todos</button>
+            </div>
+            <div id="recentTicketsList"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Atividades Recentes</h3>
+            </div>
+            <div class="timeline" id="activityTimeline"></div>
+          </div>
+        </div>
+
+        <!-- TICKETS SECTION -->
+        <div id="ticketsSection" class="section hidden">
+          <div class="flex-between mb-3">
+            <h2>Gerenciamento de Chamados</h2>
+            <button class="btn btn-primary" onclick="openTicketModal()">+ Novo Chamado</button>
+          </div>
+
+          <div class="search-bar">
+            <input type="text" id="searchTickets" class="form-control search-input" placeholder="🔍 Buscar chamados...">
+            <select id="filterStatus" class="form-select" onchange="filterTickets()">
+              <option value="">Todos Status</option>
+              <option value="open">Aberto</option>
+              <option value="progress">Em Andamento</option>
+              <option value="closed">Fechado</option>
+            </select>
+            <select id="filterPriority" class="form-select" onchange="filterTickets()">
+              <option value="">Todas Prioridades</option>
+              <option value="high">Alta</option>
+              <option value="medium">Média</option>
+              <option value="low">Baixa</option>
+            </select>
+          </div>
+
+          <div class="tabs">
+            <button class="tab active" onclick="switchTicketTab('all')">Todos</button>
+            <button class="tab" onclick="switchTicketTab('mine')">Meus Chamados</button>
+            <button class="tab" onclick="switchTicketTab('assigned')">Atribuídos a Mim</button>
+          </div>
+
+          <div id="ticketsList"></div>
+        </div>
+
+        <!-- USERS SECTION -->
+        <div id="usersSection" class="section hidden">
+          <div class="flex-between mb-3">
+            <h2>Gerenciamento de Usuários</h2>
+            <button class="btn btn-primary" onclick="openUserModal()">+ Novo Usuário</button>
+          </div>
+
+          <div class="card">
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th>Email</th>
+                    <th>Chamados</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SERVICES SECTION -->
+        <div id="servicesSection" class="section hidden">
+          <div class="flex-between mb-3">
+            <h2>Tipos de Serviço</h2>
+            <button class="btn btn-primary" onclick="openServiceModal()">+ Novo Serviço</button>
+          </div>
+
+          <div class="card">
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Serviço</th>
+                    <th>Descrição</th>
+                    <th>Chamados</th>
+                    <th>SLA (horas)</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="servicesTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- REPORTS SECTION -->
+        <div id="reportsSection" class="section hidden">
+          <h2 class="mb-3">Relatórios e Análises</h2>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-info">
+                <h3 id="avgResponseTime">2.5h</h3>
+                <p>Tempo Médio de Resposta</p>
+              </div>
+              <div class="stat-icon">⏱️</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-info">
+                <h3 id="satisfactionRate">95%</h3>
+                <p>Taxa de Satisfação</p>
+              </div>
+              <div class="stat-icon">⭐</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-info">
+                <h3 id="totalUsers">0</h3>
+                <p>Usuários Ativos</p>
+              </div>
+              <div class="stat-icon">👥</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-info">
+                <h3 id="totalServices">0</h3>
+                <p>Serviços Cadastrados</p>
+              </div>
+              <div class="stat-icon">🛠️</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Chamados por Status</h3>
+            </div>
+            <div class="chart-container">
+              <div style="text-align: center;">
+                <p>📊 Gráfico de Status</p>
+                <p style="font-size: 0.875rem;">Visualização de dados em desenvolvimento</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Exportar Dados</h3>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-success" onclick="exportData('json')">📥 Exportar JSON</button>
+              <button class="btn btn-success" onclick="exportData('csv')">📥 Exportar CSV</button>
+              <button class="btn btn-warning" onclick="backupData()">💾 Backup Completo</button>
+              <button class="btn btn-danger" onclick="clearAllData()">🗑️ Limpar Dados</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SETTINGS SECTION -->
+        <div id="settingsSection" class="section hidden">
+          <h2 class="mb-3">Configurações do Sistema</h2>
+
+          <div class="card">
+            <h3 class="card-title">Preferências Gerais</h3>
+            <div class="form-group">
+              <label class="form-label">Nome da Empresa</label>
+              <input type="text" id="companyName" class="form-control" value="Chamados Pro">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email de Notificações</label>
+              <input type="email" id="notificationEmail" class="form-control" placeholder="admin@empresa.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tema</label>
+              <select id="themeSelect" class="form-select" onchange="changeTheme(this.value)">
+                <option value="light">Claro</option>
+                <option value="dark">Escuro</option>
+                <option value="auto">Automático</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" onclick="saveSettings()">Salvar Configurações</button>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Backup e Restauração</h3>
+            <div class="form-group">
+              <label class="form-label">Restaurar de Backup</label>
+              <input type="file" id="restoreFile" class="form-control" accept=".json">
+            </div>
+            <button class="btn btn-warning" onclick="restoreBackup()">Restaurar Backup</button>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Informações do Sistema</h3>
+            <p><strong>Versão:</strong> 2.0.0</p>
+            <p><strong>Última atualização:</strong> Outubro 2025</p>
+            <p><strong>Armazenamento usado:</strong> <span id="storageUsed">0</span> KB</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- TICKET MODAL -->
+  <div id="ticketModal" class="modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('ticketModal')">✕</button>
+      <h2 class="mb-3" id="ticketModalTitle">Novo Chamado</h2>
+      <form id="ticketForm">
+        <input type="hidden" id="ticketId">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Cliente</label>
+            <select id="ticketClient" class="form-select" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo de Serviço</label>
+            <select id="ticketService" class="form-select" required></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Prioridade</label>
+            <select id="ticketPriority" class="form-select" required>
+              <option value="low">Baixa</option>
+              <option value="medium">Média</option>
+              <option value="high">Alta</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Atribuir a</label>
+            <select id="ticketAssignee" class="form-select"></select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Título</label>
+          <input type="text" id="ticketTitle" class="form-control" placeholder="Resumo do problema" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descrição</label>
+          <textarea id="ticketDescription" class="form-textarea" placeholder="Descreva o problema detalhadamente..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Localização GPS</label>
+          <input type="text" id="ticketGPS" class="form-control" placeholder="Ex: -23.550520, -46.633308">
+          <button type="button" class="btn btn-secondary btn-sm mt-2" onclick="getLocation()">📍 Obter Localização Atual</button>
+        </div>
+        <div class="flex gap-2 mt-2">
+          <button type="submit" class="btn btn-primary">Salvar Chamado</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal('ticketModal')">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TICKET DETAIL MODAL -->
+  <div id="ticketDetailModal" class="modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('ticketDetailModal')">✕</button>
+      <div id="ticketDetailContent"></div>
+    </div>
+  </div>
+
+  <!-- USER MODAL -->
+  <div id="userModal" class="modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('userModal')">✕</button>
+      <h2 class="mb-3">Novo Usuário</h2>
+      <form id="userForm">
+        <div class="form-group">
+          <label class="form-label">Nome</label>
+          <input type="text" id="userName" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="userEmail" class="form-control" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Usuário</label>
+            <input type="text" id="userUsername" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Senha</label>
+            <input type="password" id="userPassword" class="form-control" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tipo</label>
+          <select id="userType" class="form-select" required>
+            <option value="admin">Administrador</option>
+            <option value="tecnico">Técnico</option>
+            <option value="cliente">Cliente</option>
+          </select>
+        </div>
+        <div class="flex gap-2 mt-2">
+          <button type="submit" class="btn btn-primary">Salvar Usuário</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal('userModal')">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SERVICE MODAL -->
+  <div id="serviceModal" class="modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('serviceModal')">✕</button>
+      <h2 class="mb-3">Novo Serviço</h2>
+      <form id="serviceForm">
+        <div class="form-group">
+          <label class="form-label">Nome do Serviço</label>
+          <input type="text" id="serviceName" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descrição</label>
+          <textarea id="serviceDescription" class="form-textarea" required></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">SLA (horas)</label>
+          <input type="number" id="serviceSLA" class="form-control" value="24" required>
+        </div>
+        <div class="flex gap-2 mt-2">
+          <button type="submit" class="btn btn-primary">Salvar Serviço</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal('serviceModal')">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ======================== DATA STORAGE ========================
+    const DB = {
+      get(key, defaultValue = []) {
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : defaultValue;
+      },
+      set(key, value) {
+        localStorage.setItem(key, JSON.stringify(value));
+      },
+      clear() {
+        localStorage.clear();
+      }
+    };
+
+    // ======================== STATE ========================
+    let currentUser = DB.get('currentUser', null);
+    let users = DB.get('users', [
+      { id: 1, name: 'Administrador', username: 'admin', password: 'admin', email: 'admin@sistema.com', type: 'admin', status: 'active' }
+    ]);
+    let tickets = DB.get('tickets', []);
+    let services = DB.get('services', [
+      { id: 1, name: 'Instalação', description: 'Instalação de equipamentos', sla: 24 },
+      { id: 2, name: 'Manutenção', description: 'Manutenção preventiva', sla: 48 },
+      { id: 3, name: 'Conserto', description: 'Reparo de equipamentos', sla: 12 },
+      { id: 4, name: 'Entrega', description: 'Entrega de produtos', sla: 8 }
+    ]);
+    let activities = DB.get('activities', []);
+    let comments = DB.get('comments', []);
+
+    // ======================== INITIALIZATION ========================
+    function init() {
+      if (currentUser) {
+        showMainApp();
+      } else {
+        showLoginScreen();
+      }
     }
-  };
 
-  // --- Login Simples ---
-  function loginPrompt(){
-    let nome = prompt('Usuário:');
-    let senha = prompt('Senha:');
-    let u = users.find(u=>u.nome===nome&&u.senha===senha);
-    if(u){ currentUser=u; setItem('currentUser',u); refreshAccount(); refreshTicketList(); alert('Login realizado!'); }
-    else{ alert('Usuário ou senha inválidos!'); loginPrompt(); }
-  }
-  // --- Navegação Tabs ---
-  function showTab(tab){
-    for(let t of document.querySelectorAll('.tab')) t.classList.remove('active');
-    document.getElementById(tab).classList.add('active');
-  }
+    // ======================== LOGIN/LOGOUT ========================
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const username = document.getElementById('loginUsername').value;
+      const password = document.getElementById('loginPassword').value;
+      
+      const user = users.find(u => u.username === username && u.password === password);
+      
+      if (user) {
+        currentUser = user;
+        DB.set('currentUser', user);
+        showMainApp();
+        showNotification('Login realizado com sucesso!', 'success');
+        logActivity(`${user.name} fez login no sistema`);
+      } else {
+        showNotification('Usuário ou senha inválidos!', 'error');
+      }
+    });
 
-  // --- Inicialização ---
-  refreshUserList();
-  refreshServiceList();
-  refreshTicketList();
-  refreshAccount();
-  if (!currentUser) setTimeout(loginPrompt,100);
+    function logout() {
+      if (confirm('Deseja realmente sair?')) {
+        logActivity(`${currentUser.name} saiu do sistema`);
+        currentUser = null;
+        DB.set('currentUser', null);
+        showLoginScreen();
+        showNotification('Logout realizado com sucesso!', 'success');
+      }
+    }
 
-</script>
+    function showLoginScreen() {
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('mainApp').classList.add('hidden');
+    }
+
+    function showMainApp() {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('mainApp').classList.remove('hidden');
+      document.getElementById('currentUserName').textContent = currentUser.name;
+      refreshDashboard();
+      refreshAll();
+    }
+
+    // ======================== NAVIGATION ========================
+    function showSection(section) {
+      document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      
+      const sectionMap = {
+        'dashboard': 'dashboardSection',
+        'tickets': 'ticketsSection',
+        'users': 'usersSection',
+        'services': 'servicesSection',
+        'reports': 'reportsSection',
+        'settings': 'settingsSection'
+      };
+      
+      document.getElementById(sectionMap[section]).classList.remove('hidden');
+      event.target.closest('.nav-link').classList.add('active');
+      
+      const titleMap = {
+        'dashboard': 'Dashboard',
+        'tickets': 'Chamados',
+        'users': 'Usuários',
+        'services': 'Serviços',
+        'reports': 'Relatórios',
+        'settings': 'Configurações'
+      };
+      document.getElementById('pageTitle').textContent = titleMap[section];
+      
+      if (section === 'dashboard') refreshDashboard();
+      if (section === 'tickets') refreshTickets();
+      if (section === 'users') refreshUsers();
+      if (section === 'services') refreshServices();
+    }
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('collapsed');
+      document.getElementById('mainContent').classList.toggle('expanded');
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      DB.set('theme', isDark ? 'dark' : 'light');
+    }
+
+    // ======================== DASHBOARD ========================
+    function refreshDashboard() {
+      const stats = {
+        total: tickets.length,
+        open: tickets.filter(t => t.status === 'open').length,
+        progress: tickets.filter(t => t.status === 'progress').length,
+        closed: tickets.filter(t => t.status === 'closed').length
+      };
+      
+      document.getElementById('totalTickets').textContent = stats.total;
+      document.getElementById('openTickets').textContent = stats.open;
+      document.getElementById('progressTickets').textContent = stats.progress;
+      document.getElementById('closedTickets').textContent = stats.closed;
+      
+      // Recent tickets
+      const recent = tickets.slice(-5).reverse();
+      const recentHTML = recent.map(t => `
+        <div class="ticket-card" onclick="viewTicketDetail(${t.id})">
+          <div class="ticket-header">
+            <div>
+              <div class="ticket-title">${t.title}</div>
+              <div class="ticket-meta">
+                <span>🏷️ #${t.id}</span>
+                <span>👤 ${t.clientName}</span>
+                <span>📅 ${formatDate(t.createdAt)}</span>
+              </div>
+            </div>
+            <div>
+              <span class="badge badge-${t.status}">${getStatusLabel(t.status)}</span>
+              <span class="badge badge-${t.priority}">${getPriorityLabel(t.priority)}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+      document.getElementById('recentTicketsList').innerHTML = recentHTML || '<p style="text-align: center; color: var(--text-secondary);">Nenhum chamado cadastrado ainda.</p>';
+      
+      // Activity timeline
+      const recentActivities = activities.slice(-10).reverse();
+      const activitiesHTML = recentActivities.map(a => `
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <div class="timeline-date">${formatDateTime(a.timestamp)}</div>
+            <div>${a.description}</div>
+          </div>
+        </div>
+      `).join('');
+      document.getElementById('activityTimeline').innerHTML = activitiesHTML || '<p style="text-align: center; color: var(--text-secondary);">Nenhuma atividade recente.</p>';
+    }
+
+    // ======================== TICKETS ========================
+    function refreshTickets() {
+      const searchTerm = document.getElementById('searchTickets').value.toLowerCase();
+      const statusFilter = document.getElementById('filterStatus').value;
+      const priorityFilter = document.getElementById('filterPriority').value;
+      
+      let filtered = tickets;
+      
+      if (searchTerm) {
+        filtered = filtered.filter(t => 
+          t.title.toLowerCase().includes(searchTerm) ||
+          t.description.toLowerCase().includes(searchTerm) ||
+          t.id.toString().includes(searchTerm)
+        );
+      }
+      
+      if (statusFilter) {
+        filtered = filtered.filter(t => t.status === statusFilter);
+      }
+      
+      if (priorityFilter) {
+        filtered = filtered.filter(t => t.priority === priorityFilter);
+      }
+      
+      const ticketsHTML = filtered.map(t => `
+        <div class="ticket-card" onclick="viewTicketDetail(${t.id})">
+          <div class="ticket-header">
+            <div>
+              <div class="ticket-title">${t.title}</div>
+              <div style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem;">${t.description}</div>
+              <div class="ticket-meta">
+                <span>🏷️ #${t.id}</span>
+                <span>👤 ${t.clientName}</span>
+                <span>🛠️ ${t.serviceName}</span>
+                <span>📅 ${formatDate(t.createdAt)}</span>
+                ${t.gps ? `<span>📍 GPS</span>` : ''}
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <span class="badge badge-${t.status}">${getStatusLabel(t.status)}</span>
+              <span class="badge badge-${t.priority}">${getPriorityLabel(t.priority)}</span>
+              ${t.assignee ? `<div style="margin-top: 0.5rem; font-size: 0.875rem;">👨‍💼 ${t.assignee}</div>` : ''}
+            </div>
+          </div>
+        </div>
+      `).join('');
+      
+      document.getElementById('ticketsList').innerHTML = ticketsHTML || '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">Nenhum chamado encontrado.</p>';
+    }
+
+    function openTicketModal(ticketId = null) {
+      document.getElementById('ticketModalTitle').textContent = ticketId ? 'Editar Chamado' : 'Novo Chamado';
+      
+      // Populate clients
+      const clients = users.filter(u => u.type === 'cliente');
+      document.getElementById('ticketClient').innerHTML = clients.map(c => 
+        `<option value="${c.id}">${c.name}</option>`
+      ).join('');
+      
+      // Populate services
+      document.getElementById('ticketService').innerHTML = services.map(s => 
+        `<option value="${s.id}">${s.name}</option>`
+      ).join('');
+      
+      // Populate assignees
+      const technicians = users.filter(u => u.type === 'tecnico' || u.type === 'admin');
+      document.getElementById('ticketAssignee').innerHTML = '<option value="">Não atribuído</option>' + technicians.map(t => 
+        `<option value="${t.id}">${t.name}</option>`
+      ).join('');
+      
+      if (ticketId) {
+        const ticket = tickets.find(t => t.id === ticketId);
+        if (ticket) {
+          document.getElementById('ticketId').value = ticket.id;
+          document.getElementById('ticketClient').value = ticket.clientId;
+          document.getElementById('ticketService').value = ticket.serviceId;
+          document.getElementById('ticketPriority').value = ticket.priority;
+          document.getElementById('ticketAssignee').value = ticket.assigneeId || '';
+          document.getElementById('ticketTitle').value = ticket.title;
+          document.getElementById('ticketDescription').value = ticket.description;
+          document.getElementById('ticketGPS').value = ticket.gps || '';
+        }
+      }
+      
+      openModal('ticketModal');
+    }
+
+    document.getElementById('ticketForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const ticketId = document.getElementById('ticketId').value;
+      const clientId = parseInt(document.getElementById('ticketClient').value);
+      const serviceId = parseInt(document.getElementById('ticketService').value);
+      const priority = document.getElementById('ticketPriority').value;
+      const assigneeId = document.getElementById('ticketAssignee').value ? parseInt(document.getElementById('ticketAssignee').value) : null;
+      const title = document.getElementById('ticketTitle').value;
+      const description = document.getElementById('ticketDescription').value;
+      const gps = document.getElementById('ticketGPS').value;
+      
+      const client = users.find(u => u.id === clientId);
+      const service = services.find(s => s.id === serviceId);
+      const assignee = assigneeId ? users.find(u => u.id === assigneeId) : null;
+      
+      if (ticketId) {
+        // Edit existing
+        const index = tickets.findIndex(t => t.id === parseInt(ticketId));
+        tickets[index] = {
+          ...tickets[index],
+          clientId, clientName: client.name,
+          serviceId, serviceName: service.name,
+          priority, assigneeId, assignee: assignee?.name,
+          title, description, gps,
+          updatedAt: new Date().toISOString()
+        };
+        logActivity(`Chamado #${ticketId} atualizado por ${currentUser.name}`);
+        showNotification('Chamado atualizado com sucesso!', 'success');
+      } else {
+        // Create new
+        const newTicket = {
+          id: Date.now(),
+          clientId, clientName: client.name,
+          serviceId, serviceName: service.name,
+          priority, assigneeId, assignee: assignee?.name,
+          title, description, gps,
+          status: 'open',
+          createdBy: currentUser.id,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        tickets.push(newTicket);
+        logActivity(`Chamado #${newTicket.id} criado por ${currentUser.name}`);
+        showNotification('Chamado criado com sucesso!', 'success');
+      }
+      
+      DB.set('tickets', tickets);
+      closeModal('ticketModal');
+      document.getElementById('ticketForm').reset();
+      refreshTickets();
+      refreshDashboard();
+    });
+
+    function viewTicketDetail(ticketId) {
+      const ticket = tickets.find(t => t.id === ticketId);
+      if (!ticket) return;
+      
+      const ticketComments = comments.filter(c => c.ticketId === ticketId);
+      
+      const html = `
+        <h2 class="mb-2">${ticket.title}</h2>
+        <div class="flex gap-2 mb-3">
+          <span class="badge badge-${ticket.status}">${getStatusLabel(ticket.status)}</span>
+          <span class="badge badge-${ticket.priority}">${getPriorityLabel(ticket.priority)}</span>
+        </div>
+        
+        <div class="card">
+          <h3 class="card-title">Informações do Chamado</h3>
+          <p><strong>ID:</strong> #${ticket.id}</p>
+          <p><strong>Cliente:</strong> ${ticket.clientName}</p>
+          <p><strong>Serviço:</strong> ${ticket.serviceName}</p>
+          <p><strong>Prioridade:</strong> ${getPriorityLabel(ticket.priority)}</p>
+          <p><strong>Atribuído a:</strong> ${ticket.assignee || 'Não atribuído'}</p>
+          <p><strong>Criado em:</strong> ${formatDateTime(ticket.createdAt)}</p>
+          <p><strong>Última atualização:</strong> ${formatDateTime(ticket.updatedAt)}</p>
+          ${ticket.gps ? `<p><strong>GPS:</strong> ${ticket.gps} <a href="https://www.google.com/maps?q=${ticket.gps}" target="_blank">🗺️ Ver no Mapa</a></p>` : ''}
+        </div>
+        
+        <div class="card">
+          <h3 class="card-title">Descrição</h3>
+          <p>${ticket.description}</p>
+        </div>
+        
+        <div class="card">
+          <h3 class="card-title">Ações</h3>
+          <div class="flex gap-2">
+            ${ticket.status === 'open' ? `<button class="btn btn-primary btn-sm" onclick="updateTicketStatus(${ticket.id}, 'progress')">▶️ Iniciar Atendimento</button>` : ''}
+            ${ticket.status === 'progress' ? `<button class="btn btn-success btn-sm" onclick="updateTicketStatus(${ticket.id}, 'closed')">✅ Finalizar</button>` : ''}
+            ${ticket.status === 'closed' ? `<button class="btn btn-warning btn-sm" onclick="updateTicketStatus(${ticket.id}, 'open')">🔄 Reabrir</button>` : ''}
+            <button class="btn btn-secondary btn-sm" onclick="openTicketModal(${ticket.id}); closeModal('ticketDetailModal')">✏️ Editar</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteTicket(${ticket.id})">🗑️ Excluir</button>
+          </div>
+        </div>
+        
+        <div class="comments-section">
+          <h3 class="mb-2">Comentários (${ticketComments.length})</h3>
+          ${ticketComments.map(c => `
+            <div class="comment">
+              <div class="comment-header">
+                <span class="comment-author">${c.authorName}</span>
+                <span>${formatDateTime(c.timestamp)}</span>
+              </div>
+              <div>${c.text}</div>
+            </div>
+          `).join('')}
+          
+          <form onsubmit="addComment(event, ${ticket.id})">
+            <div class="form-group">
+              <textarea id="commentText" class="form-textarea" placeholder="Adicionar comentário..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">💬 Adicionar Comentário</button>
+          </form>
+        </div>
+      `;
+      
+      document.getElementById('ticketDetailContent').innerHTML = html;
+      openModal('ticketDetailModal');
+    }
+
+    function updateTicketStatus(ticketId, newStatus) {
+      const ticket = tickets.find(t => t.id === ticketId);
+      if (ticket) {
+        const oldStatus = ticket.status;
+        ticket.status = newStatus;
+        ticket.updatedAt = new Date().toISOString();
+        DB.set('tickets', tickets);
+        
+        logActivity(`Chamado #${ticketId} alterado de ${getStatusLabel(oldStatus)} para ${getStatusLabel(newStatus)} por ${currentUser.name}`);
+        showNotification(`Status do chamado atualizado para: ${getStatusLabel(newStatus)}`, 'success');
+        
+        closeModal('ticketDetailModal');
+        refreshTickets();
+        refreshDashboard();
+      }
+    }
+
+    function deleteTicket(ticketId) {
+      if (confirm('Tem certeza que deseja excluir este chamado?')) {
+        tickets = tickets.filter(t => t.id !== ticketId);
+        DB.set('tickets', tickets);
+        logActivity(`Chamado #${ticketId} excluído por ${currentUser.name}`);
+        showNotification('Chamado excluído com sucesso!', 'success');
+        closeModal('ticketDetailModal');
+        refreshTickets();
+        refreshDashboard();
+      }
+    }
+
+    function addComment(event, ticketId) {
+      event.preventDefault();
+      const text = document.getElementById('commentText').value;
+      
+      const comment = {
+        id: Date.now(),
+        ticketId,
+        authorId: currentUser.id,
+        authorName: currentUser.name,
+        text,
+        timestamp: new Date().toISOString()
+      };
+      
+      comments.push(comment);
+      DB.set('comments', comments);
+      
+      logActivity(`${currentUser.name} comentou no chamado #${ticketId}`);
+      showNotification('Comentário adicionado!', 'success');
+      
+      viewTicketDetail(ticketId);
+    }
+
+    function filterTickets() {
+      refreshTickets();
+    }
+
+    function switchTicketTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      // Implement filtering logic based on tab
+      refreshTickets();
+    }
+
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+          const gps = `${position.coords.latitude}, ${position.coords.longitude}`;
+          document.getElementById('ticketGPS').value = gps;
+          showNotification('Localização obtida com sucesso!', 'success');
+        }, () => {
+          showNotification('Erro ao obter localização!', 'error');
+        });
+      } else {
+        showNotification('Geolocalização não suportada!', 'error');
+      }
+    }
+
+    // ======================== USERS ========================
+    function refreshUsers() {
+      const html = users.map(u => `
+        <tr>
+          <td><strong>${u.name}</strong></td>
+          <td><span class="badge ${u.type === 'admin' ? 'badge-high' : u.type === 'tecnico' ? 'badge-medium' : 'badge-low'}">${u.type}</span></td>
+          <td>${u.email}</td>
+          <td>${tickets.filter(t => t.clientId === u.id).length}</td>
+          <td><span class="badge badge-open">${u.status || 'active'}</span></td>
+          <td>
+            <button class="btn btn-secondary btn-sm" onclick="editUser(${u.id})">✏️</button>
+            ${u.id !== 1 ? `<button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})">🗑️</button>` : ''}
+          </td>
+        </tr>
+      `).join('');
+      
+      document.getElementById('usersTableBody').innerHTML = html;
+      document.getElementById('totalUsers').textContent = users.length;
+    }
+
+    function openUserModal(userId = null) {
+      if (userId) {
+        const user = users.find(u => u.id === userId);
+        if (user) {
+          document.getElementById('userName').value = user.name;
+          document.getElementById('userEmail').value = user.email;
+          document.getElementById('userUsername').value = user.username;
+          document.getElementById('userPassword').value = user.password;
+          document.getElementById('userType').value = user.type;
+        }
+      }
+      openModal('userModal');
+    }
+
+    document.getElementById('userForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const user = {
+        id: Date.now(),
+        name: document.getElementById('userName').value,
+        email: document.getElementById('userEmail').value,
+        username: document.getElementById('userUsername').value,
+        password: document.getElementById('userPassword').value,
+        type: document.getElementById('userType').value,
+        status: 'active'
+      };
+      
+      users.push(user);
+      DB.set('users', users);
+      
+      logActivity(`Usuário ${user.name} criado por ${currentUser.name}`);
+      showNotification('Usuário criado com sucesso!', 'success');
+      
+      closeModal('userModal');
+      document.getElementById('userForm').reset();
+      refreshUsers();
+    });
+
+    function deleteUser(userId) {
+      if (confirm('Tem certeza que deseja excluir este usuário?')) {
+        users = users.filter(u => u.id !== userId);
+        DB.set('users', users);
+        showNotification('Usuário excluído com sucesso!', 'success');
+        refreshUsers();
+      }
+    }
+
+    // ======================== SERVICES ========================
+    function refreshServices() {
+      const html = services.map(s => `
+        <tr>
+          <td><strong>${s.name}</strong></td>
+          <td>${s.description}</td>
+          <td>${tickets.filter(t => t.serviceId === s.id).length}</td>
+          <td>${s.sla}h</td>
+          <td>
+            <button class="btn btn-secondary btn-sm" onclick="editService(${s.id})">✏️</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteService(${s.id})">🗑️</button>
+          </td>
+        </tr>
+      `).join('');
+      
+      document.getElementById('servicesTableBody').innerHTML = html;
+      document.getElementById('totalServices').textContent = services.length;
+    }
+
+    function openServiceModal(serviceId = null) {
+      if (serviceId) {
+        const service = services.find(s => s.id === serviceId);
+        if (service) {
+          document.getElementById('serviceName').value = service.name;
+          document.getElementById('serviceDescription').value = service.description;
+          document.getElementById('serviceSLA').value = service.sla;
+        }
+      }
+      openModal('serviceModal');
+    }
+
+    document.getElementById('serviceForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const service = {
+        id: Date.now(),
+        name: document.getElementById('serviceName').value,
+        description: document.getElementById('serviceDescription').value,
+        sla: parseInt(document.getElementById('serviceSLA').value)
+      };
+      
+      services.push(service);
+      DB.set('services', services);
+      
+      logActivity(`Serviço ${service.name} criado por ${currentUser.name}`);
+      showNotification('Serviço criado com sucesso!', 'success');
+      
+      closeModal('serviceModal');
+      document.getElementById('serviceForm').reset();
+      refreshServices();
+    });
+
+    function deleteService(serviceId) {
+      if (confirm('Tem certeza que deseja excluir este serviço?')) {
+        services = services.filter(s => s.id !== serviceId);
+        DB.set('services', services);
+        showNotification('Serviço excluído com sucesso!', 'success');
+        refreshServices();
+      }
+    }
+
+    // ======================== UTILITIES ========================
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      
+      document.getElementById('notifications').appendChild(notification);
+      
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
+    }
+
+    function logActivity(description) {
+      activities.push({
+        id: Date.now(),
+        description,
+        timestamp: new Date().toISOString(),
+        userId: currentUser.id
+      });
+      DB.set('activities', activities);
+    }
+
+    function formatDate(dateString) {
+      return new Date(dateString).toLocaleDateString('pt-BR');
+    }
+
+    function formatDateTime(dateString) {
+      return new Date(dateString).toLocaleString('pt-BR');
+    }
+
+    function getStatusLabel(status) {
+      const labels = {
+        'open': 'Aberto',
+        'progress': 'Em Andamento',
+        'closed': 'Fechado'
+      };
+      return labels[status] || status;
+    }
+
+    function getPriorityLabel(priority) {
+      const labels = {
+        'low': 'Baixa',
+        'medium': 'Média',
+        'high': 'Alta'
+      };
+      return labels[priority] || priority;
+    }
+
+    function refreshAll() {
+      refreshDashboard();
+      refreshTickets();
+      refreshUsers();
+      refreshServices();
+    }
+
+    // ======================== EXPORT/IMPORT ========================
+    function exportData(format) {
+      const data = {
+        tickets,
+        users: users.map(u => ({...u, password: '***'})),
+        services,
+        activities,
+        comments,
+        exportDate: new Date().toISOString()
+      };
+      
+      if (format === 'json') {
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        downloadFile(blob, `chamados-export-${Date.now()}.json`);
+      } else if (format === 'csv') {
+        const csv = convertToCSV(tickets);
+        const blob = new Blob([csv], { type: 'text/csv' });
+        downloadFile(blob, `chamados-export-${Date.now()}.csv`);
+      }
+      
+      showNotification('Dados exportados com sucesso!', 'success');
+    }
+
+    function convertToCSV(data) {
+      const headers = ['ID', 'Título', 'Cliente', 'Serviço', 'Status', 'Prioridade', 'Criado em'];
+      const rows = data.map(t => [
+        t.id, t.title, t.clientName, t.serviceName, t.status, t.priority, formatDateTime(t.createdAt)
+      ]);
+      
+      return [headers, ...rows].map(row => row.join(',')).join('\n');
+    }
+
+    function downloadFile(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function backupData() {
+      const backup = {
+        users, tickets, services, activities, comments,
+        timestamp: new Date().toISOString()
+      };
+      
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+      downloadFile(blob, `backup-completo-${Date.now()}.json`);
+      
+      showNotification('Backup realizado com sucesso!', 'success');
+    }
+
+    function restoreBackup() {
+      const file = document.getElementById('restoreFile').files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const backup = JSON.parse(e.target.result);
+          
+          if (confirm('Isso irá substituir todos os dados atuais. Continuar?')) {
+            users = backup.users || [];
+            tickets = backup.tickets || [];
+            services = backup.services || [];
+            activities = backup.activities || [];
+            comments = backup.comments || [];
+            
+            DB.set('users', users);
+            DB.set('tickets', tickets);
+            DB.set('services', services);
+            DB.set('activities', activities);
+            DB.set('comments', comments);
+            
+            showNotification('Backup restaurado com sucesso!', 'success');
+            refreshAll();
+          }
+        } catch (error) {
+          showNotification('Erro ao restaurar backup!', 'error');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function clearAllData() {
+      if (confirm('ATENÇÃO: Isso irá apagar TODOS os dados do sistema. Esta ação não pode ser desfeita!')) {
+        if (confirm('Tem ABSOLUTA certeza?')) {
+          DB.clear();
+          showNotification('Todos os dados foram apagados!', 'warning');
+          setTimeout(() => location.reload(), 1500);
+        }
+      }
+    }
+
+    function saveSettings() {
+      const companyName = document.getElementById('companyName').value;
+      const notificationEmail = document.getElementById('notificationEmail').value;
+      
+      DB.set('settings', { companyName, notificationEmail });
+      showNotification('Configurações salvas com sucesso!', 'success');
+    }
+
+    function changeTheme(theme) {
+      if (theme === 'dark') {
+        document.body.classList.add('dark-mode');
+      } else if (theme === 'light') {
+        document.body.classList.remove('dark-mode');
+      }
+      DB.set('theme', theme);
+    }
+
+    // ======================== SEARCH ========================
+    document.getElementById('searchTickets')?.addEventListener('input', () => {
+      refreshTickets();
+    });
+
+    // ======================== STORAGE INFO ========================
+    function updateStorageInfo() {
+      let total = 0;
+      for (let key in localStorage) {
+        if (localStorage.hasOwnProperty(key)) {
+          total += localStorage[key].length + key.length;
+        }
+      }
+      document.getElementById('storageUsed').textContent = (total / 1024).toFixed(2);
+    }
+
+    // ======================== INIT APP ========================
+    init();
+    
+    // Load theme
+    const savedTheme = DB.get('theme', 'light');
+    if (savedTheme === 'dark') {
+      document.body.classList.add('dark-mode');
+    }
+    
+    // Update storage info periodically
+    setInterval(updateStorageInfo, 5000);
+  </script>
 </body>
 </html>
