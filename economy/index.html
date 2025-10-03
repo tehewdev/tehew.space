@@ -85,6 +85,46 @@
             opacity: 0.9;
         }
 
+        /* Botão Instalar PWA */
+        .install-pwa-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            animation: pulse 2s infinite;
+        }
+
+        .install-pwa-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+        }
+
+        .install-pwa-btn.show {
+            display: flex;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .install-pwa-btn .icon {
+            font-size: 20px;
+        }
+
         /* Mobile Navigation */
         .nav-tabs {
             display: flex;
@@ -1435,6 +1475,12 @@
             </div>
         </div>
     </div>
+
+    <!-- Botão Flutuante para Instalar PWA -->
+    <button id="installPwaBtn" class="install-pwa-btn" onclick="instalarPWA()">
+        <span class="icon">📱</span>
+        <span>Instalar App</span>
+    </button>
 
     <script>
         // ===== CONFIGURAÇÃO JSONBIN.IO =====
@@ -3290,30 +3336,82 @@
 
         // Detectar instalação do PWA
         let deferredPrompt;
+        const installBtn = document.getElementById('installPwaBtn');
+
         window.addEventListener('beforeinstallprompt', (e) => {
-            console.log('PWA pode ser instalado');
+            console.log('✅ PWA pode ser instalado!');
             e.preventDefault();
             deferredPrompt = e;
             
-            // Você pode criar um botão customizado para instalação
-            // Por exemplo, mostrar um banner ou botão "Instalar App"
+            // Mostrar botão de instalação
+            if (installBtn) {
+                installBtn.classList.add('show');
+            }
         });
+
+        // Função para instalar o PWA
+        async function instalarPWA() {
+            if (!deferredPrompt) {
+                showNotification('⚠️ App já está instalado ou navegador não suporta instalação', 'warning');
+                return;
+            }
+
+            // Mostrar prompt de instalação
+            deferredPrompt.prompt();
+            
+            // Aguardar resposta do usuário
+            const { outcome } = await deferredPrompt.userChoice;
+            
+            if (outcome === 'accepted') {
+                console.log('✅ Usuário aceitou instalar o PWA');
+                showNotification('🎉 Instalando o app...', 'success');
+            } else {
+                console.log('❌ Usuário recusou instalar o PWA');
+            }
+            
+            // Limpar o prompt
+            deferredPrompt = null;
+            
+            // Esconder botão
+            if (installBtn) {
+                installBtn.classList.remove('show');
+            }
+        }
 
         // Detectar quando o app foi instalado
         window.addEventListener('appinstalled', () => {
             console.log('✅ PWA instalado com sucesso!');
             deferredPrompt = null;
             
+            // Esconder botão
+            if (installBtn) {
+                installBtn.classList.remove('show');
+            }
+            
             // Mostrar notificação de sucesso
             if (typeof showNotification === 'function') {
-                showNotification('📱 App instalado com sucesso!', 'success');
+                showNotification('📱 App instalado com sucesso! Agora você pode usá-lo offline!', 'success');
             }
         });
 
         // Detectar modo standalone (app instalado)
         if (window.matchMedia('(display-mode: standalone)').matches) {
             console.log('🚀 Executando como PWA instalado em /economy/');
+            // Esconder botão se já está instalado
+            if (installBtn) {
+                installBtn.style.display = 'none';
+            }
         }
+
+        // Verificar se pode instalar ao carregar
+        window.addEventListener('load', () => {
+            // Se já está em modo standalone, não mostrar botão
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                if (installBtn) {
+                    installBtn.style.display = 'none';
+                }
+            }
+        });
     </script>
 </body>
 </html>
