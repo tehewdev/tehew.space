@@ -2,101 +2,98 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tetris em HTML, CSS e JS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Tetris Mobile com Giroscópio</title>
     <style>
-        /* Estilos Gerais */
+        /* Estilos otimizados para mobile */
+        :root {
+            --bg-color: #1a1a1a;
+            --surface-color: #2c2c2c;
+            --border-color: #444;
+            --text-color: #f0f0f0;
+            --accent-color: #4CAF50;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1a1a1a;
-            color: #f0f0f0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
             margin: 0;
+            overflow: hidden; /* Impede o scroll da página */
         }
 
         h1 {
             color: #e0e0e0;
             text-shadow: 2px 2px 4px #000;
+            font-size: 1.5em;
         }
 
-        /* Container Principal do Jogo */
         .game-container {
             display: flex;
-            align-items: flex-start;
-            gap: 30px;
-            padding: 20px;
-            background-color: #2c2c2c;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
         }
 
-        /* Tabuleiro do Jogo (Canvas) */
+        .main-area {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
         #tetris-board {
-            border: 5px solid #444;
+            border: 3px solid var(--border-color);
             background-color: #000;
         }
 
-        /* Painel de Informações */
         .game-info {
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 200px;
+            width: 120px;
+            gap: 10px;
         }
-
+        
         .info-box {
-            background-color: #1a1a1a;
-            border: 2px solid #444;
+            background-color: var(--bg-color);
+            border: 2px solid var(--border-color);
             border-radius: 5px;
-            padding: 15px;
+            padding: 8px;
             width: 100%;
             text-align: center;
-            margin-bottom: 20px;
         }
 
         .info-box h2 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            font-size: 1.2em;
+            margin: 0 0 5px 0;
+            font-size: 0.9em;
             color: #cccccc;
         }
 
         #score {
-            font-size: 1.8em;
+            font-size: 1.5em;
             font-weight: bold;
-            color: #4CAF50;
+            color: var(--accent-color);
         }
         
         #next-piece-canvas {
             background-color: #000;
-            border: 2px solid #444;
         }
 
-        .controls ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            text-align: left;
+        .controls { display: none; } /* Oculta controles de teclado em mobile */
+        @media (min-width: 768px) {
+            /* Reorganiza para telas maiores */
+            .game-container { flex-direction: row; }
+            .main-area { flex-direction: row; }
+            .controls { display: block; } /* Mostra controles de teclado em desktop */
         }
 
-        .controls li {
-            margin-bottom: 8px;
-        }
-
-        .controls span {
-            display: inline-block;
-            width: 80px;
-            font-weight: bold;
-            color: #f0f0f0;
-        }
-
-        /* Botão de Iniciar */
         #start-button {
-            background-color: #4CAF50;
+            background-color: var(--accent-color);
             color: white;
             border: none;
             padding: 15px 30px;
@@ -105,43 +102,38 @@
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s, transform 0.1s;
-        }
-
-        #start-button:hover {
-            background-color: #45a049;
-        }
-
-        #start-button:active {
-            transform: scale(0.98);
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
 
-    <h1>Tetris Clássico</h1>
+    <h1>Tetris Mobile</h1>
 
     <div class="game-container">
-        <canvas id="tetris-board" width="300" height="600"></canvas>
-        <div class="game-info">
-            <div class="info-box">
-                <h2>PONTUAÇÃO</h2>
-                <p id="score">0</p>
+        <div class="main-area">
+            <canvas id="tetris-board"></canvas>
+            <div class="game-info">
+                <div class="info-box">
+                    <h2>PONTUAÇÃO</h2>
+                    <p id="score">0</p>
+                </div>
+                <div class="info-box">
+                    <h2>PRÓXIMA</h2>
+                    <canvas id="next-piece-canvas"></canvas>
+                </div>
             </div>
-            <div class="info-box">
-                <h2>PRÓXIMA</h2>
-                <canvas id="next-piece-canvas" width="120" height="120"></canvas>
-            </div>
-            <div class="info-box controls">
-                <h2>CONTROLES</h2>
-                <ul>
-                    <li><span>Esquerda:</span> ←</li>
-                    <li><span>Direita:</span> →</li>
-                    <li><span>Girar:</span> ↑ ou Espaço</li>
-                    <li><span>Acelerar:</span> ↓</li>
-                </ul>
-            </div>
-            <button id="start-button">Iniciar Jogo</button>
         </div>
+        <div class="info-box controls">
+            <h2>CONTROLES</h2>
+            <p style="text-align: left; padding-left: 10px;">
+                ← Esquerda<br>
+                → Direita<br>
+                ↑ Girar<br>
+                ↓ Acelerar
+            </p>
+        </div>
+        <button id="start-button">Iniciar Jogo</button>
     </div>
 
     <script>
@@ -153,49 +145,37 @@
             const scoreElement = document.getElementById('score');
             const startButton = document.getElementById('start-button');
 
+            // --- Configuração Dinâmica do Tabuleiro ---
+            const isMobile = window.innerWidth < 768;
             const COLS = 10;
             const ROWS = 20;
-            const BLOCK_SIZE = 30;
+            const BLOCK_SIZE = isMobile ? Math.floor(window.innerHeight * 0.035) : 30;
             
-            const NEXT_CANVAS_COLS = 4;
-            const NEXT_CANVAS_ROWS = 4;
-
+            canvas.width = COLS * BLOCK_SIZE;
+            canvas.height = ROWS * BLOCK_SIZE;
             context.scale(BLOCK_SIZE, BLOCK_SIZE);
+            
+            nextCanvas.width = 4 * BLOCK_SIZE;
+            nextCanvas.height = 4 * BLOCK_SIZE;
             nextContext.scale(BLOCK_SIZE, BLOCK_SIZE);
 
-            const COLORS = [
-                null,
-                '#FF0D72', // T
-                '#0DC2FF', // I
-                '#0DFF72', // O
-                '#F538FF', // L
-                '#FF8E0D', // J
-                '#FFE138', // S
-                '#3877FF'  // Z
-            ];
+            // --- Constantes do Jogo ---
+            const COLORS = [null, '#FF0D72', '#0DC2FF', '#0DFF72', '#F538FF', '#FF8E0D', '#FFE138', '#3877FF'];
+            const SHAPES = [[], [[1, 1, 1], [0, 1, 0]], [[2, 2, 2, 2]], [[3, 3], [3, 3]], [[4, 0, 0], [4, 4, 4]], [[0, 0, 5], [5, 5, 5]], [[0, 6, 6], [6, 6, 0]], [[7, 7, 0], [0, 7, 7]]];
 
-            const SHAPES = [
-                [], // Empty shape
-                [[1, 1, 1], [0, 1, 0]],                     // T
-                [[2, 2, 2, 2]],                             // I
-                [[3, 3], [3, 3]],                           // O
-                [[4, 0, 0], [4, 4, 4]],                     // L
-                [[0, 0, 5], [5, 5, 5]],                     // J
-                [[0, 6, 6], [6, 6, 0]],                     // S
-                [[7, 7, 0], [0, 7, 7]]                      // Z
-            ];
+            // --- Variáveis de Estado do Jogo ---
+            let board, piece, nextPiece, score, gameOver, animationId;
+            let dropCounter = 0, dropInterval = 1000, lastTime = 0;
 
-            let board = createBoard(COLS, ROWS);
-            let piece;
-            let nextPiece;
-            let score = 0;
-            let gameOver = false;
-            let animationId;
+            // --- Variáveis para Controles Mobile ---
+            let touchStartX = 0, touchStartY = 0;
+            const TILT_THRESHOLD = 8; // Graus de inclinação para mover
+            const MOVE_DELAY = 150; // ms entre movimentos por inclinação
+            let lastMoveTime = 0;
 
-            let dropCounter = 0;
-            let dropInterval = 1000; // ms
-            let lastTime = 0;
-
+            // Funções principais do jogo (draw, move, rotate, etc.)
+            // (O código abaixo é muito similar ao anterior, com adições para os novos controles)
+            
             function createBoard(cols, rows) {
                 return Array.from({ length: rows }, () => Array(cols).fill(0));
             }
@@ -203,34 +183,28 @@
             function generateRandomPiece() {
                 const randIndex = Math.floor(Math.random() * (SHAPES.length - 1)) + 1;
                 const shape = SHAPES[randIndex];
-                const colorIndex = randIndex;
-                
                 return {
                     x: Math.floor(COLS / 2) - Math.floor(shape[0].length / 2),
                     y: 0,
                     shape: shape,
-                    color: COLORS[colorIndex]
+                    color: COLORS[randIndex]
                 };
             }
 
             function draw() {
-                // Limpa o tabuleiro principal
                 context.fillStyle = '#000';
                 context.fillRect(0, 0, canvas.width, canvas.height);
-                
-                drawMatrix(board, {x: 0, y: 0}, context); // Desenha as peças travadas
-                drawMatrix(piece.shape, {x: piece.x, y: piece.y}, context, piece.color); // Desenha a peça atual
+                drawMatrix(board, { x: 0, y: 0 }, context);
+                drawMatrix(piece.shape, { x: piece.x, y: piece.y }, context, piece.color);
             }
-            
+
             function drawNext() {
-                // Limpa o canvas da próxima peça
                 nextContext.fillStyle = '#000';
                 nextContext.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
-                
-                const offsetX = (NEXT_CANVAS_COLS - nextPiece.shape[0].length) / 2;
-                const offsetY = (NEXT_CANVAS_ROWS - nextPiece.shape.length) / 2;
-
-                drawMatrix(nextPiece.shape, {x: offsetX, y: offsetY}, nextContext, nextPiece.color);
+                const shape = nextPiece.shape;
+                const offsetX = (4 - shape[0].length) / 2;
+                const offsetY = (4 - shape.length) / 2;
+                drawMatrix(shape, { x: offsetX, y: offsetY }, nextContext, nextPiece.color);
             }
 
             function drawMatrix(matrix, offset, ctx, colorOverride = null) {
@@ -260,21 +234,20 @@
             }
 
             function rotate(matrix) {
-                const N = matrix.length;
-                const M = matrix[0].length;
-                const result = Array.from({ length: M }, () => Array(N).fill(0));
-                for (let y = 0; y < N; y++) {
-                    for (let x = 0; x < M; x++) {
-                        result[x][N - 1 - y] = matrix[y][x];
+                const result = [];
+                for (let y = 0; y < matrix[0].length; y++) {
+                    result[y] = [];
+                    for (let x = 0; x < matrix.length; x++) {
+                        result[y][x] = matrix[matrix.length - 1 - x][y];
                     }
                 }
                 return result;
             }
 
             function pieceRotate() {
+                if (gameOver) return;
                 const rotated = rotate(piece.shape);
                 let offsetX = 1;
-                // Lógica para evitar rotação para fora da parede
                 if (!isValidMove(rotated, piece.x, piece.y)) {
                     piece.x += offsetX;
                     if (!isValidMove(rotated, piece.x, piece.y)) {
@@ -284,17 +257,19 @@
                 if (isValidMove(rotated, piece.x, piece.y)) {
                     piece.shape = rotated;
                 } else {
-                    piece.x += offsetX; // Reverte o movimento se a rotação ainda for inválida
+                    piece.x += offsetX;
                 }
             }
 
             function move(dir) {
+                if (gameOver) return;
                 if (isValidMove(piece.shape, piece.x + dir, piece.y)) {
                     piece.x += dir;
                 }
             }
-            
+
             function drop() {
+                if (gameOver) return;
                 if (isValidMove(piece.shape, piece.x, piece.y + 1)) {
                     piece.y++;
                 } else {
@@ -309,7 +284,7 @@
                 piece.shape.forEach((row, y) => {
                     row.forEach((value, x) => {
                         if (value !== 0) {
-                            board[piece.y + y][piece.x + x] = SHAPES.indexOf(piece.shape);
+                            board[piece.y + y][piece.x + x] = SHAPES.indexOf(SHAPES.find(s => s === piece.shape));
                         }
                     });
                 });
@@ -319,68 +294,130 @@
                 let linesCleared = 0;
                 outer: for (let y = ROWS - 1; y >= 0; y--) {
                     for (let x = 0; x < COLS; x++) {
-                        if (board[y][x] === 0) {
-                            continue outer;
-                        }
+                        if (board[y][x] === 0) continue outer;
                     }
-                    const row = board.splice(y, 1)[0].fill(0);
-                    board.unshift(row);
-                    y++; // Re-check the same row index which now has new data
+                    board.splice(y, 1);
                     linesCleared++;
                 }
-                // Atualiza a pontuação
-                if (linesCleared > 0) {
-                    score += linesCleared * 10 * linesCleared; // Bônus por múltiplas linhas
-                    scoreElement.innerText = score;
+                while(linesCleared > 0){
+                    board.unshift(Array(COLS).fill(0));
+                    linesCleared--;
                 }
+                score += linesCleared > 0 ? (linesCleared * 10) * linesCleared : 0;
+                scoreElement.innerText = score;
             }
-            
+
             function resetPiece() {
                 piece = nextPiece;
                 nextPiece = generateRandomPiece();
                 drawNext();
-                
                 if (!isValidMove(piece.shape, piece.x, piece.y)) {
-                    // Game Over
                     gameOver = true;
                     cancelAnimationFrame(animationId);
                     alert(`Fim de Jogo! Sua pontuação: ${score}`);
                     startButton.disabled = false;
                     startButton.innerText = "Jogar Novamente";
+                    removeMobileListeners();
                 }
             }
-
+            
             function update(time = 0) {
                 if (gameOver) return;
-
                 const deltaTime = time - lastTime;
                 lastTime = time;
                 dropCounter += deltaTime;
-
                 if (dropCounter > dropInterval) {
                     drop();
                 }
-
                 draw();
                 animationId = requestAnimationFrame(update);
             }
+
+            // --- CONTROLES ---
             
+            // Teclado (Desktop)
             document.addEventListener('keydown', event => {
                 if(gameOver) return;
-
-                if (event.key === 'ArrowLeft') {
-                    move(-1);
-                } else if (event.key === 'ArrowRight') {
-                    move(1);
-                } else if (event.key === 'ArrowDown') {
-                    drop();
-                } else if (event.key === 'ArrowUp' || event.key === ' ') {
-                    event.preventDefault(); // Impede a página de rolar com a barra de espaço
+                if (event.key === 'ArrowLeft') move(-1);
+                else if (event.key === 'ArrowRight') move(1);
+                else if (event.key === 'ArrowDown') drop();
+                else if (event.key === 'ArrowUp' || event.key === ' ') {
+                    event.preventDefault();
                     pieceRotate();
                 }
             });
 
-            function startGame() {
+            // --- NOVOS CONTROLES MOBILE ---
+
+            // Giroscópio
+            function handleOrientation(event) {
+                if (gameOver) return;
+                const gamma = event.gamma; // Inclinação esquerda-direita (-90 a 90)
+                const now = Date.now();
+                if (now - lastMoveTime < MOVE_DELAY) return; // Debounce para evitar movimentos muito rápidos
+
+                if (gamma > TILT_THRESHOLD) {
+                    move(1); // Mover para a direita
+                    lastMoveTime = now;
+                } else if (gamma < -TILT_THRESHOLD) {
+                    move(-1); // Mover para a esquerda
+                    lastMoveTime = now;
+                }
+            }
+
+            // Toque (Tap e Swipe)
+            function handleTouchStart(event) {
+                event.preventDefault();
+                touchStartX = event.touches[0].clientX;
+                touchStartY = event.touches[0].clientY;
+            }
+
+            function handleTouchEnd(event) {
+                event.preventDefault();
+                const touchEndX = event.changedTouches[0].clientX;
+                const touchEndY = event.changedTouches[0].clientY;
+
+                const deltaX = touchEndX - touchStartX;
+                const deltaY = touchEndY - touchStartY;
+                
+                // Se o movimento vertical for maior que o horizontal (é um swipe para baixo)
+                if (Math.abs(deltaY) > Math.abs(deltaX) && deltaY > 30) {
+                    drop();
+                } 
+                // Se o movimento for muito pequeno, considera um toque (tap)
+                else if (Math.abs(deltaX) < 20 && Math.abs(deltaY) < 20) {
+                    pieceRotate();
+                }
+            }
+
+            function addMobileListeners() {
+                canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+                canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+                window.addEventListener('deviceorientation', handleOrientation);
+            }
+
+            function removeMobileListeners() {
+                canvas.removeEventListener('touchstart', handleTouchStart);
+                canvas.removeEventListener('touchend', handleTouchEnd);
+                window.removeEventListener('deviceorientation', handleOrientation);
+            }
+
+            // --- LÓGICA DE INÍCIO DE JOGO ---
+            
+            async function startGame() {
+                // Tenta pedir permissão para o giroscópio (necessário no iOS 13+ e boa prática)
+                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    try {
+                        const permission = await DeviceOrientationEvent.requestPermission();
+                        if (permission !== 'granted') {
+                            alert('Permissão para usar o giroscópio foi negada. O controle por inclinação não funcionará.');
+                        }
+                    } catch (error) {
+                        console.error("Erro ao pedir permissão do sensor:", error);
+                        alert('Este dispositivo não parece suportar controles de giroscópio.');
+                    }
+                }
+
                 board = createBoard(COLS, ROWS);
                 score = 0;
                 scoreElement.innerText = score;
@@ -390,10 +427,11 @@
                 drawNext();
                 dropInterval = 1000;
                 lastTime = 0;
-                
-                if(animationId) cancelAnimationFrame(animationId);
+
+                if (animationId) cancelAnimationFrame(animationId);
                 
                 update();
+                addMobileListeners();
                 
                 startButton.disabled = true;
                 startButton.innerText = "Jogando...";
