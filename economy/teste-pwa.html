@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste PWA - Verificação</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #6366f1;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .check-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            background: #f9fafb;
+            border-left: 4px solid #e5e7eb;
+        }
+        .check-item.success {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+        .check-item.error {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+        .check-item.warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+        }
+        .icon {
+            font-size: 24px;
+            margin-right: 15px;
+        }
+        .check-text {
+            flex: 1;
+        }
+        .check-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .check-desc {
+            font-size: 14px;
+            color: #666;
+        }
+        .btn {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #4f46e5;
+        }
+        .btn.secondary {
+            background: #8b5cf6;
+        }
+        .btn.secondary:hover {
+            background: #7c3aed;
+        }
+        .actions {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .info-box {
+            background: #e0e7ff;
+            border: 2px solid #6366f1;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .info-box h3 {
+            color: #6366f1;
+            margin-bottom: 10px;
+        }
+        .info-box ol {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Verificação PWA</h1>
+        <p class="subtitle">Controle Financeiro Pessoal</p>
+
+        <div id="checks"></div>
+
+        <div class="info-box" id="nextSteps" style="display:none;">
+            <h3>📋 Próximos Passos:</h3>
+            <ol id="stepsList"></ol>
+        </div>
+
+        <div class="actions">
+            <button class="btn" onclick="verificarNovamente()">🔄 Verificar Novamente</button>
+            <button class="btn secondary" onclick="abrirApp()">🚀 Abrir Aplicativo</button>
+        </div>
+    </div>
+
+    <script>
+        const checks = [
+            {
+                id: 'https',
+                title: 'HTTPS ou Localhost',
+                check: () => location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1',
+                successMsg: 'Protocolo seguro detectado ✓',
+                errorMsg: 'PWA requer HTTPS ou localhost',
+                steps: ['Use localhost para testes ou publique em um servidor HTTPS (GitHub Pages, Netlify, etc.)']
+            },
+            {
+                id: 'sw',
+                title: 'Service Worker',
+                check: () => 'serviceWorker' in navigator,
+                successMsg: 'Service Worker suportado pelo navegador ✓',
+                errorMsg: 'Service Worker não suportado',
+                steps: ['Use um navegador moderno (Chrome, Firefox, Edge, Safari)']
+            },
+            {
+                id: 'manifest',
+                title: 'Web App Manifest',
+                check: async () => {
+                    try {
+                        const response = await fetch('/manifest.json');
+                        return response.ok;
+                    } catch {
+                        return false;
+                    }
+                },
+                successMsg: 'Arquivo manifest.json encontrado ✓',
+                errorMsg: 'Arquivo manifest.json não encontrado',
+                steps: ['Verifique se o arquivo manifest.json está na raiz do projeto']
+            },
+            {
+                id: 'swRegistered',
+                title: 'Service Worker Registrado',
+                check: async () => {
+                    if (!('serviceWorker' in navigator)) return false;
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    return !!registration;
+                },
+                successMsg: 'Service Worker registrado e ativo ✓',
+                errorMsg: 'Service Worker não está registrado',
+                steps: ['Abra o index.html principal', 'Verifique o console do navegador (F12) para erros']
+            },
+            {
+                id: 'standalone',
+                title: 'Modo Standalone',
+                check: () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone,
+                successMsg: 'Executando como app instalado ✓',
+                errorMsg: 'Executando no navegador (não instalado)',
+                steps: ['Para instalar: procure o ícone de instalação (+) na barra de endereço', 'Ou vá em Menu → "Instalar Controle Financeiro..."']
+            }
+        ];
+
+        async function verificarPWA() {
+            const container = document.getElementById('checks');
+            container.innerHTML = '';
+            
+            const results = [];
+            const failedSteps = [];
+
+            for (const check of checks) {
+                const div = document.createElement('div');
+                div.className = 'check-item';
+                
+                let passed = false;
+                try {
+                    passed = await check.check();
+                } catch (e) {
+                    console.error(`Erro ao verificar ${check.id}:`, e);
+                }
+
+                results.push(passed);
+
+                if (passed) {
+                    div.classList.add('success');
+                    div.innerHTML = `
+                        <span class="icon">✅</span>
+                        <div class="check-text">
+                            <div class="check-title">${check.title}</div>
+                            <div class="check-desc">${check.successMsg}</div>
+                        </div>
+                    `;
+                } else {
+                    div.classList.add(check.id === 'standalone' ? 'warning' : 'error');
+                    div.innerHTML = `
+                        <span class="icon">${check.id === 'standalone' ? '⚠️' : '❌'}</span>
+                        <div class="check-text">
+                            <div class="check-title">${check.title}</div>
+                            <div class="check-desc">${check.errorMsg}</div>
+                        </div>
+                    `;
+                    if (check.steps) {
+                        failedSteps.push(...check.steps);
+                    }
+                }
+
+                container.appendChild(div);
+            }
+
+            // Mostrar próximos passos se houver falhas
+            const nextStepsBox = document.getElementById('nextSteps');
+            const stepsList = document.getElementById('stepsList');
+            
+            if (failedSteps.length > 0) {
+                nextStepsBox.style.display = 'block';
+                stepsList.innerHTML = failedSteps.map(step => `<li>${step}</li>`).join('');
+            } else if (results.every(r => r)) {
+                nextStepsBox.style.display = 'block';
+                stepsList.innerHTML = '<li style="color: #28a745; font-weight: 600;">🎉 Tudo funcionando perfeitamente! Seu PWA está pronto para uso!</li>';
+            } else {
+                nextStepsBox.style.display = 'none';
+            }
+
+            // Verificar ícones
+            verificarIcones();
+        }
+
+        async function verificarIcones() {
+            const tamanhos = [72, 96, 128, 144, 152, 192, 384, 512];
+            const iconesFaltando = [];
+
+            for (const tamanho of tamanhos) {
+                try {
+                    const response = await fetch(`/icons/icon-${tamanho}x${tamanho}.png`, { method: 'HEAD' });
+                    if (!response.ok) {
+                        iconesFaltando.push(tamanho);
+                    }
+                } catch {
+                    iconesFaltando.push(tamanho);
+                }
+            }
+
+            if (iconesFaltando.length > 0) {
+                const div = document.createElement('div');
+                div.className = 'check-item warning';
+                div.innerHTML = `
+                    <span class="icon">⚠️</span>
+                    <div class="check-text">
+                        <div class="check-title">Ícones do PWA</div>
+                        <div class="check-desc">Faltam ${iconesFaltando.length} ícones. Abra gerar-icones.html para criar.</div>
+                    </div>
+                `;
+                document.getElementById('checks').appendChild(div);
+
+                const stepsList = document.getElementById('stepsList');
+                const li = document.createElement('li');
+                li.innerHTML = 'Abra <strong>gerar-icones.html</strong> e baixe todos os ícones';
+                stepsList.appendChild(li);
+                document.getElementById('nextSteps').style.display = 'block';
+            }
+        }
+
+        function verificarNovamente() {
+            verificarPWA();
+        }
+
+        function abrirApp() {
+            window.location.href = '/index.html';
+        }
+
+        // Verificar automaticamente ao carregar
+        verificarPWA();
+
+        // Adicionar listener para instalação
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('PWA pode ser instalado!');
+        });
+    </script>
+</body>
+</html>
+
