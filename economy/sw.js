@@ -2,19 +2,19 @@
 const CACHE_NAME = 'financeiro-pwa-v1';
 const DYNAMIC_CACHE = 'financeiro-dynamic-v1';
 
-// Arquivos para cache na instalação
+// Arquivos para cache na instalação (subdiretório /economy/)
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icons/icon-72x72.png',
-  '/icons/icon-96x96.png',
-  '/icons/icon-128x128.png',
-  '/icons/icon-144x144.png',
-  '/icons/icon-152x152.png',
-  '/icons/icon-192x192.png',
-  '/icons/icon-384x384.png',
-  '/icons/icon-512x512.png'
+  '/economy/',
+  '/economy/index.html',
+  '/economy/manifest.json',
+  '/economy/icons/icon-72x72.png',
+  '/economy/icons/icon-96x96.png',
+  '/economy/icons/icon-128x128.png',
+  '/economy/icons/icon-144x144.png',
+  '/economy/icons/icon-152x152.png',
+  '/economy/icons/icon-192x192.png',
+  '/economy/icons/icon-384x384.png',
+  '/economy/icons/icon-512x512.png'
 ];
 
 // Evento de instalação - cacheia arquivos estáticos
@@ -49,6 +49,11 @@ self.addEventListener('activate', event => {
 
 // Estratégia: Network First com fallback para Cache
 self.addEventListener('fetch', event => {
+  // Apenas interceptar requests do escopo /economy/
+  if (!event.request.url.includes('/economy/')) {
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then(response => {
@@ -71,7 +76,7 @@ self.addEventListener('fetch', event => {
             }
             // Se não houver cache e for navegação, retorna a página principal
             if (event.request.mode === 'navigate') {
-              return caches.match('/index.html');
+              return caches.match('/economy/index.html');
             }
           });
       })
@@ -98,8 +103,8 @@ self.addEventListener('push', event => {
   const data = event.data ? event.data.json() : {};
   const options = {
     body: data.body || 'Nova notificação',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-72x72.png',
+    icon: '/economy/icons/icon-192x192.png',
+    badge: '/economy/icons/icon-72x72.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
@@ -118,7 +123,7 @@ self.addEventListener('notificationclick', event => {
   event.notification.close();
   
   event.waitUntil(
-    clients.openWindow('/')
+    clients.openWindow('/economy/')
   );
 });
 

@@ -14,21 +14,21 @@
     <meta name="apple-mobile-web-app-title" content="FinControl">
     
     <!-- Manifest -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="/economy/manifest.json">
     
     <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" sizes="72x72" href="/icons/icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="96x96" href="/icons/icon-96x96.png">
-    <link rel="apple-touch-icon" sizes="128x128" href="/icons/icon-128x128.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144x144.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/economy/icons/icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="/economy/icons/icon-96x96.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="/economy/icons/icon-128x128.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/economy/icons/icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/economy/icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/economy/icons/icon-192x192.png">
     
     <!-- Favicons -->
-    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="/icons/icon-96x96.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-96x96.png">
-    <link rel="shortcut icon" href="/icons/icon-96x96.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/economy/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/economy/icons/icon-96x96.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/economy/icons/icon-96x96.png">
+    <link rel="shortcut icon" href="/economy/icons/icon-96x96.png">
     <style>
         * {
             margin: 0;
@@ -3253,10 +3253,10 @@
 
     <!-- PWA Service Worker Registration -->
     <script>
-        // Registrar Service Worker para PWA
+        // Registrar Service Worker para PWA (subdiretório /economy/)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
+                navigator.serviceWorker.register('/economy/sw.js', { scope: '/economy/' })
                     .then(registration => {
                         console.log('✅ Service Worker registrado com sucesso!', registration.scope);
                         
@@ -3312,7 +3312,7 @@
 
         // Detectar modo standalone (app instalado)
         if (window.matchMedia('(display-mode: standalone)').matches) {
-            console.log('🚀 Executando como PWA instalado');
+            console.log('🚀 Executando como PWA instalado em /economy/');
         }
     </script>
 </body>
