@@ -3,89 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TesteHTML Publisher - Frontend Only</title>
+  <title>TesteHTML Publisher - Frontend Only (jsonbin.io)</title>
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      font-family:'Segoe UI', Tahoma, Verdana, sans-serif;
-      background:linear-gradient(135deg,#667eea,#764ba2);
-      min-height:100vh; display:flex;
-      align-items:center; justify-content:center;
-      padding:20px;
-    }
-    .container {
-      background:#fff; border-radius:15px;
-      box-shadow:0 20px 60px rgba(0,0,0,0.1);
-      padding:40px; width:100%; max-width:900px;
-    }
-    .header { text-align:center; margin-bottom:30px; }
-    .header h1 { color:#333; font-size:2.5em; margin-bottom:10px; }
-    .header p  { color:#666; font-size:1.1em; }
-    label { display:block; margin:18px 0 8px; font-weight:bold; color:#333; }
-    input, textarea {
-      width:100%; padding:12px; border:2px solid #ddd;
-      border-radius:8px; font-size:14px; font-family:monospace;
-    }
-    textarea { min-height:220px; resize:vertical; }
-    .btn {
-      width:100%; padding:15px; background:linear-gradient(135deg,#667eea,#764ba2);
-      color:#fff; border:none; border-radius:8px; cursor:pointer;
-      font-size:16px; font-weight:bold; margin-top:10px; transition:.2s;
-    }
-    .btn:hover { transform:translateY(-2px); box-shadow:0 10px 25px rgba(0,0,0,0.2); }
-    .btn-secondary { background:#28a745; margin-top:10px; }
-    .status { margin-top:20px; padding:15px; border-radius:8px; display:none; }
-    .status.loading { background:#d1ecf1; color:#0c5460; }
-    .status.success { background:#d4edda; color:#155724; }
-    .status.error   { background:#f8d7da; color:#721c24; }
-    .token-info {
-      background:#fff3cd; color:#856404; padding:15px; border-radius:8px;
-      border:1px solid #ffeaa7; margin-bottom:20px; margin-top:-10px;
-    }
-    .token-info strong { color:#533f03; }
-    @media(max-width:768px) { .container{padding:20px;} }
+    body { font-family:'Segoe UI',Tahoma,Verdana,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+    .container {background:#fff;box-shadow:0 12px 40px rgba(0,0,0,0.08);border-radius:16px;max-width:780px;width:100%;padding:36px;}
+    h1 {text-align:center;margin-top:0;color:#333;}
+    label {font-weight:bold;color:#333;margin:16px 0 6px;}
+    input,textarea {width:100%;padding:13px 10px;border-radius:8px;border:2px solid #ddd;font-size:15px;}
+    textarea {min-height:210px;font-family:monospace;}
+    .btn {width:100%;padding:16px;border:none;border-radius:8px;font-size:16px;cursor:pointer;font-weight:bold;transition:.2s;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;}
+    .btn:hover {transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,0.20);}
+    .btn-secondary {background:#28a745;margin-top:14px;}
+    .status {margin-top:20px;padding:16px;border-radius:8px;display:none;}
+    .status.loading {background:#d1ecf1;color:#0c5460;}
+    .status.success {background:#d4edda;color:#155724;}
+    .status.error {background:#f8d7da;color:#721c24;}
+    .token-info {background:#fff3cd;color:#856404;padding:13px;border-radius:8px;margin-bottom:18px;}
+    .token-info strong { color:#533f03;}
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <h1>🚀 TesteHTML Publisher</h1>
-      <p>Edite e publique qualquer HTML direto no GitHub (pasta <b>testeHTML</b>)</p>
-    </div>
+    <h1>🚀 TesteHTML Publisher (Token via jsonbin.io)</h1>
     <div class="token-info">
-      <strong>⚠️ Importante:</strong> API GitHub direto do navegador.<br>
-      Token pré-configurado (<code>tehewdev/tehew.space</code>), pasta <b>testeHTML/</b>.
+      <strong>⚠️ Este app carrega o token via jsonbin.io</strong><br>
+      Bin: <code>68df47fa43b1c97be95892bc</code> (privado para proteger com Access Key)<br>
+      Use sempre a pasta <b>testeHTML/</b>.
     </div>
-
     <form id="publishForm">
       <label for="filename">Nome do arquivo (.html):</label>
       <input type="text" id="filename" value="minha-pagina.html" required>
-
       <label for="htmlContent">Código HTML:</label>
-      <textarea id="htmlContent" required>
-<!DOCTYPE html>
+      <textarea id="htmlContent" required><!DOCTYPE html>
 <html lang="pt-BR">
 <head><meta charset="UTF-8"><title>Exemplo</title></head>
-<body><h1>Olá, TesteHTML!</h1><p>Sim, funciona na pasta testeHTML :)</p></body>
-</html>
-      </textarea>
+<body><h1>Olá, TesteHTML com JSONBIN!</h1></body>
+</html></textarea>
       <button type="button" class="btn btn-secondary" id="loadExampleBtn">📋 Carregar Exemplo</button>
-      <button type="submit" class="btn" id="publishBtn">🚀 Publicar no GitHub</button>
+      <button type="submit" class="btn" id="publishBtn" disabled>🚀 Publicar no GitHub</button>
     </form>
     <div id="status" class="status"></div>
   </div>
-
 <script>
 const repoOwner   = 'tehewdev';
 const repoName    = 'tehew.space';
 const folder      = 'testeHTML';
-const githubToken = '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';
+const BIN_ID      = '68df47fa43b1c97be95892bc';
+// --- Atenção! Nunca exponha sua Access Key publicamente em produção real
+const ACCESS_KEY  = '$2a$10$f9KK7vSowGnJI5elo/dAPurqjZAJ3bJaWnsinl/caDfgIcNt28kNi';
 
-function showStatus(msg, cls) {
-  const s=document.getElementById('status');
-  s.textContent=msg; s.className='status '+cls; s.style.display='block';
+let githubToken = null;
+const publishBtn = document.getElementById('publishBtn');
+
+async function loadToken() {
+  showStatus('Carregando token...','loading');
+  try {
+    const url = `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`;
+    const res = await fetch(url, {
+      headers: {
+        'X-Access-Key': ACCESS_KEY,
+        'X-Bin-Meta': 'false'
+      }
+    });
+    if(!res.ok) throw new Error("Falha ao buscar token (bin privada?)");
+    const j = await res.json();
+    githubToken = j.record.github_token;
+    showStatus('Token carregado com sucesso!','success');
+    publishBtn.disabled = false;
+  } catch (e) {
+    showStatus('Erro ao carregar token '+e,'error');
+  }
 }
+loadToken();
 
+function showStatus(msg, cls){
+  const s=document.getElementById('status');
+  s.innerHTML=msg; s.className='status '+cls; s.style.display='block';
+}
 function sanitize(n){
   return n.toLowerCase()
     .replace(/[^a-z0-9-_.]/g,'-')
@@ -97,9 +91,12 @@ async function publicar(){
   const filename=document.getElementById('filename').value.trim();
   const html=document.getElementById('htmlContent').value.trim();
   if(!filename||!html){
-    showStatus('Preencha nome e conteúdo HTML!','error');return;
+    showStatus('Preencha nome e código HTML!','error');return;
   }
-  const sanitized=sanitize(filename);
+  if(!githubToken){
+    showStatus('Token GitHub não carregado!','error');return;
+  }
+  const sanitized = sanitize(filename);
   const path = `${folder}/${sanitized}`;
   const url  = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`;
   showStatus('Publicando...','loading');
@@ -111,7 +108,7 @@ async function publicar(){
   }catch{}
 
   const commitData={message:`Publicando ${sanitized}`,content:btoa(unescape(encodeURIComponent(html))),branch:'main'};
-  if(sha) commitData.sha = sha;
+  if(sha) commitData.sha=sha;
 
   const res=await fetch(url,{
     method:'PUT',
@@ -133,14 +130,13 @@ document.getElementById('publishForm').addEventListener('submit',e=>{
   e.preventDefault(); publicar();
 });
 document.getElementById('loadExampleBtn').addEventListener('click',()=>{
-  document.getElementById('htmlContent').value = `
-<!DOCTYPE html>
+  document.getElementById('htmlContent').value =
+    `<!DOCTYPE html>
 <html lang="pt-BR">
 <head><meta charset="UTF-8"><title>Página Exemplo</title></head>
 <body>
-  <h1>Funciona 100%!</h1>
-  <p>Diretório correto: <b>testeHTML/</b> no GitHub.</p>
-  <p>Publique agora e acesse pelo Render ou GitHub Pages.</p>
+  <h1>Agora com jsonbin.io!</h1>
+  <p>O token vem da bin privada e publicação vai para testeHTML/.</p>
 </body>
 </html>`;
   showStatus('Exemplo carregado!','success');
