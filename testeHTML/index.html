@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TesteHTML Publisher - Frontend Only (jsonbin.io)</title>
+  <title>TesteHTML Publisher - Token via JSONBIN.IO</title>
   <style>
     body { font-family:'Segoe UI',Tahoma,Verdana,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
     .container {background:#fff;box-shadow:0 12px 40px rgba(0,0,0,0.08);border-radius:16px;max-width:780px;width:100%;padding:36px;}
@@ -26,9 +26,9 @@
   <div class="container">
     <h1>🚀 TesteHTML Publisher (Token via jsonbin.io)</h1>
     <div class="token-info">
-      <strong>⚠️ Este app carrega o token via jsonbin.io</strong><br>
-      Bin: <code>68df47fa43b1c97be95892bc</code> (privado para proteger com Access Key)<br>
-      Use sempre a pasta <b>testeHTML/</b>.
+      <strong>⚠️ Token via Bin protegida jsonbin.io</strong><br>
+      Bin: <code>68df47fa43b1c97be95892bc</code> | Access Key protegida<br>
+      Pasta garantida: <b>testeHTML/</b>
     </div>
     <form id="publishForm">
       <label for="filename">Nome do arquivo (.html):</label>
@@ -37,7 +37,7 @@
       <textarea id="htmlContent" required><!DOCTYPE html>
 <html lang="pt-BR">
 <head><meta charset="UTF-8"><title>Exemplo</title></head>
-<body><h1>Olá, TesteHTML com JSONBIN!</h1></body>
+<body><h1>Publicação dinâmica via jsonbin.</h1></body>
 </html></textarea>
       <button type="button" class="btn btn-secondary" id="loadExampleBtn">📋 Carregar Exemplo</button>
       <button type="submit" class="btn" id="publishBtn" disabled>🚀 Publicar no GitHub</button>
@@ -49,7 +49,7 @@ const repoOwner   = 'tehewdev';
 const repoName    = 'tehew.space';
 const folder      = 'testeHTML';
 const BIN_ID      = '68df47fa43b1c97be95892bc';
-// --- Atenção! Nunca exponha sua Access Key publicamente em produção real
+// === ATENÇÃO Use Access Key private! Nunca exponha publicamente em produção real
 const ACCESS_KEY  = '$2a$10$f9KK7vSowGnJI5elo/dAPurqjZAJ3bJaWnsinl/caDfgIcNt28kNi';
 
 let githubToken = null;
@@ -65,13 +65,18 @@ async function loadToken() {
         'X-Bin-Meta': 'false'
       }
     });
-    if(!res.ok) throw new Error("Falha ao buscar token (bin privada?)");
     const j = await res.json();
-    githubToken = j.record.github_token;
+    console.log("Resposta bin:", j); // debug
+    // jsonbin.io v3 padrão: token esperado em j.record.github_token
+    githubToken = j && j.record && j.record.github_token;
+    if (!githubToken) {
+      showStatus("Token não encontrado - verifique se o JSON está assim:<br>{ \"github_token\": \"SUATOKEN\" }",'error');
+      return;
+    }
     showStatus('Token carregado com sucesso!','success');
     publishBtn.disabled = false;
   } catch (e) {
-    showStatus('Erro ao carregar token '+e,'error');
+    showStatus('Erro ao carregar token: <br>' + e,'error');
   }
 }
 loadToken();
@@ -136,7 +141,7 @@ document.getElementById('loadExampleBtn').addEventListener('click',()=>{
 <head><meta charset="UTF-8"><title>Página Exemplo</title></head>
 <body>
   <h1>Agora com jsonbin.io!</h1>
-  <p>O token vem da bin privada e publicação vai para testeHTML/.</p>
+  <p>O token é carregado da bin privada!</p>
 </body>
 </html>`;
   showStatus('Exemplo carregado!','success');
