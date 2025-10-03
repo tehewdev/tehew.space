@@ -3,8 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/128/2516/2516451.png" type="image/png">
     <title>Controle Financeiro Pessoal</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Sistema completo de controle financeiro pessoal com gestão de receitas, despesas, cartões e categorias">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FinControl">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="72x72" href="icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="icon-96x96.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="icon-128x128.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icon-192x192.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icon-192x192.png">
     <style>
         * {
             margin: 0;
@@ -3225,6 +3246,71 @@
         window.addEventListener('DOMContentLoaded', async () => {
             await carregarUsuariosLogin();
         });
+    </script>
+
+    <!-- PWA Service Worker Registration -->
+    <script>
+        // Registrar Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registrado com sucesso!', registration.scope);
+                        
+                        // Verificar atualizações
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // Nova versão disponível
+                                    if (confirm('Nova versão disponível! Deseja atualizar?')) {
+                                        newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        });
+                    })
+                    .catch(error => {
+                        console.error('❌ Erro ao registrar Service Worker:', error);
+                    });
+
+                // Detectar quando o service worker é atualizado
+                let refreshing;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (refreshing) return;
+                    refreshing = true;
+                    window.location.reload();
+                });
+            });
+        }
+
+        // Detectar instalação do PWA
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('PWA pode ser instalado');
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Você pode criar um botão customizado para instalação
+            // Por exemplo, mostrar um banner ou botão "Instalar App"
+        });
+
+        // Detectar quando o app foi instalado
+        window.addEventListener('appinstalled', () => {
+            console.log('✅ PWA instalado com sucesso!');
+            deferredPrompt = null;
+            
+            // Mostrar notificação de sucesso
+            if (typeof showNotification === 'function') {
+                showNotification('📱 App instalado com sucesso!', 'success');
+            }
+        });
+
+        // Detectar modo standalone (app instalado)
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            console.log('🚀 Executando como PWA instalado');
+        }
     </script>
 </body>
 </html>
