@@ -17,7 +17,10 @@
       --text-main: #2f2f2f;
       --text-muted: #646b7a;
     }
-    * { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; }
+    html {
+      scroll-behavior: smooth;
+    }
     body {
       font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
       background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
@@ -28,6 +31,7 @@
       justify-content: center;
       padding: 24px;
       color: var(--text-main);
+      overflow-y: auto;
     }
     .container {
       background: #fff;
@@ -35,7 +39,7 @@
       box-shadow: 0 20px 40px rgba(15, 23, 42, 0.16);
       width: 100%;
       max-width: 840px;
-      padding: 40px 44px;
+      padding: clamp(32px, 5vw, 40px) clamp(24px, 6vw, 44px);
     }
     .hero {
       text-align: center;
@@ -43,14 +47,14 @@
     }
     .hero h1 {
       margin: 0 0 8px;
-      font-size: 32px;
+      font-size: clamp(28px, 6vw, 32px);
       letter-spacing: -0.02em;
       color: var(--text-main);
     }
     .hero .intro {
       margin: 0;
       color: var(--text-muted);
-      font-size: 15px;
+      font-size: clamp(14px, 3.4vw, 15px);
     }
     form {
       display: grid;
@@ -78,6 +82,7 @@
       border-radius: 10px;
       border: 2px solid #e1e4ef;
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      background-color: #fff;
     }
     .field-group input:focus,
     .field-group textarea:focus {
@@ -266,16 +271,43 @@
     }
     @media (max-width: 640px) {
       body {
-        padding: 18px;
+        display: block;
+        padding: 18px 16px;
       }
       .container {
-        padding: 28px 24px;
+        padding: 26px 20px;
+        border-radius: 16px;
+      }
+      .hero {
+        margin-bottom: 24px;
+        text-align: left;
+      }
+      .hero h1 {
+        font-size: clamp(24px, 8vw, 30px);
+      }
+      .hero .intro {
+        font-size: 14px;
+      }
+      .field-group label {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+      .hint {
+        white-space: normal;
+        line-height: 1.4;
       }
       .button-row {
         flex-direction: column;
       }
       .btn {
         width: 100%;
+      }
+      #htmlContent {
+        min-height: 200px;
+      }
+      .file-list {
+        padding: 18px 16px;
       }
       .file-item {
         flex-direction: column;
@@ -805,4 +837,3 @@
   </script>
 </body>
 </html>
-
