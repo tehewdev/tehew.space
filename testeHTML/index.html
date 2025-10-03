@@ -96,24 +96,17 @@ async function listFiles(){
     const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${folder}?ref=main`;
     const res = await fetch(url, {headers:{'Authorization':'Bearer '+githubToken}});
     const files = await res.json();
-    console.log('Arquivos retornados da API:', files); // Debug sempre disponível
     let html = '';
     files.filter(f=>f.name.endsWith('.html') && f.name !== 'index.html')
          .forEach(f=>{
             html+=`<div class="file-item">
                       <span>
-                        <a href="#" class="file-link" data-file="${f.name}">${f.name}</a>
+                        <a href="https://tehew.space/${folder}/${f.name}" class="file-link" target="_blank">${f.name}</a>
                       </span>
                       <button class="btn-del" data-file="${f.name}" type="button">🗑️ Apagar</button>
                    </div>`;
           });
     fileListDiv.innerHTML = html || '<span class="small">Nenhum arquivo HTML encontrado.</span>';
-    fileListDiv.querySelectorAll('.file-link').forEach(el=>{
-      el.onclick=e=>{
-        e.preventDefault();
-        loadFile(el.dataset.file);
-      }
-    });
     fileListDiv.querySelectorAll('.btn-del').forEach(el=>{
       el.onclick=e=>{
         e.preventDefault();
