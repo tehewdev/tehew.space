@@ -5,8 +5,248 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TesteHTML Publisher - Frontend Only</title>
     <style>
-        /* (Todos os estilos fornecidos na sua mensagem. Use exatamente a sua folha de estilos) */
-        /* ...copie os estilos completos daqui... */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 900px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .config-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .config-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus, input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: #28a745;
+            margin-top: 10px;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .published-files {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .published-files h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .file-list {
+            list-style: none;
+        }
+        
+        .file-item {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+        }
+        
+        .file-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .file-link:hover {
+            text-decoration: underline;
+        }
+        
+        .file-date {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .instructions {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 5px;
+            color: #555;
+        }
+        
+        .token-info {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ffeaa7;
+            margin-bottom: 20px;
+        }
+        
+        .token-info strong {
+            color: #533f03;
+        }
+        
+        @media (max-width: 768px) {
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -15,10 +255,12 @@
             <h1>🚀 TesteHTML Publisher</h1>
             <p>Cole seu código HTML e publique diretamente no GitHub</p>
         </div>
+        
         <div class="token-info">
-            <strong>⚠️ Importante:</strong> Este app usa a API do GitHub diretamente do navegador.
-            O token já está pré-configurado (visível abaixo) e tem permissão limitada para publicar apenas em <b>tehewdev/tehew.space</b>.
+            <strong>⚠️ Importante:</strong> Este app usa a API do GitHub diretamente do navegador. 
+            O token já está pré-configurado (visível abaixo) e tem permissão limitada APENAS para <b>tehewdev/tehew.space</b>.
         </div>
+        
         <div class="config-section">
             <h3>🔧 Configuração do GitHub</h3>
             <div class="config-grid">
@@ -32,21 +274,24 @@
                 </div>
             </div>
         </div>
+        
         <div class="instructions">
             <h3>📋 Como usar:</h3>
             <ol>
                 <li>Digite um nome para seu arquivo HTML</li>
                 <li>Cole seu código HTML completo</li>
                 <li>Clique em "Publicar no GitHub"</li>
-                <li>Acesse via: <strong>tehew.space/testehtml/nome-arquivo.html</strong></li>
+                <li>Acesse via: <strong>tehew.space/testeHTML/nome-arquivo.html</strong></li>
             </ol>
         </div>
+        
         <form id="publishForm">
             <div class="form-group">
                 <label for="filename">📄 Nome do arquivo (sem extensão):</label>
                 <input type="text" id="filename" name="filename" placeholder="Ex: minha-pagina-teste" required>
-                <small style="color: #666;">Será salvo como: <span id="preview-filename">arquivo.html</span></small>
+                <small style="color: #666;">Será salvo como: <strong>testeHTML/<span id="preview-filename">arquivo.html</span></strong></small>
             </div>
+            
             <div class="form-group">
                 <label for="htmlContent">💻 Código HTML:</label>
                 <textarea id="htmlContent" name="htmlContent" placeholder="Cole seu código HTML aqui..." required></textarea>
@@ -54,16 +299,20 @@
                     📋 Carregar Exemplo
                 </button>
             </div>
+            
             <button type="submit" class="btn" id="publishBtn">
                 🚀 Publicar no GitHub
             </button>
         </form>
+        
         <div id="status" class="status"></div>
+        
         <div class="published-files" id="publishedFiles" style="display: none;">
             <h3>📚 Páginas publicadas recentemente:</h3>
             <ul class="file-list" id="fileList"></ul>
         </div>
     </div>
+
     <script>
         // Elementos do DOM
         const githubTokenInput = document.getElementById('githubToken');
@@ -77,86 +326,217 @@
         const publishedFiles = document.getElementById('publishedFiles');
         const fileList = document.getElementById('fileList');
         const loadExampleBtn = document.getElementById('loadExampleBtn');
-
+        
         // Atualizar preview do nome do arquivo
         filenameInput.addEventListener('input', function() {
             const filename = this.value.trim() || 'arquivo';
             previewFilename.textContent = `${filename}.html`;
         });
-
+        
+        // Função para mostrar status
         function showStatus(message, type = 'loading') {
             statusDiv.textContent = message;
             statusDiv.className = `status ${type}`;
             statusDiv.style.display = 'block';
         }
-        function hideStatus() { statusDiv.style.display = 'none'; }
-        function validateHTML(html) { const t = html.trim(); return !!(t && t.includes('<') && t.includes('>')); }
-        function sanitizeFilename(filename) {
-            return filename.toLowerCase().replace(/[^a-z0-9-_]/g, '-')
-                .replace(/-+/g, '-')
-                .replace(/^-|-$/g, '').substring(0, 50);
+        
+        // Função para esconder status
+        function hideStatus() {
+            statusDiv.style.display = 'none';
         }
+        
+        // Função para validar HTML básico
+        function validateHTML(html) {
+            const trimmed = html.trim();
+            if (!trimmed) return false;
+            return trimmed.includes('<') && trimmed.includes('>');
+        }
+        
+        // Função para sanitizar nome do arquivo
+        function sanitizeFilename(filename) {
+            return filename
+                .toLowerCase()
+                .replace(/[^a-z0-9-_]/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '')
+                .substring(0, 50);
+        }
+        
+        // Função para publicar no GitHub via API - CORRIGIDA PARA testeHTML
         async function publishToGitHub(filename, content, token, repo) {
             const [owner, repoName] = repo.split('/');
-            const githubPath = `testehtml/${filename}`;
+            const githubPath = `testeHTML/${filename}`; // CORRIGIDO: agora usa testeHTML
             const apiUrl = `https://api.github.com/repos/${owner}/${repoName}/contents/${githubPath}`;
+            
             try {
                 showStatus('🔄 Verificando se arquivo já existe...', 'loading');
+                
+                // Verificar se arquivo já existe
                 let sha = null;
                 try {
-                    const existingResponse = await fetch(apiUrl, {headers: {'Authorization': `Bearer ${token}`,'Accept': 'application/vnd.github.v3+json','X-GitHub-Api-Version': '2022-11-28'}});
-                    if (existingResponse.ok) {const existingData = await existingResponse.json(); sha = existingData.sha; showStatus('📝 Arquivo existente encontrado, será atualizado...', 'loading');}
-                } catch (error) {}
+                    const existingResponse = await fetch(apiUrl, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/vnd.github.v3+json',
+                            'X-GitHub-Api-Version': '2022-11-28'
+                        }
+                    });
+                    
+                    if (existingResponse.ok) {
+                        const existingData = await existingResponse.json();
+                        sha = existingData.sha;
+                        showStatus('📝 Arquivo existente encontrado, será atualizado...', 'loading');
+                    }
+                } catch (error) {
+                    // Arquivo não existe, será criado
+                }
+                
                 showStatus('📤 Enviando para o GitHub...', 'loading');
-                const commitData = {message: `${sha ? 'Update' : 'Add'} ${filename} via TesteHTML Publisher`,content: btoa(unescape(encodeURIComponent(content))),committer: {name: 'TesteHTML Publisher',email: 'testehtml@tehew.space'}};
-                if (sha) commitData.sha = sha;
-                const response = await fetch(apiUrl, {method: 'PUT',headers: {'Authorization': `Bearer ${token}`,'Accept': 'application/vnd.github.v3+json','Content-Type': 'application/json','X-GitHub-Api-Version': '2022-11-28'},body: JSON.stringify(commitData)});
-                if (!response.ok) {const errorData = await response.json(); throw new Error(errorData.message || `HTTP ${response.status}`);}
+                
+                // Preparar dados do commit
+                const commitData = {
+                    message: `${sha ? 'Update' : 'Add'} ${filename} via TesteHTML Publisher`,
+                    content: btoa(unescape(encodeURIComponent(content))), // Encode em base64
+                    committer: {
+                        name: 'TesteHTML Publisher',
+                        email: 'testehtml@tehew.space'
+                    }
+                };
+                
+                // Incluir SHA se arquivo existir
+                if (sha) {
+                    commitData.sha = sha;
+                }
+                
+                // Fazer o commit
+                const response = await fetch(apiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json',
+                        'X-GitHub-Api-Version': '2022-11-28'
+                    },
+                    body: JSON.stringify(commitData)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP ${response.status}`);
+                }
+                
                 const result = await response.json();
-                showStatus(`✅ Sucesso! Página ${sha ? 'atualizada' : 'criada'}: tehew.space/testehtml/${filename}`, 'success');
-                addToPublishedList(filename); publishForm.reset(); previewFilename.textContent = 'arquivo.html'; return result;
+                
+                showStatus(`✅ Sucesso! Página ${sha ? 'atualizada' : 'criada'}: tehew.space/testeHTML/${filename}`, 'success');
+                addToPublishedList(filename);
+                publishForm.reset();
+                previewFilename.textContent = 'arquivo.html';
+                
+                return result;
+                
             } catch (error) {
                 console.error('Erro ao publicar:', error);
+                
                 let errorMessage = error.message;
-                if (error.message.includes('401')) errorMessage = 'Token do GitHub inválido ou expirado.';
-                else if (error.message.includes('403')) errorMessage = 'Permissões insuficientes para repo.';
-                else if (error.message.includes('404')) errorMessage = 'Repositório não encontrado.';
-                else if (error.message.includes('422')) errorMessage = 'Dados inválidos no HTML.';
+                
+                if (error.message.includes('401')) {
+                    errorMessage = 'Token do GitHub inválido ou expirado. Verifique suas credenciais.';
+                } else if (error.message.includes('403')) {
+                    errorMessage = 'Permissões insuficientes. O token precisa da permissão "repo".';
+                } else if (error.message.includes('404')) {
+                    errorMessage = 'Repositório não encontrado. Verifique o nome do repositório.';
+                } else if (error.message.includes('422')) {
+                    errorMessage = 'Dados inválidos. Verifique o conteúdo HTML.';
+                }
+                
                 showStatus(`❌ Erro: ${errorMessage}`, 'error');
                 throw error;
             }
         }
+        
+        // Função para adicionar arquivo à lista de publicados - CORRIGIDA PARA testeHTML
         function addToPublishedList(filename) {
             publishedFiles.style.display = 'block';
-            const li = document.createElement('li'); li.className = 'file-item';
-            const link = document.createElement('a'); link.href = `https://tehew.space/testehtml/${filename}`;
-            link.textContent = filename; link.className = 'file-link'; link.target = '_blank';
-            const date = document.createElement('span'); date.textContent = new Date().toLocaleString('pt-BR'); date.className = 'file-date';
-            li.appendChild(link); li.appendChild(date);
+            
+            const li = document.createElement('li');
+            li.className = 'file-item';
+            
+            const link = document.createElement('a');
+            link.href = `https://tehew.space/testeHTML/${filename}`; // CORRIGIDO: agora usa testeHTML
+            link.textContent = filename;
+            link.className = 'file-link';
+            link.target = '_blank';
+            
+            const date = document.createElement('span');
+            date.textContent = new Date().toLocaleString('pt-BR');
+            date.className = 'file-date';
+            
+            li.appendChild(link);
+            li.appendChild(date);
+            
+            // Adicionar no topo da lista
             fileList.insertBefore(li, fileList.firstChild);
-            while (fileList.children.length > 5) { fileList.removeChild(fileList.lastChild); }
+            
+            // Manter apenas os 5 mais recentes
+            while (fileList.children.length > 5) {
+                fileList.removeChild(fileList.lastChild);
+            }
         }
+        
+        // Event listener para o formulário
         publishForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+            
             const token = githubTokenInput.value.trim();
             const repo = githubRepoInput.value.trim();
             const filename = filenameInput.value.trim();
             const htmlContent = htmlContentTextarea.value.trim();
-            if (!filename) { showStatus('❌ Por favor, digite um nome para o arquivo', 'error'); filenameInput.focus(); return; }
-            if (!validateHTML(htmlContent)) { showStatus('❌ Por favor, cole um código HTML válido', 'error'); htmlContentTextarea.focus(); return; }
+            
+            // Validações
+            if (!filename) {
+                showStatus('❌ Por favor, digite um nome para o arquivo', 'error');
+                filenameInput.focus();
+                return;
+            }
+            
+            if (!validateHTML(htmlContent)) {
+                showStatus('❌ Por favor, cole um código HTML válido', 'error');
+                htmlContentTextarea.focus();
+                return;
+            }
+            
+            // Sanitizar nome do arquivo
             const sanitizedFilename = sanitizeFilename(filename);
-            const fullFilename = sanitizedFilename.endsWith('.html') ? sanitizedFilename : `${sanitizedFilename}.html`;
-            if (sanitizedFilename !== filename) { filenameInput.value = sanitizedFilename; showStatus(`ℹ️ Nome do arquivo ajustado para: ${sanitizedFilename}`, 'loading'); await new Promise(resolve => setTimeout(resolve, 1500)); }
+            const fullFilename = sanitizedFilename.endsWith('.html') ? 
+                sanitizedFilename : `${sanitizedFilename}.html`;
+            
+            if (sanitizedFilename !== filename) {
+                filenameInput.value = sanitizedFilename;
+                showStatus(`ℹ️ Nome do arquivo ajustado para: ${sanitizedFilename}`, 'loading');
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+            
+            // Desabilitar botão durante upload
             publishBtn.disabled = true;
             publishBtn.textContent = '⏳ Publicando...';
-            try { await publishToGitHub(fullFilename, htmlContent, token, repo); } catch (error) {} finally { publishBtn.disabled = false; publishBtn.textContent = '🚀 Publicar no GitHub'; }
+            
+            try {
+                await publishToGitHub(fullFilename, htmlContent, token, repo);
+            } catch (error) {
+                // Erro já tratado na função publishToGitHub
+            } finally {
+                publishBtn.disabled = false;
+                publishBtn.textContent = '🚀 Publicar no GitHub';
+            }
         });
+        
+        // HTML de exemplo
         const exampleHTML = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minha Página de Teste</title>
+    <title>Minha Página de Teste - testeHTML</title>
     <style>
         body {
             font-family: 'Segoe UI', sans-serif;
@@ -213,15 +593,17 @@
         <div class="header">
             <h1>🎉 Minha Página Funcionou!</h1>
             <p>Esta página foi publicada através do TesteHTML Publisher</p>
-            <p><strong>URL:</strong> tehew.space/testehtml/exemplo-teste.html</p>
+            <p><strong>URL:</strong> tehew.space/testeHTML/exemplo-teste.html</p>
         </div>
+        
         <h2>📝 Sobre esta página</h2>
         <p>Esta é uma página de exemplo criada com o sistema TesteHTML Publisher. 
-        Você pode criar qualquer tipo de página HTML e publicar instantaneamente no GitHub!</p>
+        Você pode criar qualquer tipo de página HTML e publicar instantaneamente no diretório <strong>testeHTML</strong> do GitHub!</p>
+        
         <div class="feature-grid">
             <div class="feature-card">
                 <h3>🚀 Publicação Rápida</h3>
-                <p>Publique páginas HTML em segundos diretamente no GitHub</p>
+                <p>Publique páginas HTML em segundos diretamente no GitHub em /testeHTML/</p>
             </div>
             <div class="feature-card">
                 <h3>🎨 Design Livre</h3>
@@ -236,6 +618,7 @@
                 <p>Republique e atualize suas páginas quando quiser</p>
             </div>
         </div>
+        
         <h2>🚀 Possibilidades</h2>
         <ul>
             <li>✅ Páginas de teste e protótipos</li>
@@ -245,6 +628,7 @@
             <li>✅ Experimentos com código</li>
             <li>✅ Páginas de eventos</li>
         </ul>
+        
         <div style="text-align: center; margin-top: 40px;">
             <button class="btn" onclick="alert('Botão funcionando! 🎉')">
                 🎯 Teste Interatividade
@@ -253,39 +637,55 @@
                 🎨 Mudar Cor
             </button>
         </div>
+        
         <footer style="text-align: center; margin-top: 40px; color: #666; border-top: 1px solid #ddd; padding-top: 20px;">
             <p>Criado com ❤️ usando TesteHTML Publisher</p>
             <p><small>Publicado em: ${new Date().toLocaleString('pt-BR')}</small></p>
+            <p><small>Diretório: <strong>testeHTML/</strong></small></p>
         </footer>
     </div>
+    
     <script>
-    function changeColor() {
-        const colors = ['#667eea', '#764ba2', '#28a745', '#dc3545', '#ffc107'];
-        const randomColor = colors[Math.floor(Math.random() * colors.length)];
-        document.querySelector('.header').style.background = randomColor;
-    }
-    document.addEventListener('DOMContentLoaded', function() {
-        const container = document.querySelector('.container');
-        container.style.opacity = '0';
-        container.style.transform = 'translateY(20px)';
-        setTimeout(() => {
-            container.style.transition = 'all 0.5s ease';
-            container.style.opacity = '1';
-            container.style.transform = 'translateY(0)';
-        }, 100);
-    });
+        console.log('✅ Página carregada com sucesso no diretório testeHTML!');
+        
+        function changeColor() {
+            const colors = ['#667eea', '#764ba2', '#28a745', '#dc3545', '#ffc107'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            document.querySelector('.header').style.background = randomColor;
+        }
+        
+        // Animação de entrada
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM totalmente carregado no testeHTML!');
+            
+            const container = document.querySelector('.container');
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                container.style.transition = 'all 0.5s ease';
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+            }, 100);
+        });
     </script>
 </body>
-</html>
-`;
+</html>`;
+        
+        // Event listener para carregar exemplo
         loadExampleBtn.addEventListener('click', function() {
             htmlContentTextarea.value = exampleHTML;
             filenameInput.value = 'exemplo-teste';
             showStatus('📋 Exemplo carregado! Agora você pode publicar ou editar o código.', 'success');
             setTimeout(hideStatus, 3000);
         });
+        
+        // Dica inicial
         if (!htmlContentTextarea.value.trim()) {
-            setTimeout(() => { showStatus('💡 Dica: Use "Carregar Exemplo" para testar!', 'loading'); setTimeout(hideStatus, 5000); }, 1000);
+            setTimeout(() => {
+                showStatus('💡 Dica: Use "Carregar Exemplo" para testar a publicação no diretório testeHTML!', 'loading');
+                setTimeout(hideStatus, 5000);
+            }, 1000);
         }
     </script>
 </body>
