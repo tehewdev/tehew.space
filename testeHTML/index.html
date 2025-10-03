@@ -4,205 +4,805 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TesteHTML Publisher</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImEiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjNjY3ZWVhIiAvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3NjRiYTIiIC8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxNCIgZmlsbD0idXJsKCNhKSIgLz4KICA8cGF0aCBmaWxsPSIjZmZmZmZmIiBkPSJNMjEgMThoOGw1IDkgNS05aDhsLTkgMTZ2MTJoLThWMzR6IiAvPgo8L3N2Zz4=" />
   <style>
-    body { font-family:'Segoe UI',Tahoma,Verdana,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
-    .container {background:#fff;box-shadow:0 12px 40px rgba(0,0,0,0.08);border-radius:16px;max-width:780px;width:100%;padding:36px;}
-    h1 {text-align:center;margin-top:0;color:#333;}
-    label {font-weight:bold;color:#333;margin:16px 0 6px;}
-    input,textarea {width:100%;padding:13px 10px;border-radius:8px;border:2px solid #ddd;font-size:15px;}
-    textarea {min-height:210px;font-family:monospace;}
-    .btn {width:100%;padding:16px;border:none;border-radius:8px;font-size:16px;cursor:pointer;font-weight:bold;transition:.2s;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;}
-    .btn:hover {transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,0.20);}
-    .btn-secondary {background:#28a745;margin-top:14px;}
-    .btn-del {width:auto;background:#dc3545;padding:7px 13px;margin-left:10px;border-radius:7px;font-size:14px;}
-    .btn-del:hover { background:#b9162b; }
-    .status {margin-top:20px;padding:16px;border-radius:8px;display:none;}
-    .status.loading {background:#d1ecf1;color:#0c5460;}
-    .status.success {background:#d4edda;color:#155724;}
-    .status.error {background:#f8d7da;color:#721c24;}
-    .file-list {margin-top:32px;}
-    .file-item {background:#f8f9fa;border-radius:5px;padding:8px 14px;margin-bottom:7px;font-size:1em;display:flex;justify-content:space-between;align-items:center;}
-    .file-link {color:#667eea; text-decoration:none; font-weight:bold;}
-    .file-link:hover { text-decoration:underline; }
-    .small { font-size:13px; color:#666;}
+    :root {
+      --gradient-start: #667eea;
+      --gradient-end: #764ba2;
+      --accent: #5964f1;
+      --accent-strong: #4650d8;
+      --success: #28a745;
+      --danger: #dc3545;
+      --neutral: #f8f9fa;
+      --text-main: #2f2f2f;
+      --text-muted: #646b7a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      color: var(--text-main);
+    }
+    .container {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.16);
+      width: 100%;
+      max-width: 840px;
+      padding: 40px 44px;
+    }
+    .hero {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+    }
+    .hero .intro {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+    form {
+      display: grid;
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .field-group label {
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+    }
+    .field-group input,
+    .field-group textarea {
+      width: 100%;
+      font-size: 15px;
+      padding: 14px 12px;
+      border-radius: 10px;
+      border: 2px solid #e1e4ef;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .field-group input:focus,
+    .field-group textarea:focus {
+      border-color: var(--accent);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.16);
+    }
+    #htmlContent {
+      min-height: 240px;
+      font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
+      line-height: 1.45;
+      resize: vertical;
+    }
+    .hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .btn {
+      flex: 1 1 220px;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      color: #fff;
+      box-shadow: 0 14px 28px rgba(87, 99, 230, 0.28);
+    }
+    .btn-primary:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+      box-shadow: none;
+      transform: none;
+    }
+    .btn-primary:not(:disabled):hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 32px rgba(87, 99, 230, 0.32);
+    }
+    .btn-secondary {
+      background: #eef1ff;
+      color: var(--accent);
+      border: 2px solid transparent;
+    }
+    .btn-secondary:hover {
+      background: #e0e5ff;
+    }
+    .btn-refresh {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(102, 126, 234, 0.28);
+      background: rgba(102, 126, 234, 0.08);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s ease, border-color 0.18s ease;
+    }
+    .btn-refresh:hover {
+      background: rgba(102, 126, 234, 0.16);
+      border-color: rgba(102, 126, 234, 0.4);
+    }
+    .status {
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin-top: -4px;
+      font-size: 14px;
+      display: none;
+    }
+    .status a {
+      color: inherit;
+      font-weight: 600;
+      text-decoration: underline;
+    }
+    .status-info {
+      display: block;
+      background: #e8f1ff;
+      color: #1f4ea6;
+      border: 1px solid rgba(31, 78, 166, 0.28);
+    }
+    .status-success {
+      display: block;
+      background: #e9f7ef;
+      color: #1f6a3b;
+      border: 1px solid rgba(40, 167, 69, 0.28);
+    }
+    .status-error {
+      display: block;
+      background: #fcebec;
+      color: #8b1b2a;
+      border: 1px solid rgba(220, 53, 69, 0.28);
+    }
+    .file-list {
+      margin-top: 34px;
+      background: var(--neutral);
+      border-radius: 14px;
+      padding: 20px 22px;
+    }
+    .file-list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 12px;
+    }
+    .file-list-header h2 {
+      margin: 0;
+      font-size: 18px;
+      color: var(--text-main);
+    }
+    .file-list-content {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .file-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      border-radius: 10px;
+      padding: 12px 14px;
+      border: 1px solid #e5e9f2;
+      gap: 12px;
+    }
+    .file-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .file-info a {
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .file-info a:hover {
+      text-decoration: underline;
+    }
+    .file-path {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .file-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-ghost,
+    .btn-del {
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.16s ease, box-shadow 0.16s ease;
+    }
+    .btn-ghost {
+      background: rgba(102, 126, 234, 0.12);
+      color: var(--accent-strong);
+    }
+    .btn-ghost:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 18px rgba(102, 126, 234, 0.18);
+    }
+    .btn-del {
+      background: rgba(220, 53, 69, 0.12);
+      color: var(--danger);
+    }
+    .btn-del:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 18px rgba(220, 53, 69, 0.2);
+    }
+    .small {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    @media (max-width: 640px) {
+      body {
+        padding: 18px;
+      }
+      .container {
+        padding: 28px 24px;
+      }
+      .button-row {
+        flex-direction: column;
+      }
+      .btn {
+        width: 100%;
+      }
+      .file-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .file-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🚀 TesteHTML Publisher</h1>
-    <form id="publishForm">
-      <label for="filename">Nome do arquivo (.html):</label>
-      <input type="text" id="filename" value="minha-pagina.html" required>
-      <label for="htmlContent">Código HTML:</label>
-      <textarea id="htmlContent" required><!DOCTYPE html>
+    <header class="hero">
+      <h1>🚀 TesteHTML Publisher</h1>
+      <p class="intro">Publique rapidamente páginas HTML diretamente no repositório GitHub.</p>
+    </header>
+
+    <form id="publishForm" novalidate>
+      <div class="field-group">
+        <label for="filename">
+          <span>Nome do arquivo (.html)</span>
+          <span id="sanitizedPreview" class="hint">Nome resultante: minha-pagina.html</span>
+        </label>
+        <input type="text" id="filename" name="filename" value="minha-pagina.html" autocomplete="off" required>
+      </div>
+
+      <div class="field-group">
+        <label for="htmlContent">Código HTML</label>
+        <textarea id="htmlContent" name="htmlContent" required><!DOCTYPE html>
 <html lang="pt-BR">
 <head><meta charset="UTF-8"><title>Exemplo</title></head>
 <body><h1>Publicação dinâmica via jsonbin.</h1></body>
 </html></textarea>
-      <button type="button" class="btn btn-secondary" id="loadExampleBtn">📋 Carregar Exemplo</button>
-      <button type="submit" class="btn" id="publishBtn" disabled>🚀 Publicar no GitHub</button>
+      </div>
+
+      <div class="button-row">
+        <button type="button" class="btn btn-secondary" id="loadExampleBtn">📋 Carregar Exemplo</button>
+        <button type="submit" class="btn btn-primary" id="publishBtn" disabled>🚀 Publicar no GitHub</button>
+      </div>
     </form>
-    <div id="status" class="status"></div>
-    <div class="file-list">
-      <h2 style="font-size:1.1em;margin-bottom:7px;">Arquivos Existentes</h2>
-      <div id="fileList"><span class="small">Carregando arquivos...</span></div>
-      <span class="small">Tempo de deploy: ~30s após salvar/criar/apagar.</span>
-    </div>
+
+    <div id="status" class="status" role="alert" aria-live="polite"></div>
+
+    <section class="file-list">
+      <div class="file-list-header">
+        <h2>Arquivos existentes</h2>
+        <button type="button" class="btn-refresh" id="refreshBtn">Atualizar lista</button>
+      </div>
+      <div id="fileList" class="file-list-content">
+        <span class="small">Carregando arquivos...</span>
+      </div>
+      <p class="small">Tempo de deploy: ~30s após salvar, criar ou remover arquivos.</p>
+    </section>
   </div>
-<script>
-const repoOwner   = 'tehewdev';
-const repoName    = 'tehew.space';
-const folder      = 'testeHTML';
-const BIN_ID      = '68df49ae43b1c97be95893d1';
-const ACCESS_KEY  = '$2a$10$f9KK7vSowGnJI5elo/dAPurqjZAJ3bJaWnsinl/caDfgIcNt28kNi';
 
-let githubToken = null;
-const publishBtn = document.getElementById('publishBtn');
-const fileListDiv = document.getElementById('fileList');
+  <script>
+    (function () {
+      'use strict';
 
-async function loadToken() {
-  showStatus('Carregando token...','loading');
-  try {
-    const url = `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`;
-    const res = await fetch(url, {
-      headers: {'X-Access-Key': ACCESS_KEY, 'X-Bin-Meta': 'false'}
-    });
-    const j = await res.json();
-    githubToken = j.github_token;
-    if (!githubToken) {
-      showStatus("Token não encontrado! Bin json deve conter: { \"github_token\": \"token_aqui\" }",'error');
-      return;
-    }
-    showStatus('Token carregado com sucesso!','success');
-    publishBtn.disabled = false;
-    listFiles();
-  } catch (e) {
-    showStatus('Erro ao carregar token: <br>' + e,'error');
-  }
-}
-loadToken();
+      const config = {
+        repoOwner: 'tehewdev',
+        repoName: 'tehew.space',
+        folder: 'testeHTML',
+        previewBaseUrl: 'https://tehew.space',
+        binId: '68df49ae43b1c97be95893d1',
+        accessKey: '$2a$10$f9KK7vSowGnJI5elo/dAPurqjZAJ3bJaWnsinl/caDfgIcNt28kNi'
+      };
 
-function showStatus(msg, cls){
-  const s=document.getElementById('status');
-  s.innerHTML=msg; s.className='status '+cls; s.style.display='block';
-}
-function sanitize(n){
-  return n.toLowerCase().replace(/[^a-z0-9-_.]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
-}
+      const state = {
+        token: null,
+        isPublishing: false,
+        statusTimer: null
+      };
 
-async function listFiles(){
-  try{
-    fileListDiv.innerHTML='<span class="small">Carregando arquivos...</span>';
-    const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${folder}?ref=main`;
-    const res = await fetch(url, {headers:{'Authorization':'Bearer '+githubToken}});
-    const files = await res.json();
-    let html = '';
-    files.filter(f=>f.name.endsWith('.html') && f.name !== 'index.html')
-         .forEach(f=>{
-            html+=`<div class="file-item">
-                      <span>
-                        <a href="https://tehew.space/${folder}/${f.name}" class="file-link" target="_blank">${f.name}</a>
-                      </span>
-                      <button class="btn-del" data-file="${f.name}" type="button">🗑️ Apagar</button>
-                   </div>`;
-          });
-    fileListDiv.innerHTML = html || '<span class="small">Nenhum arquivo HTML encontrado.</span>';
-    fileListDiv.querySelectorAll('.btn-del').forEach(el=>{
-      el.onclick=e=>{
-        e.preventDefault();
-        deleteFile(el.dataset.file);
+      const ui = {
+        form: document.getElementById('publishForm'),
+        filename: document.getElementById('filename'),
+        htmlContent: document.getElementById('htmlContent'),
+        publishBtn: document.getElementById('publishBtn'),
+        loadExampleBtn: document.getElementById('loadExampleBtn'),
+        refreshBtn: document.getElementById('refreshBtn'),
+        fileList: document.getElementById('fileList'),
+        status: document.getElementById('status'),
+        sanitizedPreview: document.getElementById('sanitizedPreview')
+      };
+
+      const defaultExample = '<!DOCTYPE html>\n<html lang="pt-BR">\n<head><meta charset="UTF-8"><title>Página Exemplo</title></head>\n<body>\n  <h1>Exemplo carregado do botão!</h1>\n  <p>O token é carregado da bin privada.</p>\n</body>\n</html>';
+
+      init();
+
+      function init() {
+        ui.form.addEventListener('submit', publicar);
+        ui.filename.addEventListener('input', handleFilenameChange);
+        ui.htmlContent.addEventListener('input', updatePublishAvailability);
+        ui.loadExampleBtn.addEventListener('click', carregarExemplo);
+        ui.refreshBtn.addEventListener('click', listFiles);
+        ui.fileList.addEventListener('click', handleFileListAction);
+        updateSanitizedPreview();
+        updatePublishAvailability();
+        loadToken();
       }
-    });
-  }catch(e){
-    fileListDiv.innerHTML='<span class="error">Erro ao listar arquivos!</span>';
-  }
-}
-async function loadFile(name){
-  showStatus('Carregando conteúdo...','loading');
-  const path=`${folder}/${name}`;
-  const url=`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`;
-  const res=await fetch(url,{headers:{'Authorization':'Bearer '+githubToken}});
-  if(!res.ok){showStatus('Falha ao carregar arquivo '+name,'error');return;}
-  const j=await res.json();
-  const html=decodeURIComponent(escape(atob(j.content.replace(/\n/g,''))));
-  document.getElementById('filename').value=name;
-  document.getElementById('htmlContent').value=html;
-  showStatus('Arquivo carregado: '+name,'success');
-}
-async function deleteFile(name){
-  if(!confirm('Apagar "'+name+'"?'))return;
-  showStatus('Apagando...','loading');
-  const path = `${folder}/${name}`;
-  const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`;
-  let sha = null;
-  // Busca SHA sempre na hora
-  const res = await fetch(url, {headers:{'Authorization':'Bearer '+githubToken}});
-  if(res.ok) { sha = (await res.json()).sha; }
-  if(!sha) return showStatus('Não foi possível obter SHA do arquivo para apagar.','error');
-  const data = {message:'Apaga '+name, sha, branch:'main'};
-  const delres=await fetch(url,{
-    method:'DELETE',
-    headers:{
-      'Authorization':'Bearer '+githubToken,
-      'Content-Type':'application/json'
-    },
-    body:JSON.stringify(data)
-  });
-  if(delres.ok){
-    showStatus('Arquivo apagado com sucesso.','success');
-    listFiles();
-  } else {
-    const r=await delres.json();
-    showStatus('Erro ao apagar: '+r.message,'error');
-  }
-}
-async function publicar(){
-  const filename=document.getElementById('filename').value.trim();
-  const html=document.getElementById('htmlContent').value.trim();
-  if(!filename||!html){
-    showStatus('Preencha nome e código HTML!','error');return;
-  }
-  if(!githubToken){
-    showStatus('Token GitHub não carregado!','error');return;
-  }
-  const sanitized = sanitize(filename);
-  const path = `${folder}/${sanitized}`;
-  const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`;
-  showStatus('Publicando...','loading');
-  let sha = null;
-  const resHead = await fetch(url, {headers: {'Authorization':'Bearer '+githubToken}});
-  if(resHead.ok) { sha = (await resHead.json()).sha; }
-  const commitData={message:`Publicando ${sanitized}`,content:btoa(unescape(encodeURIComponent(html))),branch:'main'};
-  if(sha) commitData.sha=sha;
-  const res=await fetch(url,{
-    method:'PUT',
-    headers:{
-      'Authorization':'Bearer '+githubToken,
-      'Content-Type':'application/json'
-    },
-    body:JSON.stringify(commitData)
-  });
-  const r=await res.json();
-  if(res.ok){
-    showStatus(`Publicado! <a href="https://tehew.space/${folder}/${sanitized}" target="_blank">${folder}/${sanitized}</a>`,'success');
-    listFiles();
-  } else {
-    showStatus(`Erro: ${r.message}`,'error');
-  }
-}
-document.getElementById('publishForm').addEventListener('submit',e=>{ e.preventDefault(); publicar(); });
-document.getElementById('loadExampleBtn').addEventListener('click',()=>{
-  document.getElementById('htmlContent').value =
-    `<!DOCTYPE html>
-<html lang="pt-BR">
-<head><meta charset="UTF-8"><title>Página Exemplo</title></head>
-<body>
-  <h1>Exemplo carregado do botão!</h1>
-  <p>O token é carregado da bin privada.</p>
-</body>
-</html>`;
-  showStatus('Exemplo carregado!','success');
-});
-</script>
+
+      function handleFilenameChange() {
+        updateSanitizedPreview();
+        updatePublishAvailability();
+      }
+
+      function carregarExemplo() {
+        ui.htmlContent.value = defaultExample;
+        updatePublishAvailability();
+        setStatus('Exemplo carregado no editor!', 'success', { autoHide: 3200 });
+      }
+
+      function handleFileListAction(event) {
+        const button = event.target.closest('button[data-action]');
+        if (!button) {
+          return;
+        }
+        const action = button.dataset.action;
+        const filename = button.dataset.file;
+        if (!filename) {
+          return;
+        }
+        if (action === 'load') {
+          loadFile(filename);
+        } else if (action === 'delete') {
+          deleteFile(filename);
+        }
+      }
+
+      async function loadToken() {
+        setStatus('Carregando token...', 'info');
+        try {
+          const url = 'https://api.jsonbin.io/v3/b/' + config.binId + '/latest';
+          const response = await fetch(url, {
+            headers: {
+              'X-Access-Key': config.accessKey,
+              'X-Bin-Meta': 'false'
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error(response.status + ' ' + response.statusText);
+          }
+
+          const data = await parseJsonResponse(response);
+          const token = data && data.github_token;
+
+          if (!token) {
+            throw new Error('Token não encontrado na bin (campo "github_token").');
+          }
+
+          state.token = token;
+          updatePublishAvailability();
+          setStatus('Token carregado com sucesso!', 'success', { autoHide: 3200 });
+          await listFiles();
+        } catch (error) {
+          state.token = null;
+          updatePublishAvailability();
+          setStatus('Erro ao carregar token: ' + error.message, 'error');
+        }
+      }
+
+      async function listFiles() {
+        if (!state.token) {
+          ui.fileList.innerHTML = '<span class="small">Token não carregado.</span>';
+          return;
+        }
+
+        ui.fileList.innerHTML = '<span class="small">Carregando arquivos...</span>';
+
+        try {
+          const url = 'https://api.github.com/repos/' + config.repoOwner + '/' + config.repoName + '/contents/' + config.folder + '?ref=main';
+          const response = await fetch(url, {
+            headers: authHeaders()
+          });
+
+          if (response.status === 404) {
+            renderFileList([]);
+            return;
+          }
+
+          if (!response.ok) {
+            throw new Error(response.status + ' ' + response.statusText);
+          }
+
+          const files = await parseJsonResponse(response);
+          if (!Array.isArray(files)) {
+            throw new Error('Resposta inesperada da API do GitHub.');
+          }
+
+          const htmlFiles = files
+            .filter(function (file) {
+              return file.name && file.name.endsWith('.html') && file.name !== 'index.html';
+            })
+            .sort(function (a, b) {
+              return a.name.localeCompare(b.name);
+            });
+
+          renderFileList(htmlFiles);
+        } catch (error) {
+          const safeError = escapeHtml(error.message || 'Erro desconhecido');
+          ui.fileList.innerHTML = '<span class="small" style="color:#b72136;">Erro ao listar arquivos: ' + safeError + '</span>';
+        }
+      }
+
+      function renderFileList(files) {
+        if (!files.length) {
+          ui.fileList.innerHTML = '<span class="small">Nenhum arquivo HTML encontrado.</span>';
+          return;
+        }
+
+        const content = files.map(function (file) {
+          const filename = file.name;
+          const safeFilename = escapeHtml(filename);
+          const pathInfo = escapeHtml(config.folder + '/' + filename);
+          const encodedFilename = encodeURIComponent(filename);
+          const dataAttr = escapeAttribute(filename);
+          const viewUrl = config.previewBaseUrl + '/' + config.folder + '/' + encodedFilename;
+          return (
+            '<div class="file-item" data-filename="' + dataAttr + '">' +
+              '<div class="file-info">' +
+                '<a href="' + viewUrl + '" target="_blank" rel="noopener">' + safeFilename + '</a>' +
+                '<span class="file-path">' + pathInfo + '</span>' +
+              '</div>' +
+              '<div class="file-actions">' +
+                '<button type="button" class="btn-ghost" data-action="load" data-file="' + dataAttr + '">Editar</button>' +
+                '<button type="button" class="btn-del" data-action="delete" data-file="' + dataAttr + '">Apagar</button>' +
+              '</div>' +
+            '</div>'
+          );
+        }).join('');
+
+        ui.fileList.innerHTML = content;
+      }
+
+      async function loadFile(name) {
+        if (!state.token) {
+          setStatus('Token GitHub não carregado.', 'error');
+          return;
+        }
+
+        setStatus('Carregando "' + name + '"...', 'info');
+
+        try {
+          const path = config.folder + '/' + name;
+          const url = 'https://api.github.com/repos/' + config.repoOwner + '/' + config.repoName + '/contents/' + path;
+          const response = await fetch(url, { headers: authHeaders() });
+
+          if (!response.ok) {
+            throw new Error(response.status + ' ' + response.statusText);
+          }
+
+          const data = await parseJsonResponse(response);
+          const content = data && data.content ? fromBase64(data.content) : '';
+
+          ui.filename.value = name;
+          ui.htmlContent.value = content;
+          updateSanitizedPreview();
+          updatePublishAvailability();
+
+          setStatus('Arquivo "' + name + '" carregado para edição.', 'success', { autoHide: 3600 });
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (error) {
+          setStatus('Erro ao carregar "' + name + '": ' + error.message, 'error');
+        }
+      }
+
+      async function deleteFile(name) {
+        if (!state.token) {
+          setStatus('Token GitHub não carregado.', 'error');
+          return;
+        }
+
+        if (!confirm('Apagar "' + name + '"?')) {
+          return;
+        }
+
+        setStatus('Apagando "' + name + '"...', 'info');
+
+        try {
+          const sha = await getFileSha(name);
+          if (!sha) {
+            throw new Error('Não foi possível obter o SHA do arquivo.');
+          }
+
+          const path = config.folder + '/' + name;
+          const url = 'https://api.github.com/repos/' + config.repoOwner + '/' + config.repoName + '/contents/' + path;
+          const body = {
+            message: 'Apaga ' + name,
+            sha: sha,
+            branch: 'main'
+          };
+
+          const response = await fetch(url, {
+            method: 'DELETE',
+            headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
+            body: JSON.stringify(body)
+          });
+
+          const data = await parseJsonResponse(response);
+          if (!response.ok) {
+            const message = data && data.message ? data.message : (response.status + ' ' + response.statusText);
+            throw new Error(message);
+          }
+
+          setStatus('Arquivo "' + name + '" removido com sucesso.', 'success', { autoHide: 3600 });
+          await listFiles();
+        } catch (error) {
+          setStatus('Erro ao apagar "' + name + '": ' + error.message, 'error');
+        }
+      }
+
+      async function publicar(event) {
+        event.preventDefault();
+
+        if (!state.token) {
+          setStatus('Token GitHub não carregado.', 'error');
+          return;
+        }
+
+        const rawFilename = ui.filename.value.trim();
+        const sanitized = sanitizeName(rawFilename);
+        const htmlContent = ui.htmlContent.value.trim();
+
+        if (!sanitized) {
+          setStatus('Informe um nome de arquivo válido.', 'error');
+          return;
+        }
+
+        if (!htmlContent) {
+          setStatus('Informe o conteúdo HTML que será publicado.', 'error');
+          return;
+        }
+
+        if (sanitized !== rawFilename) {
+          ui.filename.value = sanitized;
+          updateSanitizedPreview();
+        }
+
+        setPublishing(true);
+        setStatus('Publicando "' + sanitized + '"...', 'info');
+
+        try {
+          const sha = await getFileSha(sanitized);
+          const path = config.folder + '/' + sanitized;
+          const url = 'https://api.github.com/repos/' + config.repoOwner + '/' + config.repoName + '/contents/' + path;
+
+          const body = {
+            message: 'Publicando ' + sanitized,
+            content: toBase64(htmlContent),
+            branch: 'main'
+          };
+          if (sha) {
+            body.sha = sha;
+          }
+
+          const response = await fetch(url, {
+            method: 'PUT',
+            headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
+            body: JSON.stringify(body)
+          });
+
+          const data = await parseJsonResponse(response);
+          if (!response.ok) {
+            const message = data && data.message ? data.message : (response.status + ' ' + response.statusText);
+            throw new Error(message);
+          }
+
+          const previewUrl = config.previewBaseUrl + '/' + config.folder + '/' + encodeURIComponent(sanitized);
+          setStatus('Publicado! <a href="' + previewUrl + '" target="_blank" rel="noopener">Abrir página publicada</a>', 'success', { asHtml: true });
+          await listFiles();
+        } catch (error) {
+          setStatus('Erro ao publicar: ' + error.message, 'error');
+        } finally {
+          setPublishing(false);
+        }
+      }
+
+      async function getFileSha(name) {
+        if (!state.token) {
+          return null;
+        }
+        const path = config.folder + '/' + name;
+        const url = 'https://api.github.com/repos/' + config.repoOwner + '/' + config.repoName + '/contents/' + path;
+        const response = await fetch(url, { headers: authHeaders() });
+
+        if (response.status === 404) {
+          return null;
+        }
+
+        if (!response.ok) {
+          throw new Error(response.status + ' ' + response.statusText);
+        }
+
+        const data = await parseJsonResponse(response);
+        return data && data.sha ? data.sha : null;
+      }
+
+      function updateSanitizedPreview() {
+        const raw = ui.filename.value.trim();
+        if (!raw) {
+          ui.sanitizedPreview.textContent = 'Nome resultante: —';
+          return;
+        }
+        const sanitized = sanitizeName(raw);
+        ui.sanitizedPreview.textContent = 'Nome resultante: ' + (sanitized || '—');
+      }
+
+      function updatePublishAvailability() {
+        const hasContent = ui.htmlContent.value.trim().length > 0;
+        const sanitized = sanitizeName(ui.filename.value.trim());
+        const canPublish = Boolean(state.token && hasContent && sanitized);
+        ui.publishBtn.disabled = state.isPublishing || !canPublish;
+      }
+
+      function setPublishing(isPublishing) {
+        state.isPublishing = isPublishing;
+        updatePublishAvailability();
+        ui.publishBtn.textContent = isPublishing ? '⏳ Publicando...' : '🚀 Publicar no GitHub';
+      }
+
+      function sanitizeName(name) {
+        if (!name) {
+          return '';
+        }
+        var base = name;
+        if (typeof base.normalize === 'function') {
+          base = base.normalize('NFD');
+        }
+        base = base.replace(/[\u0300-\u036f]/g, '');
+        base = base.toLowerCase().trim();
+
+        base = base.replace(/\.html?$/g, '');
+        base = base.replace(/[^a-z0-9._-]+/g, '-');
+        base = base.replace(/-+/g, '-');
+        base = base.replace(/^-+|-+$/g, '');
+        base = base.replace(/\.+/g, '.');
+        base = base.replace(/^\.+|\.+$/g, '');
+
+        if (!base) {
+          return '';
+        }
+
+        if (!base.endsWith('.html')) {
+          base = base + '.html';
+        }
+
+        return base;
+      }
+
+      function authHeaders() {
+        return {
+          Authorization: 'Bearer ' + state.token,
+          Accept: 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28'
+        };
+      }
+
+      function setStatus(message, type, options) {
+        clearTimeout(state.statusTimer);
+        if (!message) {
+          ui.status.className = 'status';
+          ui.status.style.display = 'none';
+          ui.status.textContent = '';
+          return;
+        }
+
+        const cssClass = type ? 'status-' + type : 'status-info';
+        ui.status.className = 'status ' + cssClass;
+        ui.status.style.display = 'block';
+        if (options && options.asHtml) {
+          ui.status.innerHTML = message;
+        } else {
+          ui.status.textContent = message;
+        }
+
+        if (options && options.autoHide) {
+          state.statusTimer = setTimeout(function () {
+            setStatus(null);
+          }, options.autoHide);
+        }
+      }
+
+      async function parseJsonResponse(response) {
+        const text = await response.text();
+        if (!text) {
+          return {};
+        }
+        try {
+          return JSON.parse(text);
+        } catch (error) {
+          throw new Error('Resposta inválida do servidor.');
+        }
+      }
+
+      function toBase64(value) {
+        return btoa(unescape(encodeURIComponent(value)));
+      }
+
+      function fromBase64(value) {
+        if (!value) {
+          return '';
+        }
+        try {
+          return decodeURIComponent(escape(atob(value.replace(/\s/g, ''))));
+        } catch (error) {
+          throw new Error('Não foi possível decodificar o conteúdo base64.');
+        }
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function escapeAttribute(value) {
+        return escapeHtml(value);
+      }
+    })();
+  </script>
 </body>
 </html>
+
