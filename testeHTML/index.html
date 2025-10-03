@@ -2,190 +2,214 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>TesteHTML Publisher Avançado</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TesteHTML Publisher</title>
   <style>
-    body{font-family:'Segoe UI',Tahoma,Verdana,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:32px;}
-    .container{background:#fff;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.10);max-width:900px;width:100%;padding:36px;}
-    h1{text-align:center;color:#333;}
-    .token-info{background:#fff3cd;color:#856404;padding:12px;border-radius:8px;border:1px solid #ffeaa7;margin-bottom:16px;}
-    label{font-weight:bold;color:#333;margin:16px 0 6px;display:block;}
-    input,textarea{width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:15px;font-family:monospace;}
-    textarea{min-height:200px;resize:vertical;}
-    .btn{display:inline-block;margin-top:14px;width:100%;padding:14px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer;transition:transform .2s;}
-    .btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.2);}
-    .btn-secondary{background:#28a745;}
-    .btn-danger{background:#dc3545;}
-    .btn-group{display:flex;gap:14px;}
-    .status{margin-top:18px;padding:12px;border-radius:8px;display:none;}
-    .loading{background:#d1ecf1;color:#0c5460;}
-    .success{background:#d4edda;color:#155724;}
-    .error{background:#f8d7da;color:#721c24;}
-    .file-list{margin-top:28px;}
-    .file-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;}
-    .file-item:last-child{border-bottom:none;}
-    .file-link{color:#667eea;text-decoration:none;font-weight:bold;}
-    .file-link:hover{text-decoration:underline;}
-    .small{font-size:13px;color:#666;margin-top:8px;}
+    body { font-family:'Segoe UI',Tahoma,Verdana,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+    .container {background:#fff;box-shadow:0 12px 40px rgba(0,0,0,0.08);border-radius:16px;max-width:780px;width:100%;padding:36px;}
+    h1 {text-align:center;margin-top:0;color:#333;}
+    label {font-weight:bold;color:#333;margin:16px 0 6px;}
+    input,textarea {width:100%;padding:13px 10px;border-radius:8px;border:2px solid #ddd;font-size:15px;}
+    textarea {min-height:210px;font-family:monospace;}
+    .btn {width:100%;padding:16px;border:none;border-radius:8px;font-size:16px;cursor:pointer;font-weight:bold;transition:.2s;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;}
+    .btn:hover {transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,0.20);}
+    .btn-secondary {background:#28a745;margin-top:14px;}
+    .btn-del {width:auto;background:#dc3545;padding:7px 13px;margin-left:10px;border-radius:7px;font-size:14px;}
+    .btn-del:hover { background:#b9162b; }
+    .status {margin-top:20px;padding:16px;border-radius:8px;display:none;}
+    .status.loading {background:#d1ecf1;color:#0c5460;}
+    .status.success {background:#d4edda;color:#155724;}
+    .status.error {background:#f8d7da;color:#721c24;}
+    .file-list {margin-top:32px;}
+    .file-item {background:#f8f9fa;border-radius:5px;padding:8px 14px;margin-bottom:7px;font-size:1em;display:flex;justify-content:space-between;align-items:center;}
+    .file-link {color:#667eea; text-decoration:none; font-weight:bold;}
+    .file-link:hover { text-decoration:underline; }
+    .small { font-size:13px; color:#666;}
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🚀 TesteHTML Publisher PRO</h1>
-    <div class="token-info">
-      <strong>⚡ Token via JSONBIN.IO:</strong> Bin <code>68df49ae43b1c97be95893d1</code> — pasta <b>testeHTML</b>
-    </div>
-
-    <label for="filename">Arquivo (.html):</label>
-    <input type="text" id="filename" placeholder="ex: pagina.html">
-
-    <label for="htmlContent">Conteúdo HTML:</label>
-    <textarea id="htmlContent"></textarea>
-
-    <div class="btn-group">
-      <button id="newBtn" class="btn btn-secondary" type="button">🆕 Novo</button>
-      <button id="saveBtn" class="btn" type="submit" disabled>💾 Salvar/Atualizar</button>
-      <button id="deleteBtn" class="btn btn-danger" type="button" disabled>🗑️ Apagar</button>
-    </div>
+    <h1>🚀 TesteHTML Publisher</h1>
+    <form id="publishForm">
+      <label for="filename">Nome do arquivo (.html):</label>
+      <input type="text" id="filename" value="minha-pagina.html" required>
+      <label for="htmlContent">Código HTML:</label>
+      <textarea id="htmlContent" required><!DOCTYPE html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"><title>Exemplo</title></head>
+<body><h1>Publicação dinâmica via jsonbin.</h1></body>
+</html></textarea>
+      <button type="button" class="btn btn-secondary" id="loadExampleBtn">📋 Carregar Exemplo</button>
+      <button type="submit" class="btn" id="publishBtn" disabled>🚀 Publicar no GitHub</button>
+    </form>
     <div id="status" class="status"></div>
-
     <div class="file-list">
-      <h2>Arquivos Existentes</h2>
-      <div id="fileList"></div>
-      <div class="small">Tempo para deploy/renderizar: ~30s após salvar/criar/apagar.</div>
+      <h2 style="font-size:1.1em;margin-bottom:7px;">Arquivos Existentes</h2>
+      <div id="fileList"><span class="small">Carregando arquivos...</span></div>
+      <span class="small">Tempo de deploy: ~30s após salvar/criar/apagar.</span>
     </div>
   </div>
 <script>
-const repoOwner='tehewdev',repoName='tehew.space',folder='testeHTML';
-const BIN_ID='68df49ae43b1c97be95893d1';
-const ACCESS_KEY='$2a$10$f9KK7vSowGnJI5elo/dAPurqjZAJ3bJaWnsinl/caDfgIcNt28kNi';
+const repoOwner   = 'tehewdev';
+const repoName    = 'tehew.space';
+const folder      = 'testeHTML';
+const BIN_ID      = '68df49ae43b1c97be95893d1';
+const ACCESS_KEY  = '$2a$10$f9KK7vSowGnJI5elo/dAPurqjZAJ3bJaWnsinl/caDfgIcNt28kNi';
 
-let token=null, currentSha=null;
-const filenameInput=document.getElementById('filename');
-const htmlArea=document.getElementById('htmlContent');
-const newBtn=document.getElementById('newBtn');
-const saveBtn=document.getElementById('saveBtn');
-const deleteBtn=document.getElementById('deleteBtn');
-const statusDiv=document.getElementById('status');
-const fileListDiv=document.getElementById('fileList');
-let fileCache={};
+let githubToken = null;
+const publishBtn = document.getElementById('publishBtn');
+const fileListDiv = document.getElementById('fileList');
 
-function show(msg,cls){statusDiv.innerHTML=msg;statusDiv.className='status '+cls;statusDiv.style.display='block';}
-function hide(){statusDiv.style.display='none';}
-function sanitize(n){return n.toLowerCase().replace(/[^a-z0-9-_.]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');}
-
-async function loadToken(){
-  show('Carregando token...','loading');
-  try{
-    const res=await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`,{
-      headers:{'X-Access-Key':ACCESS_KEY,'X-Bin-Meta':'false'}
+async function loadToken() {
+  showStatus('Carregando token...','loading');
+  try {
+    const url = `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`;
+    const res = await fetch(url, {
+      headers: {'X-Access-Key': ACCESS_KEY, 'X-Bin-Meta': 'false'}
     });
-    const j=await res.json(); token=j.github_token;
-    if(!token) throw 'Token não encontrado.';
-    saveBtn.disabled=false;
-    await listFiles(); show('Token carregado.','success');
-  }catch(e){ show('Erro ao obter token: '+e,'error'); }
+    const j = await res.json();
+    githubToken = j.github_token;
+    if (!githubToken) {
+      showStatus("Token não encontrado! Bin json deve conter: { \"github_token\": \"token_aqui\" }",'error');
+      return;
+    }
+    showStatus('Token carregado com sucesso!','success');
+    publishBtn.disabled = false;
+    listFiles();
+  } catch (e) {
+    showStatus('Erro ao carregar token: <br>' + e,'error');
+  }
+}
+loadToken();
+
+function showStatus(msg, cls){
+  const s=document.getElementById('status');
+  s.innerHTML=msg; s.className='status '+cls; s.style.display='block';
+}
+function sanitize(n){
+  return n.toLowerCase().replace(/[^a-z0-9-_.]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
 }
 
 async function listFiles(){
   try{
-    fileListDiv.innerHTML='<small>Carregando arquivos...</small>';
-    const url=`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${folder}`;
-    const res=await fetch(url,{headers:{'Authorization':'Bearer '+token}});
-    if(!res.ok) throw '';
-    const items=await res.json();
-    fileCache={};
-    let html='';
-    items.filter(f=>f.name.endsWith('.html')).forEach(f=>{
-      fileCache[f.name]=f.sha;
-      html+=`
-        <div class="file-item">
-          <a href="#" class="file-link" data-name="${f.name}">${f.name}</a>
-          <button class="btn btn-danger" data-file="${f.name}" type="button">🗑️</button>
-        </div>`;
+    fileListDiv.innerHTML='<span class="small">Carregando arquivos...</span>';
+    const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${folder}?ref=main`;
+    const res = await fetch(url, {headers:{'Authorization':'Bearer '+githubToken}});
+    const files = await res.json();
+    console.log('Arquivos retornados da API:', files); // Debug sempre disponível
+    let html = '';
+    files.filter(f=>f.name.endsWith('.html') && f.name !== 'index.html')
+         .forEach(f=>{
+            html+=`<div class="file-item">
+                      <span>
+                        <a href="#" class="file-link" data-file="${f.name}">${f.name}</a>
+                      </span>
+                      <button class="btn-del" data-file="${f.name}" type="button">🗑️ Apagar</button>
+                   </div>`;
+          });
+    fileListDiv.innerHTML = html || '<span class="small">Nenhum arquivo HTML encontrado.</span>';
+    fileListDiv.querySelectorAll('.file-link').forEach(el=>{
+      el.onclick=e=>{
+        e.preventDefault();
+        loadFile(el.dataset.file);
+      }
     });
-    fileListDiv.innerHTML=html||'<small>Nenhum arquivo encontrado.</small>';
-    fileListDiv.querySelectorAll('.file-link').forEach(el=>
-      el.onclick=e=>{e.preventDefault();loadFile(el.dataset.name);}
-    );
-    fileListDiv.querySelectorAll('.btn-danger').forEach(el=>
-      el.onclick=e=>{e.preventDefault();deleteFile(el.dataset.file);}
-    );
-  }catch{
-    fileListDiv.innerHTML='<span class="error">Falha ao listar arquivos!</span>';
+    fileListDiv.querySelectorAll('.btn-del').forEach(el=>{
+      el.onclick=e=>{
+        e.preventDefault();
+        deleteFile(el.dataset.file);
+      }
+    });
+  }catch(e){
+    fileListDiv.innerHTML='<span class="error">Erro ao listar arquivos!</span>';
   }
 }
 async function loadFile(name){
-  show('Carregando conteúdo...','loading');
+  showStatus('Carregando conteúdo...','loading');
   const path=`${folder}/${name}`;
   const url=`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`;
-  const res=await fetch(url,{headers:{'Authorization':'Bearer '+token}});
+  const res=await fetch(url,{headers:{'Authorization':'Bearer '+githubToken}});
+  if(!res.ok){showStatus('Falha ao carregar arquivo '+name,'error');return;}
   const j=await res.json();
   const html=decodeURIComponent(escape(atob(j.content.replace(/\n/g,''))));
-  filenameInput.value=j.name; htmlArea.value=html;
-  currentSha=j.sha;
-  saveBtn.disabled=false; deleteBtn.disabled=false;
-  show('Arquivo carregado.','success');
-}
-async function saveOrUpdate(){
-  const name=sanitize(filenameInput.value.trim());
-  const html=htmlArea.value;
-  if(!name||!html) return show('Preencha nome e HTML!','error');
-  show('Salvando...','loading');
-  const path=`${folder}/${name}`;
-  const url=`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`;
-  // checa se existe para pegar sha:
-  let sha=currentSha;
-  if(!sha&&fileCache[name]){
-    sha=fileCache[name];
-  } else if(!sha) {
-    // tenta fetch na hora se não está cache
-    try{
-      let get=await fetch(url,{headers:{'Authorization':'Bearer '+token}});
-      if(get.ok) {
-        let jad=await get.json();
-        sha=jad.sha;
-      }
-    }catch{}
-  }
-  const data={message:(sha?'Atualiza ':'Cria ')+name,content:btoa(unescape(encodeURIComponent(html))),branch:'main'};
-  if(sha) data.sha=sha;
-  const res=await fetch(url,{method:'PUT',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(data)});
-  const j=await res.json();
-  if(res.ok){ show('Salvo! Deploy ≈30s.','success'); currentSha=j.content.sha; await listFiles(); }
-  else show('Erro: '+j.message,'error');
+  document.getElementById('filename').value=name;
+  document.getElementById('htmlContent').value=html;
+  showStatus('Arquivo carregado: '+name,'success');
 }
 async function deleteFile(name){
-  if(!confirm('Confirma apagar '+name+'?'))return;
-  show('Apagando...','loading');
-  const path=`${folder}/${name}`;
-  const url=`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`;
-  let sha=fileCache[name];
-  if(!sha){
-    // tenta fetch direto
-    const res=await fetch(url,{headers:{'Authorization':'Bearer '+token}});
-    if(res.ok){const x=await res.json();sha=x.sha;}
-  }
-  if(!sha) return show('Arquivo não encontrado para apagar.','error');
-  const data={message:'Apaga '+name,sha,branch:'main'};
-  const res=await fetch(url,{method:'DELETE',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(data)});
-  if(res.ok){
-    show('Apagado!','success');
-    if(filenameInput.value.trim()===name){filenameInput.value=''; htmlArea.value='';currentSha=null;deleteBtn.disabled=true;}
-    await listFiles();
-  }else{
-    const j=await res.json();
-    show('Erro: '+j.message,'error');
+  if(!confirm('Apagar "'+name+'"?'))return;
+  showStatus('Apagando...','loading');
+  const path = `${folder}/${name}`;
+  const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`;
+  let sha = null;
+  // Busca SHA sempre na hora
+  const res = await fetch(url, {headers:{'Authorization':'Bearer '+githubToken}});
+  if(res.ok) { sha = (await res.json()).sha; }
+  if(!sha) return showStatus('Não foi possível obter SHA do arquivo para apagar.','error');
+  const data = {message:'Apaga '+name, sha, branch:'main'};
+  const delres=await fetch(url,{
+    method:'DELETE',
+    headers:{
+      'Authorization':'Bearer '+githubToken,
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify(data)
+  });
+  if(delres.ok){
+    showStatus('Arquivo apagado com sucesso.','success');
+    listFiles();
+  } else {
+    const r=await delres.json();
+    showStatus('Erro ao apagar: '+r.message,'error');
   }
 }
-newBtn.onclick=_=>{
-  filenameInput.value=''; htmlArea.value=''; currentSha=null; deleteBtn.disabled=true;
-  show('Pronto para criar novo arquivo!','success');
-};
-saveBtn.onclick=saveOrUpdate;
-deleteBtn.onclick=_=>{if(filenameInput.value)deleteFile(filenameInput.value.trim());};
-document.getElementById('publishForm').onsubmit=(e)=>{e.preventDefault();saveOrUpdate();};
-window.onload=loadToken;
+async function publicar(){
+  const filename=document.getElementById('filename').value.trim();
+  const html=document.getElementById('htmlContent').value.trim();
+  if(!filename||!html){
+    showStatus('Preencha nome e código HTML!','error');return;
+  }
+  if(!githubToken){
+    showStatus('Token GitHub não carregado!','error');return;
+  }
+  const sanitized = sanitize(filename);
+  const path = `${folder}/${sanitized}`;
+  const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`;
+  showStatus('Publicando...','loading');
+  let sha = null;
+  const resHead = await fetch(url, {headers: {'Authorization':'Bearer '+githubToken}});
+  if(resHead.ok) { sha = (await resHead.json()).sha; }
+  const commitData={message:`Publicando ${sanitized}`,content:btoa(unescape(encodeURIComponent(html))),branch:'main'};
+  if(sha) commitData.sha=sha;
+  const res=await fetch(url,{
+    method:'PUT',
+    headers:{
+      'Authorization':'Bearer '+githubToken,
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify(commitData)
+  });
+  const r=await res.json();
+  if(res.ok){
+    showStatus(`Publicado! <a href="https://tehew.space/${folder}/${sanitized}" target="_blank">${folder}/${sanitized}</a>`,'success');
+    listFiles();
+  } else {
+    showStatus(`Erro: ${r.message}`,'error');
+  }
+}
+document.getElementById('publishForm').addEventListener('submit',e=>{ e.preventDefault(); publicar(); });
+document.getElementById('loadExampleBtn').addEventListener('click',()=>{
+  document.getElementById('htmlContent').value =
+    `<!DOCTYPE html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"><title>Página Exemplo</title></head>
+<body>
+  <h1>Exemplo carregado do botão!</h1>
+  <p>O token é carregado da bin privada.</p>
+</body>
+</html>`;
+  showStatus('Exemplo carregado!','success');
+});
 </script>
 </body>
 </html>
