@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>Maquita - Demo</title>
+  <style>
+    body {
+      background: #f7f7f7;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      margin-bottom: 40px;
+      color: #222;
+    }
+    .container {
+      position: relative;
+      width: 320px;
+      height: 320px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #maquita-img {
+      width: 260px;
+      height: 260px;
+      transition: transform 0.35s cubic-bezier(.37,3.95,.58,.56);
+      cursor: pointer;
+    }
+    #maquita-img.active {
+      transform: rotate(-20deg) scale(1.1) translateY(-10px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+    #audio {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Demo Maquita</h1>
+  <div class="container">
+    <img
+      src="https://tropicalcenter.vteximg.com.br/arquivos/ids/158291-1000-1000/997afd4724fe2db5d579872fa32c5adcawsaccesskeyidakiatclmsgfx4g7qtfvdexpires1652959680signaturezu9xh7zooov9jkshi1nw89jumk03d-db5e68bc36d41c6de816503676910191-1024-1024.png?v=638538962781370000"
+      alt="Maquita"
+      id="maquita-img"
+    />
+    <audio id="audio" src="https://www.myinstants.com/media/sounds/tmpouuwno74.mp3"></audio>
+  </div>
+  <script>
+    const maq = document.getElementById("maquita-img");
+    const audio = document.getElementById("audio");
+    maq.addEventListener("click", () => {
+      maq.classList.add("active");
+      audio.currentTime = 0;
+      audio.play();
+      setTimeout(() => maq.classList.remove("active"), 800);
+    });
+  </script>
+</body>
+</html>
