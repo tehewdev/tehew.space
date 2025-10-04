@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Compras Inteligente</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header .date {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9em;
+        }
+
+        .input-group input, .input-group select {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-add {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-add:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .btn-new {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-new:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-export {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-export:hover {
+            background: #d97706;
+            transform: translateY(-2px);
+        }
+
+        .btn-clear {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-card .number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .lists-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .category {
+            margin-bottom: 30px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .category-header {
+            background: #f3f4f6;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .category-header:hover {
+            background: #e5e7eb;
+        }
+
+        .category-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .category-count {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .items-list {
+            padding: 0;
+        }
+
+        .item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            transition: background 0.3s;
+        }
+
+        .item:hover {
+            background: #f9fafb;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .item.completed {
+            opacity: 0.6;
+            background: #f0fdf4;
+        }
+
+        .item.completed .item-name {
+            text-decoration: line-through;
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        .item-name {
+            flex: 1;
+            font-size: 1.1em;
+            color: #1f2937;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            background: transparent;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .btn-edit {
+            color: #3b82f6;
+        }
+
+        .btn-edit:hover {
+            background: #dbeafe;
+        }
+
+        .btn-delete {
+            color: #ef4444;
+        }
+
+        .btn-delete:hover {
+            background: #fee2e2;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #1f2937;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 Lista de Compras</h1>
+            <div class="date" id="currentDate"></div>
+        </div>
+
+        <div class="content">
+            <div class="controls">
+                <div class="input-group">
+                    <label for="itemName">Nome do Item</label>
+                    <input type="text" id="itemName" placeholder="Ex: Abacate" />
+                </div>
+                <div class="input-group">
+                    <label for="categorySelect">Categoria</label>
+                    <select id="categorySelect">
+                        <option value="Frutas e Vegetais">Frutas e Vegetais</option>
+                        <option value="Laticínios">Laticínios</option>
+                        <option value="Carnes">Carnes</option>
+                        <option value="Temperos">Temperos</option>
+                        <option value="Massas">Massas</option>
+                        <option value="Bebidas">Bebidas</option>
+                        <option value="Limpeza">Limpeza</option>
+                        <option value="Higiene">Higiene</option>
+                        <option value="Padaria">Padaria</option>
+                        <option value="Outros">Outros</option>
+                        <option value="custom">+ Nova Categoria</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-add" onclick="addItem()">➕ Adicionar</button>
+                <button class="btn-new" onclick="newList()">📝 Nova Lista</button>
+                <button class="btn-export" onclick="exportList()">📤 Exportar</button>
+                <button class="btn-clear" onclick="clearCompleted()">🗑️ Limpar Comprados</button>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="number" id="totalItems">0</div>
+                    <div class="label">Total de Itens</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="pendingItems">0</div>
+                    <div class="label">Pendentes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="completedItems">0</div>
+                    <div class="label">Comprados</div>
+                </div>
+            </div>
+
+            <div class="lists-container" id="listsContainer"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="customCategoryModal">
+        <div class="modal-content">
+            <h2>Nova Categoria</h2>
+            <div class="input-group">
+                <label for="customCategoryName">Nome da Categoria</label>
+                <input type="text" id="customCategoryName" placeholder="Ex: Congelados" />
+            </div>
+            <div class="button-group" style="margin-top: 20px;">
+                <button class="btn-add" onclick="saveCustomCategory()">Salvar</button>
+                <button class="btn-clear" onclick="closeModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let shoppingList = [];
+        let customCategories = [];
+
+        // Carregar dados salvos
+        function loadData() {
+            const saved = localStorage.getItem('shoppingList');
+            const savedCategories = localStorage.getItem('customCategories');
+            
+            if (saved) {
+                shoppingList = JSON.parse(saved);
+            } else {
+                // Lista de exemplo
+                shoppingList = [
+                    { id: Date.now() + 1, name: 'Abacate', category: 'Frutas e Vegetais', completed: false, date: new Date().toISOString() },
+                    { id: Date.now() + 2, name: 'Cebola roxa', category: 'Frutas e Vegetais', completed: false, date: new Date().toISOString() },
+                    { id: Date.now() + 3, name: 'Tomate', category: 'Frutas e Vegetais', completed: false, date: new Date().toISOString() },
+                    { id: Date.now() + 4, name: 'Limão', category: 'Frutas e Vegetais', completed: false, date: new Date().toISOString() },
+                    { id: Date.now() + 5, name: 'Sal', category: 'Temperos', completed: false, date: new Date().toISOString() },
+                    { id: Date.now() + 6, name: 'Macarrão (1 pacote)', category: 'Massas', completed: false, date: new Date().toISOString() },
+                    { id: Date.now() + 7, name: 'Leite (1 litro)', category: 'Laticínios', completed: false, date: new Date().toISOString() },
+                    { id: Date.now() + 8, name: 'Queijo', category: 'Laticínios', completed: false, date: new Date().toISOString() },
+                    { id: Date.now() + 9, name: 'Carne (patinho/coxão mole)', category: 'Carnes', completed: false, date: new Date().toISOString() },
+                    { id: Date.now() + 10, name: 'Maizena', category: 'Outros', completed: false, date: new Date().toISOString() },
+                    { id: Date.now() + 11, name: 'Noz moscada', category: 'Temperos', completed: false, date: new Date().toISOString() },
+                    { id: Date.now() + 12, name: 'Páprica picante', category: 'Temperos', completed: false, date: new Date().toISOString() },
+                    { id: Date.now() + 13, name: 'Páprica defumada', category: 'Temperos', completed: false, date: new Date().toISOString() },
+                ];
+            }
+
+            if (savedCategories) {
+                customCategories = JSON.parse(savedCategories);
+                updateCategorySelect();
+            }
+        }
+
+        // Salvar dados
+        function saveData() {
+            localStorage.setItem('shoppingList', JSON.stringify(shoppingList));
+            localStorage.setItem('customCategories', JSON.stringify(customCategories));
+        }
+
+        // Atualizar data
+        function updateDate() {
+            const dateElement = document.getElementById('currentDate');
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            dateElement.textContent = now.toLocaleDateString('pt-BR', options);
+        }
+
+        // Adicionar item
+        function addItem() {
+            const itemName = document.getElementById('itemName').value.trim();
+            const category = document.getElementById('categorySelect').value;
+
+            if (!itemName) {
+                alert('Por favor, digite o nome do item!');
+                return;
+            }
+
+            if (category === 'custom') {
+                document.getElementById('customCategoryModal').classList.add('active');
+                return;
+            }
+
+            const newItem = {
+                id: Date.now(),
+                name: itemName,
+                category: category,
+                completed: false,
+                date: new Date().toISOString()
+            };
+
+            shoppingList.push(newItem);
+            document.getElementById('itemName').value = '';
+            saveData();
+            renderList();
+        }
+
+        // Toggle item completado
+        function toggleItem(id) {
+            const item = shoppingList.find(i => i.id === id);
+            if (item) {
+                item.completed = !item.completed;
+                saveData();
+                renderList();
+            }
+        }
+
+        // Deletar item
+        function deleteItem(id) {
+            if (confirm('Deseja realmente remover este item?')) {
+                shoppingList = shoppingList.filter(i => i.id !== id);
+                saveData();
+                renderList();
+            }
+        }
+
+        // Editar item
+        function editItem(id) {
+            const item = shoppingList.find(i => i.id === id);
+            if (item) {
+                const newName = prompt('Editar item:', item.name);
+                if (newName && newName.trim()) {
+                    item.name = newName.trim();
+                    saveData();
+                    renderList();
+                }
+            }
+        }
+
+        // Nova lista
+        function newList() {
+            if (confirm('Deseja criar uma nova lista? A atual será apagada.')) {
+                shoppingList = [];
+                saveData();
+                renderList();
+            }
+        }
+
+        // Limpar itens comprados
+        function clearCompleted() {
+            if (confirm('Deseja remover todos os itens comprados?')) {
+                shoppingList = shoppingList.filter(i => !i.completed);
+                saveData();
+                renderList();
+            }
+        }
+
+        // Exportar lista
+        function exportList() {
+            let text = '🛒 LISTA DE COMPRAS\n';
+            text += `Data: ${new Date().toLocaleDateString('pt-BR')}\n\n`;
+
+            const categories = [...new Set(shoppingList.map(i => i.category))];
+            
+            categories.forEach(cat => {
+                const items = shoppingList.filter(i => i.category === cat);
+                text += `\n📁 ${cat.toUpperCase()}\n`;
+                items.forEach(item => {
+                    const status = item.completed ? '✅' : '⬜';
+                    text += `${status} ${item.name}\n`;
+                });
+            });
+
+            text += `\n\n📊 ESTATÍSTICAS\n`;
+            text += `Total: ${shoppingList.length} itens\n`;
+            text += `Pendentes: ${shoppingList.filter(i => !i.completed).length}\n`;
+            text += `Comprados: ${shoppingList.filter(i => i.completed).length}\n`;
+
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `lista-compras-${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+        }
+
+        // Renderizar lista
+        function renderList() {
+            const container = document.getElementById('listsContainer');
+            
+            if (shoppingList.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        <h3>Lista vazia</h3>
+                        <p>Adicione itens para começar sua lista de compras!</p>
+                    </div>
+                `;
+                updateStats();
+                return;
+            }
+
+            const categories = [...new Set(shoppingList.map(i => i.category))];
+            let html = '';
+
+            categories.forEach(cat => {
+                const items = shoppingList.filter(i => i.category === cat);
+                html += `
+                    <div class="category">
+                        <div class="category-header" onclick="toggleCategory(this)">
+                            <span class="category-title">📁 ${cat}</span>
+                            <span class="category-count">${items.length}</span>
+                        </div>
+                        <div class="items-list">
+                            ${items.map(item => `
+                                <div class="item ${item.completed ? 'completed' : ''}">
+                                    <input type="checkbox" class="checkbox" 
+                                           ${item.completed ? 'checked' : ''} 
+                                           onchange="toggleItem(${item.id})">
+                                                                        <span class="item-name">${item.name}</span>
+                                    <div class="item-actions">
+                                        <button class="btn-icon btn-edit" onclick="editItem(${item.id})" title="Editar">✏️</button>
+                                        <button class="btn-icon btn-delete" onclick="deleteItem(${item.id})" title="Deletar">🗑️</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            updateStats();
+        }
+
+        // Toggle categoria
+        function toggleCategory(header) {
+            const itemsList = header.nextElementSibling;
+            itemsList.style.display = itemsList.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Atualizar estatísticas
+        function updateStats() {
+            document.getElementById('totalItems').textContent = shoppingList.length;
+            document.getElementById('pendingItems').textContent = shoppingList.filter(i => !i.completed).length;
+            document.getElementById('completedItems').textContent = shoppingList.filter(i => i.completed).length;
+        }
+
+        // Modal de categoria customizada
+        function saveCustomCategory() {
+            const categoryName = document.getElementById('customCategoryName').value.trim();
+            if (!categoryName) {
+                alert('Por favor, digite o nome da categoria!');
+                return;
+            }
+
+            customCategories.push(categoryName);
+            updateCategorySelect();
+            closeModal();
+            
+            document.getElementById('categorySelect').value = categoryName;
+            saveData();
+        }
+
+        function updateCategorySelect() {
+            const select = document.getElementById('categorySelect');
+            const currentValue = select.value;
+            
+            const defaultOptions = `
+                <option value="Frutas e Vegetais">Frutas e Vegetais</option>
+                <option value="Laticínios">Laticínios</option>
+                <option value="Carnes">Carnes</option>
+                <option value="Temperos">Temperos</option>
+                <option value="Massas">Massas</option>
+                <option value="Bebidas">Bebidas</option>
+                <option value="Limpeza">Limpeza</option>
+                <option value="Higiene">Higiene</option>
+                <option value="Padaria">Padaria</option>
+                <option value="Outros">Outros</option>
+            `;
+
+            const customOptions = customCategories.map(cat => 
+                `<option value="${cat}">${cat}</option>`
+            ).join('');
+
+            select.innerHTML = defaultOptions + customOptions + '<option value="custom">+ Nova Categoria</option>';
+            select.value = currentValue;
+        }
+
+        function closeModal() {
+            document.getElementById('customCategoryModal').classList.remove('active');
+            document.getElementById('customCategoryName').value = '';
+        }
+
+        // Enter para adicionar
+        document.getElementById('itemName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addItem();
+            }
+        });
+
+        // Inicializar
+        updateDate();
+        loadData();
+        renderList();
+    </script>
+</body>
+</html>
