@@ -675,36 +675,24 @@
 
         // Exportar lista
         function exportList() {
-            let text = '🛒 LISTA DE COMPRAS
-';
-            text += `Data: ${new Date().toLocaleDateString('pt-BR')}
-
-`;
+            let text = '🛒 LISTA DE COMPRAS\n';
+            text += `Data: ${new Date().toLocaleDateString('pt-BR')}\n\n`;
 
             const categories = [...new Set(shoppingList.map(i => i.category))];
             
             categories.forEach(cat => {
                 const items = shoppingList.filter(i => i.category === cat);
-                text += `
-📁 ${cat.toUpperCase()}
-`;
+                text += `\n📁 ${cat.toUpperCase()}\n`;
                 items.forEach(item => {
                     const status = item.completed ? '✅' : '⬜';
-                    text += `${status} ${item.name}
-`;
+                    text += `${status} ${item.name}\n`;
                 });
             });
 
-            text += `
-
-📊 ESTATÍSTICAS
-`;
-            text += `Total: ${shoppingList.length} itens
-`;
-            text += `Pendentes: ${shoppingList.filter(i => !i.completed).length}
-`;
-            text += `Comprados: ${shoppingList.filter(i => i.completed).length}
-`;
+            text += `\n\n📊 ESTATÍSTICAS\n`;
+            text += `Total: ${shoppingList.length} itens\n`;
+            text += `Pendentes: ${shoppingList.filter(i => !i.completed).length}\n`;
+            text += `Comprados: ${shoppingList.filter(i => i.completed).length}\n`;
 
             // Para mobile, usar Share API se disponível
             if (navigator.share) {
@@ -753,7 +741,7 @@
 
             categories.forEach(cat => {
                 const items = shoppingList.filter(i => i.category === cat);
-                const catId = cat.replace(/s+/g, '-').toLowerCase();
+                const catId = cat.replace(/\s+/g, '-').toLowerCase();
                 html += `
                     <div class="category" id="cat-${catId}">
                         <div class="category-header" onclick="toggleCategory('${catId}')">
