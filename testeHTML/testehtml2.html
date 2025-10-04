@@ -3,226 +3,101 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TesteHTML Publisher Corrigido</title>
-  <!-- CodeMirror CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.css">
+  <title>TesteHTML Publisher Pro - COMPLETO</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
   <style>
-    body {background: linear-gradient(135deg,#667eea,#764ba2); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; min-height:100vh; margin:0; display:flex; align-items:center; justify-content:center;}
-    .container {background:#fff; padding:28px; max-width:980px; width:100%; border-radius:16px; box-shadow:0 12px 32px rgba(0,0,0,0.12);}
-    h1 {margin:0 0 18px;color:#5964f1;text-align:center;}
-    .input-group {margin: 12px 0;}
-    .input-group label {font-weight: 500;}
-    input[type=text] {width:100%;padding:10px;margin:5px 0 0;border-radius:8px;border:1.5px solid #bbb;}
-    .info-bar {display:flex;gap:16px;justify-content:center;margin:15px 0;}
-    .info {background:#f2f3ff;padding:6px 12px;border-radius:8px;font-size:14px;}
-    .editor-toolbar {display:flex;gap:8px;margin:8px 0;}
-    .btn {padding:9px 17px;border:none;border-radius:8px;font-weight:600; cursor:pointer;}
-    .btn-primary {background: linear-gradient(135deg,#667eea,#764ba2); color:#fff;}
-    .btn-secondary {background:#eef1ff;color:#667eea;}
-    .status {margin-top:18px;padding:11px 15px;border-radius:8px;display:none;}
-    .status.success {background:#dff0d8;color:#3c763d;}
-    .status.error {background:#f2dede;color:#a94442;}
-    .file-list {background:#f8f9fa;padding:16px;border-radius:10px;margin-top:22px;}
-    .file-item {display:flex;justify-content:space-between;background:#fff;border:1px solid #eee;padding:10px 14px;margin-top:8px;border-radius:7px;}
-    .file-item a {text-decoration:none;color:#667eea;font-weight:600;}
-    .file-actions button{margin-left:10px;}
-    @media (max-width:700px){
-      .container{padding:14px;}
-      .editor-toolbar{flex-direction:column;}
-    }
-    .CodeMirror {height:auto; min-height:360px;}
+    body {font-family: 'Inter', sans-serif;background: linear-gradient(135deg,#667eea,#764ba2);color:#333;margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;}
+    .container {background:#fff;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.15);padding:32px;max-width:1200px;width:100%;}
+    h1{text-align:center;margin:0 0 16px;color:#333;}
+    .stats{display:flex;gap:16px;justify-content:center;margin-bottom:20px;}
+    .stat{background:#f2f3ff;border-radius:8px;padding:6px 12px;font-size:13px;}
+    .editor{position:relative;background:#1e1e1e;border-radius:10px;overflow:hidden;}
+    .line-numbers{background:#2b2b2b;color:#999;padding:16px;text-align:right;user-select:none;min-width:40px;}
+    .editor textarea{flex:1;background:transparent;color:#ddd;font-family:'Fira Code',monospace;font-size:14px;border:none;outline:none;padding:16px;resize:none;}
+    .editor-wrapper{display:flex;overflow:auto;max-height:400px;}
+    .btn{padding:10px 16px;border:none;border-radius:8px;cursor:pointer;font-weight:600;transition:.2s;}
+    .btn-primary{background:#667eea;color:#fff;}
+    .btn-primary:hover{background:#764ba2;}
+    .btn-secondary{background:#eef1ff;color:#667eea;}
+    .file-list{margin-top:24px;background:#f8f9fa;padding:16px;border-radius:10px;}
+    .file-item{display:flex;justify-content:space-between;background:#fff;border:1px solid #eee;padding:10px 14px;margin-top:8px;border-radius:8px;}
+    .file-item a{text-decoration:none;color:#667eea;font-weight:600;}
+    .file-actions button{margin-left:8px;}
+    .status{margin-top:16px;padding:10px;border-radius:8px;display:none;}
+    .success{background:#dff0d8;color:#3c763d;}
+    .error{background:#f2dede;color:#a94442;}
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🚀 TesteHTML Publisher Corrigido</h1>
-    <div class="info-bar">
-      <div class="info">Linhas: <span id="lineCount">0</span></div>
-      <div class="info">Caracteres: <span id="charCount">0</span></div>
-      <div class="info">Tamanho: <span id="sizeCount">0KB</span></div>
+    <h1>🚀 TesteHTML Publisher Pro - COMPLETO</h1>
+    <div class="stats">
+      <div class="stat">Linhas: <span id="lineCount">0</span></div>
+      <div class="stat">Caracteres: <span id="charCount">0</span></div>
+      <div class="stat">Tamanho: <span id="sizeCount">0KB</span></div>
     </div>
-    <div class="input-group">
-      <label>Nome do arquivo (.html):</label>
-      <input type="text" id="filename" value="minha-pagina.html">
-    </div>
-    <div>
-      <div class="editor-toolbar">
-        <button id="formatBtn" class="btn btn-secondary">Formatar</button>
-        <button id="validateBtn" class="btn btn-secondary">Validar</button>
-        <button id="clearBtn" class="btn btn-secondary">Limpar</button>
-        <button id="publishBtn" class="btn btn-primary">🚀 Publicar no GitHub</button>
-        <select id="themeSelector" class="btn btn-secondary">
-          <option value="default">Light</option>
-          <option value="dracula" selected>Dracula</option>
-        </select>
-      </div>
-      <textarea id="htmlContent" spellcheck="false">
-<!DOCTYPE html>
+
+    <label>Nome do arquivo (.html)</label>
+    <input type="text" id="filename" value="minha-pagina.html" style="width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc;">
+
+    <div class="editor">
+      <div class="editor-wrapper">
+        <div id="lineNumbers" class="line-numbers"></div>
+        <textarea id="htmlContent" spellcheck="false"><!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <title>Exemplo</title>
 </head>
 <body>
-  <h1>Publicação Dinâmica!</h1>
-  <p>Edite aqui seu HTML e publique via GitHub!</p>
+  <h1>Publicação Dinâmica</h1>
+  <p>Edite este código e publique direto no GitHub!</p>
 </body>
-</html>
-      </textarea>
+</html></textarea>
+      </div>
     </div>
+
+    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
+      <button id="formatBtn" class="btn btn-secondary">Formatar</button>
+      <button id="validateBtn" class="btn btn-secondary">Validar</button>
+      <button id="clearBtn" class="btn btn-secondary">Limpar</button>
+      <button id="publishBtn" class="btn btn-primary">🚀 Publicar no GitHub</button>
+    </div>
+
     <div id="status" class="status"></div>
+
     <div class="file-list">
-      <b>Arquivos publicados</b>
+      <h3>📁 Arquivos publicados</h3>
       <div id="fileList">Carregando...</div>
     </div>
   </div>
-  <!-- CodeMirror Scripts -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.js"></script>
+
   <script>
-    // --- CONFIG (adapte a busca de token para seu ambiente seguro no backend) ---
-    const config = {
-      repoOwner: 'tehewdev',
-      repoName: 'tehew.space',
-      folder: 'testeHTML',
-      previewBaseUrl: 'https://tehew.space',
-      // NÃO exponha seu accessKey/token em prod!
-      accessKey: '' // deixe em branco e busque via backend seguro
-    };
-    let token = null;
+    const config={repoOwner:'tehewdev',repoName:'tehew.space',folder:'testeHTML',previewBaseUrl:'https://tehew.space',binId:'68df49ae43b1c97be95893d1',accessKey:'$2a$10$f9KK7vSowGnJI5elo/dAPurqjZAJ3bJaWnsinl/caDfgIcNt28kNi'};
+    let token=null;
 
-    // --- COMPORTAMENTO DO EDITOR ---
-    const editor = CodeMirror.fromTextArea(document.getElementById('htmlContent'), {
-      mode: "htmlmixed",
-      theme: "dracula",
-      lineNumbers: true,
-      lineWrapping: true,
-      foldGutter: true,
-      gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]
-    });
+    async function init(){await loadToken();updateEditorStats();listFiles();document.getElementById('htmlContent').addEventListener('input',updateEditorStats);document.getElementById('formatBtn').addEventListener('click',formatCode);document.getElementById('validateBtn').addEventListener('click',validateHTML);document.getElementById('clearBtn').addEventListener('click',()=>{if(confirm('Limpar editor?')){htmlContent.value='';updateEditorStats();}});document.getElementById('publishBtn').addEventListener('click',publish);}    
 
-    function updateEditorStats() {
-      const content = editor.getValue();
-      document.getElementById('lineCount').textContent = editor.lineCount();
-      document.getElementById('charCount').textContent = content.length;
-      document.getElementById('sizeCount').textContent = (new Blob([content]).size / 1024).toFixed(2) + " KB";
-    }
-    editor.on("change", updateEditorStats);
-    updateEditorStats();
+    function updateEditorStats(){const content=htmlContent.value;const lines=content.split('\n').length;lineCount.textContent=lines;charCount.textContent=content.length;sizeCount.textContent=(new Blob([content]).size/1024).toFixed(2)+' KB';let ln='';for(let i=0;i<lines;i++){ln+='<div>'+(i+1)+'</div>';}lineNumbers.innerHTML=ln;}
 
-    document.getElementById('themeSelector').addEventListener("change", function() {
-      editor.setOption("theme", this.value);
-    });
+    function formatCode(){const lines=htmlContent.value.split(/>\s*</);let ind=0,res='';for(let l of lines){if(l.match(/^\//))ind--;res+='  '.repeat(ind)+'<'+l+'>\n';if(l.match(/^<?\w[^>]*[^\/]$/)&&!l.match(/(br|img|meta|link)/))ind++;}htmlContent.value=res.trim();updateEditorStats();}
 
-    // --- FORMATAÇÃO & VALIDAÇÃO ---
-    document.getElementById('formatBtn').onclick = () => {
-      let content = editor.getValue();
-      let pretty = content.replace(/>\s*</g, '>\n<');
-      editor.setValue(pretty.trim());
-      updateEditorStats();
-      setStatus("Formatado com sucesso.", "success");
-    };
+    function validateHTML(){const c=htmlContent.value;if(!c.match(/<!DOCTYPE/i))return showStatus('Faltando <!DOCTYPE>', 'error');if(!c.match(/<html/i))return showStatus('Faltando <html>', 'error');if(!c.match(/<body/i))return showStatus('Faltando <body>', 'error');showStatus('✅ HTML parece válido!', 'success');}
 
-    document.getElementById('validateBtn').onclick = () => {
-      let content = editor.getValue();
-      let msg = simpleValidateHTML(content);
-      setStatus(msg.ok ? "✅ HTML parece válido!" : msg.error, msg.ok ? "success" : "error");
-    };
+    async function loadToken(){try{const r=await fetch('https://api.jsonbin.io/v3/b/'+config.binId+'/latest',{headers:{'X-Access-Key':config.accessKey,'X-Bin-Meta':'false'}});const d=await r.json();token=d.github_token;showStatus('Token carregado','success');}catch(e){showStatus('Erro token '+e.message,'error');}}
 
-    function simpleValidateHTML(content) {
-      if (!content.match(/<!DOCTYPE/i)) return {ok:false, error:"Faltando <!DOCTYPE>"};
-      if (!content.match(/<html/i)) return {ok:false, error:"Faltando <html>"};
-      if (!content.match(/<body/i)) return {ok:false, error:"Faltando <body>"};
-      // Validação simples de fechamento de tags
-      let tags = [], exp, m, regex = /<\/?([a-zA-Z0-9]+)(\s[^>]*)?>/g;
-      while ((m = regex.exec(content)) != null) {
-        if (m[0][1] !== '/') tags.push(m[1]);
-        else if (!(exp = tags.pop()) || exp !== m[1]) return {ok:false, error:`Problema nas tags: ${m[0]}`};
-      }
-      if (tags.length) return {ok:false, error:`Tags abertas sem fechamento: ${tags.join(', ')}`};
-      return {ok:true};
-    }
+    async function publish(){const filename=document.getElementById('filename').value.trim();const content=document.getElementById('htmlContent').value;if(!filename||!content)return showStatus('Preencha tudo','error');const path=config.folder+'/'+filename;const url='https://api.github.com/repos/'+config.repoOwner+'/'+config.repoName+'/contents/'+path;const body={message:'Publicando '+filename,content:btoa(unescape(encodeURIComponent(content))),branch:'main'};const headers={'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','Content-Type':'application/json'};showStatus('⏳ Publicando...');try{const r=await fetch(url,{method:'PUT',headers,body:JSON.stringify(body)});const res=await r.json();if(!r.ok)throw new Error(res.message);showStatus('✅ Publicado! <a href="'+config.previewBaseUrl+'/'+config.folder+'/'+encodeURIComponent(filename)+'" target="_blank">Ver página</a>','success');listFiles();}catch(e){showStatus('Erro: '+e.message,'error');}}
 
-    document.getElementById('clearBtn').onclick = () => {
-      if (confirm("Limpar editor?")) editor.setValue("");
-      updateEditorStats();
-    };
+    async function listFiles(){if(!token)return;try{const url='https://api.github.com/repos/'+config.repoOwner+'/'+config.repoName+'/contents/'+config.folder+'?ref=main';const r=await fetch(url,{headers:{Authorization:'Bearer '+token}});const files=await r.json();if(!Array.isArray(files))throw new Error('Falha resposta');const html=files.filter(f=>f.name.endsWith('.html')).map(f=>`<div class='file-item'><div><a href='${config.previewBaseUrl}/${config.folder}/${f.name}' target='_blank'>${f.name}</a></div><div class='file-actions'><button onclick="loadFile('${f.name}')">✏️</button><button onclick="deleteFile('${f.name}')">🗑️</button></div></div>`).join('');document.getElementById('fileList').innerHTML=html||'Nenhum arquivo.';}catch(e){document.getElementById('fileList').innerHTML='Erro: '+e.message;}}
 
-    // --- PUBLICAÇÃO (adaptar para ambiente seguro) ---
-    document.getElementById('publishBtn').onclick = async function() {
-      if (!token) return setStatus('Token não carregado.', 'error');
-      const filename = document.getElementById('filename').value.trim();
-      const content = editor.getValue();
-      if (!filename || !content) return setStatus('Preencha tudo', 'error');
-      setStatus('⏳ Publicando...');
-      try {
-        // OBTENHA O TOKEN DE MANEIRA SEGURA (NUNCA deixe hardcoded)
-        const url = "https://api.github.com/repos/" + config.repoOwner + "/" + config.repoName + "/contents/" + config.folder + "/" + filename;
-        const body = {
-          message: "Publicando " + filename,
-          content: btoa(unescape(encodeURIComponent(content))),
-          branch: "main"
-        };
-        const resp = await fetch(url, {
-          method: "PUT",
-          headers: {
-            "Authorization": "Bearer " + token,
-            "Accept": "application/vnd.github+json",
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(body)
-        });
-        const res = await resp.json();
-        if (!resp.ok) throw new Error(res.message);
-        setStatus('✅ Publicado! <a href="' + config.previewBaseUrl + '/' + config.folder + '/' + encodeURIComponent(filename) + '" target="_blank">Ver página</a>', 'success');
-        listFiles();
-      } catch (e) {
-        setStatus("Erro: " + e.message, "error");
-      }
-    };
+    async function loadFile(name){try{const url='https://api.github.com/repos/'+config.repoOwner+'/'+config.repoName+'/contents/'+config.folder+'/'+name;const r=await fetch(url,{headers:{Authorization:'Bearer '+token}});const d=await r.json();htmlContent.value=decodeURIComponent(escape(atob(d.content)));filename.value=name;updateEditorStats();showStatus('Arquivo carregado: '+name,'success');}catch(e){showStatus('Erro '+e.message,'error');}}
 
-    // --- LISTAGEM DE ARQUIVOS (require token válido) ---
-    async function listFiles() {
-      if (!token) return;
-      try {
-        const url = "https://api.github.com/repos/" + config.repoOwner + "/" + config.repoName + "/contents/" + config.folder + "?ref=main";
-        const r = await fetch(url, {headers: {"Authorization": "Bearer " + token}});
-        const files = await r.json();
-        if (!Array.isArray(files)) throw new Error("Falha resposta");
-        const html = files.filter(f=>f.name.endsWith('.html'))
-          .map(f=>`<div class='file-item'><a href='${config.previewBaseUrl}/${config.folder}/${f.name}' target='_blank'>${f.name}</a></div>`)
-          .join('');
-        document.getElementById('fileList').innerHTML = html || "Nenhum arquivo.";
-      } catch (e) {
-        document.getElementById('fileList').innerHTML = "Erro: " + e.message;
-      }
-    }
+    async function deleteFile(name){if(!confirm('Apagar '+name+'?'))return;try{const url='https://api.github.com/repos/'+config.repoOwner+'/'+config.repoName+'/contents/'+config.folder+'/'+name;const r=await fetch(url,{headers:{Authorization:'Bearer '+token}});const d=await r.json();const body={message:'Removendo '+name,sha:d.sha,branch:'main'};await fetch(url,{method:'DELETE',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});showStatus('Removido '+name,'success');listFiles();}catch(e){showStatus('Erro '+e.message,'error');}}
 
-    // --- STATUS ---
-    function setStatus(msg, type) {
-      const s = document.getElementById('status');
-      s.innerHTML = msg;
-      s.className = "status " + (type || "");
-      s.style.display = "block";
-    }
+    function showStatus(msg,type){const s=document.getElementById('status');s.innerHTML=msg;s.className='status '+type;s.style.display='block';}
 
-    // --- LOAD TOKEN VIA BACKEND (SEGURANÇA) ---
-    async function loadToken() {
-      // EXEMPLO: busque do backend, ou API privada. NÃO EXIBA tokens no frontend!
-      // token = (await fetch('/minha-api-segura')).text();
-      // Aqui, exibe aviso apenas. Substitua pela lógica real de busca do token.
-      setStatus("Token não carregado. Adapte a busca do token para o seu ambiente seguro!", "error");
-    }
-
-    // --- Inicialização ---
-    loadToken();
-    listFiles();
+    init();
   </script>
 </body>
 </html>
