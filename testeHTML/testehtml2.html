@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>TesteHTML Publisher Pro</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImEiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjNjY3ZWVhIiAvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3NjRiYTIiIC8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxNCIgZmlsbD0idXJsKCNhKSIgLz4KICA8cGF0aCBmaWxsPSIjZmZmZmZmIiBkPSJNMjEgMThoOGw1IDkgNS05aDhsLTkgMTZ2MTJoLThWMzR6IiAvPgo8L3N2Zz4=" />
+  
+  <!-- Prism.js para syntax highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
+  
+  <style>
+    :root {
+      --gradient-start: #667eea;
+      --gradient-end: #764ba2;
+      --accent: #5964f1;
+      --accent-strong: #4650d8;
+      --success: #28a745;
+      --danger: #dc3545;
+      --warning: #ffc107;
+      --neutral: #f8f9fa;
+      --text-main: #2f2f2f;
+      --text-muted: #646b7a;
+      --editor-bg: #1d1f21;
+      --editor-line-bg: #282a2e;
+      --editor-line-num: #969896;
+      --editor-border: #373b41;
+    }
+    
+    *, *::before, *::after { box-sizing: border-box; }
+    
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', 'Helvetica Neue', sans-serif;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      color: var(--text-main);
+      overflow-y: auto;
+    }
+    
+    .container {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.16);
+      width: 100%;
+      max-width: 1200px;
+      padding: clamp(24px, 4vw, 40px) clamp(20px, 5vw, 44px);
+    }
+    
+    .hero {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(24px, 5vw, 32px);
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+      font-weight: 700;
+    }
+    
+    .hero .intro {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: clamp(13px, 3vw, 15px);
+    }
+    
+    .editor-stats {
+      display: flex;
+      gap: 16px;
+      margin-top: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: var(--neutral);
+      border-radius: 6px;
+    }
+    
+    .stat-label {
+      font-weight: 600;
+    }
+    
+    form {
+      display: grid;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .field-group label {
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      font-size: 14px;
+    }
+    
+    .field-group input {
+      width: 100%;
+      font-size: 15px;
+      padding: 14px 12px;
+      border-radius: 10px;
+      border: 2px solid #e1e4ef;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      background-color: #fff;
+      font-family: inherit;
+    }
+    
+    .field-group input:focus {
+      border-color: var(--accent);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.16);
+    }
+    
+    /* Editor container com números de linha */
+    .code-editor-wrapper {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid #e1e4ef;
+      background: var(--editor-bg);
+      transition: border-color 0.2s ease;
+    }
+    
+    .code-editor-wrapper:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.16);
+    }
+    
+    .code-editor-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: #2d2d2d;
+      border-bottom: 1px solid var(--editor-border);
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .editor-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #969896;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .editor-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    
+    .editor-btn {
+      padding: 5px 10px;
+      font-size: 11px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #c5c8c6;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    
+    .editor-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .code-editor-container {
+      display: flex;
+      background: var(--editor-bg);
+      max-height: 600px;
+      overflow: auto;
+    }
+    
+    .line-numbers {
+      background: var(--editor-line-bg);
+      color: var(--editor-line-num);
+      padding: 16px 12px 16px 16px;
+      text-align: right;
+      user-select: none;
+      font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      min-width: 50px;
+      border-right: 1px solid var(--editor-border);
+      position: sticky;
+      left: 0;
+      z-index: 1;
+    }
+    
+    .line-numbers div {
+      counter-increment: line;
+    }
+    
+    .line-numbers div::before {
+      content: counter(line);
+      display: block;
+    }
+    
+    #htmlContent {
+      flex: 1;
+      min-height: 300px;
+      font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 16px;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: #c5c8c6;
+      resize: none;
+      tab-size: 2;
+      white-space: pre;
+      overflow-wrap: normal;
+      overflow-x: auto;
+    }
+    
+    #htmlContent::selection {
+      background: rgba(102, 126, 234, 0.3);
+    }
+    
+    .validation-panel {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      display: none;
+      background: #fcf8e3;
+      border: 1px solid #faebcc;
+      color: #8a6d3b;
+    }
+    
+    .validation-panel.show {
+      display: block;
+    }
+    
+    .validation-panel.error {
+      background: #f2dede;
+      border-color: #ebccd1;
+      color: #a94442;
+    }
+    
+    .validation-panel.success {
+      background: #dff0d8;
+      border-color: #d6e9c6;
+      color: #3c763d;
+    }
+    
+    .validation-title {
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .validation-list {
+      margin: 0;
+      padding-left: 20px;
+    }
+    
+    .validation-list li {
+      margin: 4px 0;
+    }
+    
+    .hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    
+    .button-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    
+    .btn {
+      padding: 15px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      color: #fff;
+      box-shadow: 0 14px 28px rgba(87, 99, 230, 0.28);
+    }
+    
+    .btn-primary:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+      box-shadow: none;
+      transform: none;
+    }
+    
+    .btn-primary:not(:disabled):hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 32px rgba(87, 99, 230, 0.32);
+    }
+    
+    .btn-secondary {
+      background: #eef1ff;
+      color: var(--accent);
+      border: 2px solid transparent;
+    }
+    
+    .btn-secondary:hover {
+      background: #e0e5ff;
+      border-color: rgba(102, 126, 234, 0.2);
+    }
+    
+    .btn-refresh {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(102, 126, 234, 0.28);
+      background: rgba(102, 126, 234, 0.08);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s ease, border-color 0.18s ease;
+    }
+    
+    .btn-refresh:hover {
+      background: rgba(102, 126, 234, 0.16);
+      border-color: rgba(102, 126, 234, 0.4);
+    }
+    
+    .status {
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin-top: -4px;
+      font-size: 14px;
+      display: none;
+    }
+    
+    .status a {
+      color: inherit;
+      font-weight: 600;
+      text-decoration: underline;
+    }
+    
+    .status-info {
+      display: block;
+      background: #e8f1ff;
+      color: #1f4ea6;
+      border: 1px solid rgba(31, 78, 166, 0.28);
+    }
+    
+    .status-success {
+      display: block;
+      background: #e9f7ef;
+      color: #1f6a3b;
+      border: 1px solid rgba(40, 167, 69, 0.28);
+    }
+    
+    .status-error {
+      display: block;
+      background: #fcebec;
+      color: #8b1b2a;
+      border: 1px solid rgba(220, 53, 69, 0.28);
+    }
+    
+    .file-list {
+      margin-top: 34px;
+      background: var(--neutral);
+      border-radius: 14px;
+      padding: 20px 22px;
+    }
+    
+    .file-list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 12px;
+    }
+    
+    .file-list-header h2 {
+      margin: 0;
+      font-size: 18px;
+      color: var(--text-main);
+      font-weight: 600;
+    }
+    
+    .file-list-content {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .file-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      border-radius: 10px;
+      padding: 12px 14px;
+      border: 1px solid #e5e9f2;
+      gap: 12px;
+      transition: box-shadow 0.2s ease;
+    }
+    
+    .file-item:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    
+    .file-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .file-info a {
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .file-info a:hover {
+      text-decoration: underline;
+    }
+    
+    .file-path {
+      font-size: 12px;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .file-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    
+    .btn-ghost,
+    .btn-del {
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.16s ease, box-shadow 0.16s ease;
+      white-space: nowrap;
+    }
+    
+    .btn-ghost {
+      background: rgba(102, 126, 234, 0.12);
+      color: var(--accent-strong);
+    }
+    
+    .btn-ghost:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 18px rgba(102, 126, 234, 0.18);
+    }
+    
+    .btn-del {
+      background: rgba(220, 53, 69, 0.12);
+      color: var(--danger);
+    }
+    
+    .btn-del:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 18px rgba(220, 53, 69, 0.2);
+    }
+    
+    .small {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    /* Melhorias para Mobile */
+    @media (max-width: 768px) {
+      body {
+        padding: 12px 8px;
+      }
+      
+      .container {
+        padding: 20px 16px;
+        border-radius: 14px;
+      }
+      
+      .hero {
+        margin-bottom: 20px;
+        text-align: left;
+      }
+      
+      .hero h1 {
+        font-size: clamp(22px, 6vw, 28px);
+      }
+      
+      .editor-stats {
+        justify-content: flex-start;
+        font-size: 12px;
+      }
+      
+      .stat-item {
+        padding: 3px 8px;
+      }
+      
+      .code-editor-toolbar {
+        padding: 8px 10px;
+      }
+      
+      .editor-label {
+        font-size: 11px;
+      }
+      
+      .editor-btn {
+        padding: 4px 8px;
+        font-size: 10px;
+      }
+      
+      .code-editor-container {
+        max-height: 400px;
+      }
+      
+      .line-numbers {
+        padding: 12px 8px 12px 10px;
+        font-size: 12px;
+        min-width: 40px;
+      }
+      
+      #htmlContent {
+        font-size: 12px;
+        padding: 12px;
+        min-height: 250px;
+      }
+      
+      .button-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .btn {
+        padding: 13px 16px;
+        font-size: 14px;
+      }
+      
+      .file-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .file-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+      
+      .btn-ghost,
+      .btn-del {
+        flex: 1;
+      }
+    }
+    
+    /* Modo paisagem em dispositivos pequenos */
+    @media (max-width: 768px) and (orientation: landscape) {
+      .code-editor-container {
+        max-height: 250px;
+      }
+      
+      #htmlContent {
+        min-height: 200px;
+      }
+    }
+    
+    /* Suporte touch para melhor UX em mobile */
+    @media (hover: none) and (pointer: coarse) {
+      .btn,
+      .editor-btn,
+      .btn-ghost,
+      .btn-del,
+      .btn-refresh {
+        min-height: 44px;
+      }
+      
+      .editor-btn {
+        min-height: 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="hero">
+      <h1>🚀 TesteHTML Publisher Pro</h1>
+      <p class="intro">Editor avançado de HTML com números de linha, syntax highlighting e validação em tempo real.</p>
+      <div class="editor-stats">
+        <div class="stat-item">
+          <span class="stat-label">Linhas:</span>
+          <span id="lineCount">1</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Caracteres:</span>
+          <span id="charCount">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Tamanho:</span>
+          <span id="sizeCount">0 KB</span>
+        </div>
+      </div>
+    </header>
+
+    <form id="publishForm" novalidate>
+      <div class="field-group">
+        <label for="filename">
+          <span>Nome do arquivo (.html)</span>
+          <span id="sanitizedPreview" class="hint">Nome resultante: minha-pagina.html</span>
+        </label>
+        <input type="text" id="filename" name="filename" value="minha-pagina.html" autocomplete="off" required>
+      </div>
+
+      <div class="field-group">
+        <label for="htmlContent">Editor de Código HTML</label>
+        <div class="code-editor-wrapper">
+          <div class="code-editor-toolbar">
+            <span class="editor-label">💻 HTML Editor</span>
+            <div class="editor-actions">
+              <button type="button" class="editor-btn" id="formatBtn" title="Formatar código">Formatar</button>
+              <button type="button" class="editor-btn" id="validateBtn" title="Validar HTML">Validar</button>
+              <button type="button" class="editor-btn" id="clearBtn" title="Limpar editor">Limpar</button>
+            </div>
+          </div>
+          <div class="code-editor-container">
+            <div class="line-numbers" id="lineNumbers" aria-hidden="true">
+              <div></div>
+            </div>
+            <textarea 
+              id="htmlContent" 
+              name="htmlContent" 
+              required 
+              spellcheck="false"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
+              placeholder="Digite ou cole seu código HTML aqui..."
+            ><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Exemplo</title>
+</head>
+<body>
+  <h1>Publicação dinâmica via GitHub</h1>
+  <p>Edite este código e publique!</p>
+</body>
+</html></textarea>
+          </div>
+        </div>
+        <div id="validationPanel" class="validation-panel"></div>
+      </div>
+
+      <div class="button-row">
+        <button type="button" class="btn btn-secondary" id="loadExampleBtn">📋 Carregar Exemplo</button>
+        <button type="submit" class="btn btn-primary" id="publishBtn" disabled>🚀 Publicar no GitHub</button>
+      </div>
+    </form>
+
+    <div id="status" class="status" role="alert" aria-live="polite"></div>
+
+    <section class="file-list">
+      <div class="file-list-header">
+        <h2>📁 Arquivos existentes</h2>
+        <button type="button" class="btn-refresh" id="refreshBtn">🔄 Atualizar lista</button>
+      </div>
+      <div id="fileList" class="file-list-content">
+        <span class="small">Carregando arquivos...</span>
+      </div>
+      <p class="small">⏱️ Tempo de deploy: ~30s após salvar, criar ou remover arquivos.</p>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const config = {
+        repoOwner: 'tehewdev',
+        repoName: 'tehew.space',
+        folder: 'testeHTML',
+        previewBaseUrl: 'https://tehew.space',
+        binId: '68df49ae43b1c97be95893d1',
+        accessKey: '$2a$10$f9KK7vSowGnJI5elo/dAPurqjZAJ3bJaWnsinl/caDfgIcNt28kNi'
+      };
+
+      const state = {
+        token: null,
+        isPublishing: false,
+        statusTimer: null
+      };
+
+      const ui = {
+        form: document.getElementById('publishForm'),
+        filename: document.getElementById('filename'),
+        htmlContent: document.getElementById('htmlContent'),
+        publishBtn: document.getElementById('publishBtn'),
+        loadExampleBtn: document.getElementById('loadExampleBtn'),
+        refreshBtn: document.getElementById('refreshBtn'),
+        formatBtn: document.getElementById('formatBtn'),
+        validateBtn: document.getElementById('validateBtn'),
+        clearBtn: document.getElementById('clearBtn'),
+        fileList: document.getElementById('fileList'),
+        status: document.getElementById('status'),
+        sanitizedPreview: document.getElementById('sanitizedPreview'),
+        lineNumbers: document.getElementById('lineNumbers'),
+        lineCount: document.getElementById('lineCount'),
+        charCount: document.getElementById('charCount'),
+        sizeCount: document.getElementById('sizeCount'),
+        validationPanel: document.getElementById('validationPanel')
+      };
+
+      const defaultExample = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Página Exemplo</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 2rem;
+      margin: 2rem 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 Exemplo Carregado!</h1>
+  <div class="card">
+    <h2>Bem-vindo ao TesteHTML Publisher Pro</h2>
+    <p>Este é um exemplo de página HTML com estilos modernos.</p>
+    <p>O token é carregado automaticamente da bin privada.</p>
+  </div>
+  <script>
+    console.log('Página carregada com sucesso!');
+  </script>
+</body>
+</html>`;
+
+      init();
+
+      function init() {
+        ui.form.addEventListener('submit', publicar);
+        ui.filename.addEventListener('input', handleFilenameChange);
+        ui.htmlContent.addEventListener('input', handleEditorInput);
+        ui.htmlContent.addEventListener('scroll', syncScroll);
+        ui.htmlContent.addEventListener('keydown', handleTabKey);
+        ui.loadExampleBtn.addEventListener('click', carregarExemplo);
+        ui.refreshBtn.addEventListener('click', listFiles);
+        ui.formatBtn.addEventListener('click', formatCode);
+        ui.validateBtn.addEventListener('click', validateHTML);
+        ui.clearBtn.addEventListener('click', clearEditor);
+        ui.fileList.addEventListener('click', handleFileListAction);
+        
+        updateSanitizedPreview();
+        updateLineNumbers();
+        updateStats();
+        updatePublishAvailability();
+        loadToken();
+      }
+
+      function handleTabKey(event) {
+        if (event.key === 'Tab') {
+          event.preventDefault();
+          const start = ui.htmlContent.selectionStart;
+          const end = ui.htmlContent.selectionEnd;
+          const value = ui.htmlContent.value;
+          
+          ui.htmlContent.value = value.substring(0, start) + '  ' + value.substring(end);
+          ui.htmlContent.selectionStart = ui.htmlContent.selectionEnd = start + 2;
+        }
+      }
+
+      function handleEditorInput() {
+        updateLineNumbers();
+        updateStats();
+        updatePublishAvailability();
+      }
+
+      function syncScroll() {
+        ui.lineNumbers.scrollTop = ui.htmlContent.scrollTop;
+      }
+
+      function updateLineNumbers() {
+        const lines = ui.htmlContent.value.split('\n');
+        const lineCount = lines.length;
+        
+        let numbersHTML = '';
+        for (let i = 0; i < lineCount; i++) {
+          numbersHTML += '<div></div>';
+        }
+        ui.lineNumbers.innerHTML = numbersHTML;
+      }
+
+      function updateStats() {
+        const content = ui.htmlContent.value;
+        const lines = content.split('\n').length;
+        const chars = content.length;
+        const bytes = new Blob([content]).size;
+        const kb = (bytes / 1024).toFixed(2);
+        
+        ui.lineCount.textContent = lines;
+        ui.charCount.textContent = chars;
+        ui.sizeCount.textContent = kb + ' KB';
+      }
+
+      function formatCode() {
+        try {
+          let code = ui.htmlContent.value.trim();
+          let formatted = formatHTML(code);
+          ui.htmlContent.value = formatted;
+          updateLineNumbers();
+          updateStats();
+          setStatus('Código formatado com sucesso!', 'success', { autoHide: 2500 });
+        } catch (error) {
+          setStatus('Erro ao formatar código: ' + error.message, 'error');
+        }
+      }
+
+      function formatHTML(html) {
+        const tab = '  ';
+        let result = '';
+        let indent = 0;
+        
+        html.split(/>\s*</).forEach(function(element) {
+          if (element.match(/^\/\w/)) {
+            indent--;
+          }
+          
+          result += tab.repeat(indent < 0 ? 0 : indent);
+          
+          if (element.match(/^<?\w[^>]*[^\/]$/) && !element.startsWith('input') && !element.startsWith('br') && !element.startsWith('img') && !element.startsWith('meta') && !element.startsWith('link')) {
+            indent++;
+          }
+          
+          result += '<' + element + '>\n';
+        });
+        
+        return result.substring(1, result.length - 2);
+      }
+
+      function validateHTML() {
+        const content = ui.htmlContent.value.trim();
+        const issues = [];
+        
+        if (!content) {
+          showValidation('Nenhum código para validar', [], 'error');
+          return;
+        }
+        
+        // Validações básicas
+        if (!content.match(/<!DOCTYPE/i)) {
+          issues.push('Faltando declaração <!DOCTYPE html>');
+        }
+        
+        if (!content.match(/<html/i)) {
+          issues.push('Faltando tag <html>');
+        }
+        
+        if (!content.match(/<head/i)) {
+          issues.push('Faltando tag <head>');
+        }
+        
+        if (!content.match(/<body/i)) {
+          issues.push('Faltando tag <body>');
+        }
+        
+        if (!content.match(/<meta.*charset/i)) {
+          issues.push('Recomendado: adicionar <meta charset="UTF-8">');
+        }
+        
+        if (!content.match(/<title/i)) {
+          issues.push('Recomendado: adicionar tag <title>');
+        }
+        
+        // Verifica tags não fechadas (simplificado)
+        const openTags = content.match(/<(\w+)[^>]*>/g) || [];
+        const closeTags = content.match(/<\/(\w+)>/g) || [];
+        const selfClosing = ['br', 'img', 'input', 'meta', 'link', 'hr'];
+        
+        const openCount = {};
+        openTags.forEach(tag => {
+          const tagName = tag.match(/<(\w+)/)[1].toLowerCase();
+          if (!selfClosing.includes(tagName)) {
+            openCount[tagName] = (openCount[tagName] || 0) + 1;
+          }
+        });
+        
+        closeTags.forEach(tag => {
+          const tagName = tag.match(/<\/(\w+)>/)[1].toLowerCase();
+          if (openCount[tagName]) {
+            openCount[tagName]--;
+          }
+        });
+        
+        Object.keys(openCount).forEach(tag => {
+          if (openCount[tag] > 0) {
+            issues.push(`Possível tag não fechada: <${tag}>`);
+          }
+        });
+        
+        if (issues.length === 0) {
+          showValidation('✅ HTML válido!', ['Estrutura básica presente', 'Todas as tags aparentam estar fechadas'], 'success');
+        } else {
+          showValidation('⚠️ Problemas encontrados', issues, 'error');
+        }
+      }
+
+      function showValidation(title, items, type) {
+        const panel = ui.validationPanel;
+        panel.className = 'validation-panel show ' + type;
+        
+        let html = '<div class="validation-title">' + title + '</div>';
+        
+        if (items.length > 0) {
+          html += '<ul class="validation-list">';
+          items.forEach(item => {
+            html += '<li>' + escapeHtml(item) + '</li>';
+          });
+          html += '</ul>';
+        }
+        
+        panel.innerHTML = html;
+        
+        setTimeout(() => {
+          panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+      }
+
+      function clearEditor() {
+        if (confirm('Deseja realmente limpar o editor?')) {
+          ui.htmlContent.value = '';
+          updateLineNumbers();
+          updateStats();
+          ui.validationPanel.className = 'validation-panel';
+          setStatus('Editor limpo!', 'success', { autoHide: 2000 });
+        }
+      }
+
+      function handleFilenameChange() {
+        updateSanitizedPreview();
+        updatePublishAvailability();
+      }
+
+      function carregarExemplo() {
+        ui.htmlContent.value = defaultExample;
+        updateLineNumbers();
+        updateStats();
+        updatePublishAvailability();
+        ui.validationPanel.className = 'validation-panel';
+        setStatus('Exemplo carregado no editor!', 'success', { autoHide: 3200 });
+      }
+
+      function handleFileListAction(event) {
+        const button = event.target.closest('button[data-action]');
+        if (!button) {
+          return;
+        }
+        const action = button.dataset.action;
+        const filename = button.dataset.file;
+        if (!filename) {
+          return;
+        }
+        if (action === 'load') {
+          loadFile(filename);
+        } else if (action === 'delete') {
+          deleteFile(filename);
+        }
+      }
+
+      async function loadToken() {
+        setStatus('Carregando token...', 'info');
+        try {
+          const url = 'https://api.jsonbin.io/v3/b/' + config.binId + '/latest';
+          const response = await fetch(url, {
+            headers: {
+              'X-Access-Key': config.accessKey,
+              'X-Bin-Meta': 'false'
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error(response.status + ' ' + response.statusText);
+          }
+
+          const data = await parseJsonResponse(response);
+          const token = data && data.github_token;
+
+          if (!token) {
+            throw new Error('Token não encontrado na bin (campo "github_token").');
+          }
+
+          state.token = token;
+          updatePublishAvailability();
+          setStatus('Token carregado com sucesso!', 'success', { autoHide: 3200 });
+          await listFiles();
+        } catch (error) {
+          state.token = null;
+          updatePublishAvailability();
+          setStatus('Erro ao carregar token: ' + error.message, 'error');
+        }
+      }
+
+      async function listFiles() {
+        if (!state.token) {
+          ui.fileList.innerHTML = '<span class="small">Token não carregado.</span>';
+          return;
+        }
+
+        ui.fileList.innerHTML = '<span class="small">Carregando arquivos...</span>';
+
+        try {
+          const url = 'https://api.github.com/repos/' + config.repoOwner + '/' + config.repoName + '/contents/' + config.folder + '?ref=main';
+          const response = await fetch(url, {
+            headers: authHeaders()
+          });
+
+          if (response.status === 404) {
+            renderFileList([]);
+            return;
+          }
+
+          if (!response.ok) {
+            throw new Error(response.status + ' ' + response.statusText);
+          }
+
+          const files = await parseJsonResponse(response);
+          if (!Array.isArray(files)) {
+            throw new Error('Resposta inesperada da API do GitHub.');
+          }
+
+          const htmlFiles = files
+            .filter(function (file) {
+              return file.name && file.name.endsWith('.html') && file.name !== 'index.html';
+            })
+            .sort(function (a, b) {
+              return a.name.localeCompare(b.name);
+            });
+
+          renderFileList(htmlFiles);
+        } catch (error) {
+          const safeError = escapeHtml(error.message || 'Erro desconhecido');
+          ui.fileList.innerHTML = '<span class="small" style="color:#b72136;">Erro ao listar arquivos: ' + safeError + '</span>';
+        }
+      }
+
+      function renderFileList(files) {
+        if (!files.length) {
+          ui.fileList.innerHTML = '<span class="small">Nenhum arquivo HTML encontrado.</span>';
+          return;
+        }
+
+        const content = files.map(function (file) {
+          const filename = file.name;
+          const safeFilename = escapeHtml(filename);
+          const pathInfo = escapeHtml(config.folder + '/' + filename);
+          const encodedFilename = encodeURIComponent(filename);
+          const dataAttr = escapeAttribute(filename);
+          const viewUrl = config.previewBaseUrl + '/' + config.folder + '/' + encodedFilename;
+          return (
+            '<div class="file-item" data-filename="' + dataAttr + '">' +
+              '<div class="file-info">' +
+                '<a href="' + viewUrl + '" target="_blank" rel="noopener">' + safeFilename + '</a>' +
+                '<span class="file-path">' + pathInfo + '</span>' +
+              '</div>' +
+              '<div class="file-actions">' +
+                '<button type="button" class="btn-ghost" data-action="load" data-file="' + dataAttr + '">✏️ Editar</button>' +
+                '<button type="button" class="btn-del" data-action="delete" data-file="' + dataAttr + '">🗑️ Apagar</button>' +
+              '</div>' +
+            '</div>'
+          );
+        }).join('');
+
+        ui.fileList.innerHTML = content;
+      }
+
+      async function loadFile(name) {
+        if (!state.token) {
+          setStatus('Token GitHub não carregado.', 'error');
+          return;
+        }
+
+        setStatus('Carregando "' + name + '"...', 'info');
+
+        try {
+          const path = config.folder + '/' + name;
+          const url = 'https://api.github.com/repos/' + config.repoOwner + '/' + config.repoName + '/contents/' + path;
+          const response = await fetch(url, { headers: authHeaders() });
+
+          if (!response.ok) {
+            throw new Error(response.status + ' ' + response.statusText);
+          }
+
+          const data = await parseJsonResponse(response);
+          const content = data && data.content ? fromBase64(data.content) : '';
+
+          ui.filename.value = name;
+          ui.htmlContent.value = content;
+          updateSanitizedPreview();
+          updateLineNumbers();
+          updateStats();
+          updatePublishAvailability();
+          ui.validationPanel.className = 'validation-panel';
+
+          setStatus('Arquivo "' + name + '" carregado para edição.', 'success', { autoHide: 3600 });
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (error) {
+          setStatus('Erro ao carregar "' + name + '": ' + error.message, 'error');
+        }
+      }
+
+      async function deleteFile(name) {
+        if (!state.token) {
+          setStatus('Token GitHub não carregado.', 'error');
+          return;
+        }
+
+        if (!confirm('Apagar "' + name + '"?')) {
+          return;
+        }
+
+        setStatus('Apagando "' + name + '"...', 'info');
+
+        try {
+          const sha = await getFileSha(name);
+          if (!sha) {
+            throw new Error('Não foi possível obter o SHA do arquivo.');
+          }
+
+          const path = config.folder + '/' + name;
+          const url = 'https://api.github.com/repos/' + config.repoOwner + '/' + config.repoName + '/contents/' + path;
+          const body = {
+            message: 'Apaga ' + name,
+            sha: sha,
+            branch: 'main'
+          };
+
+          const response = await fetch(url, {
+            method: 'DELETE',
+            headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
+            body: JSON.stringify(body)
+          });
+
+          const data = await parseJsonResponse(response);
+          if (!response.ok) {
+            const message = data && data.message ? data.message : (response.status + ' ' + response.statusText);
+            throw new Error(message);
+          }
+
+          setStatus('Arquivo "' + name + '" removido com sucesso.', 'success', { autoHide: 3600 });
+          await listFiles();
+        } catch (error) {
+          setStatus('Erro ao apagar "' + name + '": ' + error.message, 'error');
+        }
+      }
+
+      async function publicar(event) {
+        event.preventDefault();
+
+        if (!state.token) {
+          setStatus('Token GitHub não carregado.', 'error');
+          return;
+        }
+
+        const rawFilename = ui.filename.value.trim();
+        const sanitized = sanitizeName(rawFilename);
+        const htmlContent = ui.htmlContent.value.trim();
+
+        if (!sanitized) {
+          setStatus('Informe um nome de arquivo válido.', 'error');
+          return;
+        }
+
+        if (!htmlContent) {
+          setStatus('Informe o conteúdo HTML que será publicado.', 'error');
+          return;
+        }
+
+        if (sanitized !== rawFilename) {
+          ui.filename.value = sanitized;
+          updateSanitizedPreview();
+        }
+
+        setPublishing(true);
+        setStatus('Publicando "' + sanitized + '"...', 'info');
+
+        try {
+          const sha = await getFileSha(sanitized);
+          const path = config.folder + '/' + sanitized;
+          const url = 'https://api.github.com/repos/' + config.repoOwner + '/' + config.repoName + '/contents/' + path;
+
+          const body = {
+            message: 'Publicando ' + sanitized,
+            content: toBase64(htmlContent),
+            branch: 'main'
+          };
+          if (sha) {
+            body.sha = sha;
+          }
+
+          const response = await fetch(url, {
+            method: 'PUT',
+            headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
+            body: JSON.stringify(body)
+          });
+
+          const data = await parseJsonResponse(response);
+          if (!response.ok) {
+            const message = data && data.message ? data.message : (response.status + ' ' + response.statusText);
+            throw new Error(message);
+          }
+
+          const previewUrl = config.previewBaseUrl + '/' + config.folder + '/' + encodeURIComponent(sanitized);
+          setStatus('✅ Publicado! <a href="' + previewUrl + '" target="_blank" rel="noopener">Abrir página publicada</a>', 'success', { asHtml: true });
+          await listFiles();
+        } catch (error) {
+          setStatus('Erro ao publicar: ' + error.message, 'error');
+        } finally {
+          setPublishing(false);
+        }
+      }
+
+      async function getFileSha(name) {
+        if (!state.token) {
+          return null;
+        }
+        const path = config.folder + '/' + name;
+        const url = 'https://api.github.com/repos/' + config.repoOwner + '/' + config.repoName + '/contents/' + path;
+        const response = await fetch(url, { headers: authHeaders() });
+
+        if (response.status === 404) {
+          return null;
+        }
+
+        if (!response.ok) {
+          throw new Error(response.status + ' ' + response.statusText);
+        }
+
+        const data = await parseJsonResponse(response);
+        return data && data.sha ? data.sha : null;
+      }
+
+      function updateSanitizedPreview() {
+        const raw = ui.filename.value.trim();
+        if (!raw) {
+          ui.sanitizedPreview.textContent = 'Nome resultante: —';
+          return;
+        }
+        const sanitized = sanitizeName(raw);
+        ui.sanitizedPreview.textContent = 'Nome resultante: ' + (sanitized || '—');
+      }
+
+      function updatePublishAvailability() {
+        const hasContent = ui.htmlContent.value.trim().length > 0;
+        const sanitized = sanitizeName(ui.filename.value.trim());
+        const canPublish = Boolean(state.token && hasContent && sanitized);
+        ui.publishBtn.disabled = state.isPublishing || !canPublish;
+      }
+
+      function setPublishing(isPublishing) {
+        state.isPublishing = isPublishing;
+        updatePublishAvailability();
+        ui.publishBtn.textContent = isPublishing ? '⏳ Publicando...' : '🚀 Publicar no GitHub';
+      }
+
+      function sanitizeName(name) {
+        if (!name) {
+          return '';
+        }
+        var base = name;
+        if (typeof base.normalize === 'function') {
+          base = base.normalize('NFD');
+        }
+        base = base.replace(/[\u0300-\u036f]/g, '');
+        base = base.toLowerCase().trim();
+
+        base = base.replace(/\.html?$/g, '');
+        base = base.replace(/[^a-z0-9._-]+/g, '-');
+        base = base.replace(/-+/g, '-');
+        base = base.replace(/^-+|-+$/g, '');
+        base = base.replace(/\.+/g, '.');
+        base = base.replace(/^\.+|\.+$/g, '');
+
+        if (!base) {
+          return '';
+        }
+
+        if (!base.endsWith('.html')) {
+          base = base + '.html';
+        }
+
+        return base;
+      }
+
+      function authHeaders() {
+        return {
+          Authorization: 'Bearer ' + state.token,
+          Accept: 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28'
+        };
+      }
+
+      function setStatus(message, type, options) {
+        clearTimeout(state.statusTimer);
+        if (!message) {
+          ui.status.className = 'status';
+          ui.status.style.display = 'none';
+          ui.status.textContent = '';
+          return;
+        }
+
+        const cssClass = type ? 'status-' + type : 'status-info';
+        ui.status.className = 'status ' + cssClass;
+        ui.status.style.display = 'block';
+        if (options && options.asHtml) {
+          ui.status.innerHTML = message;
+        } else {
+          ui.status.textContent = message;
+        }
+
+        if (options && options.autoHide) {
+          state.statusTimer = setTimeout(function () {
+            setStatus(null);
+          }, options.autoHide);
+        }
+      }
+
+      async function parseJsonResponse(response) {
+        const text = await response.text();
+        if (!text) {
+          return {};
+        }
+        try {
+          return JSON.parse(text);
+        } catch (error) {
+          throw new Error('Resposta inválida do servidor.');
+        }
+      }
+
+      function toBase64(value) {
+        return btoa(unescape(encodeURIComponent(value)));
+      }
+
+      function fromBase64(value) {
+        if (!value) {
+          return '';
+        }
+        try {
+          return decodeURIComponent(escape(atob(value.replace(/\s/g, ''))));
+        } catch (error) {
+          throw new Error('Não foi possível decodificar o conteúdo base64.');
+        }
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function escapeAttribute(value) {
+        return escapeHtml(value);
+      }
+    })();
+  </script>
+</body>
+</html>
