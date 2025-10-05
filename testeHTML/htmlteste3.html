@@ -435,7 +435,8 @@
                 return base ? `${base}.html` : '';
             }
             escapeHtml(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML;}
-            escapeAttr(str) { return this.escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, ''');}
+            escapeAttr(str) { return this.escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
             sanitizeHtml(html) { return html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ''); }
         }
         class PublisherApp {
