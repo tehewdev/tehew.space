@@ -260,27 +260,11 @@
     </div>
     <script>
         'use strict';
-        // CONFIGURAÇÕES, GERENCIADORES E APP conforme o código anterior modularizado!
-        // Pode copiar literalmente todo JS abaixo, é igual ao seu último funcional.
         const CONFIG = {
-            repo: {
-                owner: 'tehewdev',
-                name: 'tehew.space',
-                folder: 'testeHTML',
-                branch: 'main'
-            },
-            preview: {
-                baseUrl: 'https://tehew.space'
-            },
-            jsonbin: {
-                binId: '68df49ae43b1c97be95893d1',
-                accessKey: '$2a$10$f9KK7vSowGnJI5elo/dAPurqjZAJ3bJaWnsinl/caDfgIcNt28kNi'
-            },
-            cache: {
-                tokenKey: 'gh_token_cache',
-                filesKey: 'gh_files_cache',
-                duration: 1000 * 60 * 15
-            }
+            repo: { owner: 'tehewdev', name: 'tehew.space', folder: 'testeHTML', branch: 'main' },
+            preview: { baseUrl: 'https://tehew.space' },
+            jsonbin: { binId: '68df49ae43b1c97be95893d1', accessKey: '$2a$10$f9KK7vSowGnJI5elo/dAPurqjZAJ3bJaWnsinl/caDfgIcNt28kNi' },
+            cache: { tokenKey: 'gh_token_cache', filesKey: 'gh_files_cache', duration: 1000 * 60 * 15 }
         };
         const DEFAULT_EXAMPLE = `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -435,8 +419,7 @@
                 return base ? `${base}.html` : '';
             }
             escapeHtml(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML;}
-            escapeAttr(str) { return this.escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
+            escapeAttr(str) { return this.escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
             sanitizeHtml(html) { return html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ''); }
         }
         class PublisherApp {
