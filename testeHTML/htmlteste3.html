@@ -1,1462 +1,554 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TesteHTML Publisher - Enhanced</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImEiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjNjY3ZWVhIiAvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3NjRiYTIiIC8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxNCIgZmlsbD0idXJsKCNhKSIgLz4KICA8cGF0aCBmaWxsPSIjZmZmZmZmIiBkPSJNMjEgMThoOGw1IDkgNS05aDhsLTkgMTZ2MTJoLThWMzR6IiAvPgo8L3N2Zz4=" />
-  
-  <!-- CodeMirror CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/one-dark.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/lint/lint.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/matchesonscrollbar.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/dialog/dialog.min.css">
-
-  <style>
-    :root {
-      --gradient-start: #667eea;
-      --gradient-end: #764ba2;
-      --accent: #5964f1;
-      --accent-strong: #4650d8;
-      --success: #28a745;
-      --danger: #dc3545;
-      --warning: #ffc107;
-      --neutral: #f8f9fa;
-      --text-main: #2f2f2f;
-      --text-muted: #646b7a;
-      --editor-bg: #1e1e1e;
-      --editor-border: #404040;
-    }
-
-    *, *::before, *::after { 
-      box-sizing: border-box; 
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
-      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-      min-height: 100vh;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      color: var(--text-main);
-      overflow-y: auto;
-    }
-
-    .container {
-      background: #fff;
-      border-radius: 18px;
-      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.16);
-      width: 100%;
-      max-width: 1200px;
-      padding: clamp(24px, 4vw, 32px) clamp(20px, 5vw, 36px);
-    }
-
-    .hero {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-
-    .hero h1 {
-      margin: 0 0 8px;
-      font-size: clamp(24px, 5vw, 28px);
-      letter-spacing: -0.02em;
-      color: var(--text-main);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-    }
-
-    .hero .intro {
-      margin: 0;
-      color: var(--text-muted);
-      font-size: clamp(13px, 3vw, 14px);
-    }
-
-    .editor-section {
-      margin: 24px 0;
-    }
-
-    .editor-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .editor-controls {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .editor-controls select,
-    .editor-controls button {
-      padding: 6px 12px;
-      border-radius: 6px;
-      border: 1px solid #ddd;
-      background: white;
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .editor-controls button:hover,
-    .editor-controls select:hover {
-      border-color: var(--accent);
-      transform: translateY(-1px);
-    }
-
-    .btn-editor-action {
-      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-      color: white;
-      border: none !important;
-    }
-
-    .btn-editor-action:hover {
-      box-shadow: 0 4px 12px rgba(89, 100, 241, 0.3);
-    }
-
-    .editor-container {
-      border: 2px solid var(--editor-border);
-      border-radius: 12px;
-      overflow: hidden;
-      position: relative;
-      background: var(--editor-bg);
-    }
-
-    .editor-toolbar {
-      background: #2d2d2d;
-      border-bottom: 1px solid var(--editor-border);
-      padding: 8px 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .editor-info {
-      display: flex;
-      gap: 16px;
-      font-size: 11px;
-      color: #aaa;
-      align-items: center;
-    }
-
-    .error-indicator {
-      color: var(--danger);
-      font-weight: bold;
-      display: none;
-    }
-
-    .error-indicator.active {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .CodeMirror {
-      height: auto;
-      min-height: 350px;
-      max-height: 70vh;
-      font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .CodeMirror-gutters {
-      border-right: 1px solid var(--editor-border);
-    }
-
-    .CodeMirror-linenumber {
-      padding: 0 8px 0 5px;
-      min-width: 28px;
-      text-align: right;
-      color: #666;
-      font-size: 12px;
-    }
-
-    .CodeMirror-lint-marker-error,
-    .CodeMirror-lint-marker-warning {
-      cursor: pointer;
-    }
-
-    .error-line {
-      background: rgba(255, 0, 0, 0.1) !important;
-      border-left: 3px solid var(--danger);
-    }
-
-    .warning-line {
-      background: rgba(255, 193, 7, 0.1) !important;
-      border-left: 3px solid var(--warning);
-    }
-
-    .form-section {
-      display: grid;
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-
-    .field-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .field-group label {
-      font-weight: 600;
-      color: var(--text-main);
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      gap: 12px;
-    }
-
-    .field-group input {
-      width: 100%;
-      font-size: 15px;
-      padding: 12px;
-      border-radius: 8px;
-      border: 2px solid #e1e4ef;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
-      background-color: #fff;
-    }
-
-    .field-group input:focus {
-      border-color: var(--accent);
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.16);
-    }
-
-    .hint {
-      font-size: 12px;
-      color: var(--text-muted);
-      font-weight: 500;
-    }
-
-    .button-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .btn {
-      flex: 1 1 200px;
-      padding: 14px 20px;
-      border: none;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-      color: #fff;
-      box-shadow: 0 10px 25px rgba(87, 99, 230, 0.25);
-    }
-
-    .btn-primary:disabled {
-      cursor: not-allowed;
-      opacity: 0.6;
-      box-shadow: none;
-      transform: none;
-    }
-
-    .btn-primary:not(:disabled):hover {
-      transform: translateY(-2px);
-      box-shadow: 0 15px 30px rgba(87, 99, 230, 0.3);
-    }
-
-    .btn-secondary {
-      background: #eef1ff;
-      color: var(--accent);
-      border: 2px solid transparent;
-    }
-
-    .btn-secondary:hover {
-      background: #e0e5ff;
-      border-color: var(--accent);
-    }
-
-    .btn-refresh {
-      padding: 8px 14px;
-      border-radius: 8px;
-      border: 1px solid rgba(102, 126, 234, 0.28);
-      background: rgba(102, 126, 234, 0.08);
-      color: var(--accent);
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .btn-refresh:hover {
-      background: rgba(102, 126, 234, 0.16);
-      border-color: rgba(102, 126, 234, 0.4);
-    }
-
-    .status {
-      border-radius: 12px;
-      padding: 16px 18px;
-      margin-bottom: 16px;
-      font-size: 14px;
-      display: none;
-    }
-
-    .status a {
-      color: inherit;
-      font-weight: 600;
-      text-decoration: underline;
-    }
-
-    .status-info {
-      display: block;
-      background: #e8f1ff;
-      color: #1f4ea6;
-      border: 1px solid rgba(31, 78, 166, 0.28);
-    }
-
-    .status-success {
-      display: block;
-      background: #e9f7ef;
-      color: #1f6a3b;
-      border: 1px solid rgba(40, 167, 69, 0.28);
-    }
-
-    .status-error {
-      display: block;
-      background: #fcebec;
-      color: #8b1b2a;
-      border: 1px solid rgba(220, 53, 69, 0.28);
-    }
-
-    .file-list {
-      margin-top: 24px;
-      background: var(--neutral);
-      border-radius: 14px;
-      padding: 20px 22px;
-    }
-
-    .file-list-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-      gap: 12px;
-    }
-
-    .file-list-header h2 {
-      margin: 0;
-      font-size: 18px;
-      color: var(--text-main);
-    }
-
-    .file-list-content {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .file-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #fff;
-      border-radius: 10px;
-      padding: 12px 14px;
-      border: 1px solid #e5e9f2;
-      gap: 12px;
-    }
-
-    .file-info {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .file-info a {
-      color: var(--accent);
-      font-weight: 600;
-      text-decoration: none;
-    }
-
-    .file-info a:hover {
-      text-decoration: underline;
-    }
-
-    .file-path {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .file-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn-ghost,
-    .btn-del {
-      border: none;
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .btn-ghost {
-      background: rgba(102, 126, 234, 0.12);
-      color: var(--accent-strong);
-    }
-
-    .btn-ghost:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 16px rgba(102, 126, 234, 0.2);
-    }
-
-    .btn-del {
-      background: rgba(220, 53, 69, 0.12);
-      color: var(--danger);
-    }
-
-    .btn-del:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 16px rgba(220, 53, 69, 0.2);
-    }
-
-    .small {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    /* Mobile optimizations */
-    @media (max-width: 768px) {
-      body {
-        display: block;
-        padding: 16px 12px;
-      }
-
-      .container {
-        padding: 20px 16px;
-        border-radius: 12px;
-      }
-
-      .hero {
-        margin-bottom: 20px;
-        text-align: left;
-      }
-
-      .hero h1 {
-        font-size: clamp(20px, 6vw, 24px);
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .editor-header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .editor-controls {
-        width: 100%;
-        justify-content: space-between;
-      }
-
-      .editor-toolbar {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-      }
-
-      .editor-info {
-        justify-content: space-between;
-        flex-wrap: wrap;
-      }
-
-      .CodeMirror {
-        min-height: 300px;
-        font-size: 13px;
-      }
-
-      .button-row {
-        flex-direction: column;
-      }
-
-      .btn {
-        width: 100%;
-      }
-
-      .file-item {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .file-actions {
-        width: 100%;
-        justify-content: flex-start;
-      }
-
-      .field-group label {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
-      }
-    }
-
-    /* Touch device optimizations */
-    @media (pointer: coarse) {
-      .btn, button, select {
-        min-height: 44px;
-        font-size: 16px;
-      }
-
-      .CodeMirror {
-        font-size: 14px;
-      }
-
-      .editor-controls button,
-      .editor-controls select {
-        padding: 8px 14px;
-        font-size: 14px;
-      }
-    }
-
-    /* Dark theme for editor */
-    .cm-s-dracula .CodeMirror-gutters {
-      background: #282a36;
-      border-color: #44475a;
-    }
-
-    .cm-s-one-dark .CodeMirror-gutters {
-      background: #21252b;
-      border-color: #3e4451;
-    }
-
-    /* Custom scrollbar for webkit browsers */
-    .CodeMirror-scroll::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-
-    .CodeMirror-scroll::-webkit-scrollbar-track {
-      background: #2d2d2d;
-    }
-
-    .CodeMirror-scroll::-webkit-scrollbar-thumb {
-      background: #666;
-      border-radius: 4px;
-    }
-
-    .CodeMirror-scroll::-webkit-scrollbar-thumb:hover {
-      background: #888;
-    }
-  </style>
-</head>
-
-<body>
-  <div class="container">
-    <header class="hero">
-      <h1>
-        🚀 TesteHTML Publisher
-        <span style="font-size: 0.6em; color: var(--accent); font-weight: 400;">Enhanced</span>
-      </h1>
-      <p class="intro">Editor avançado com numeração de linhas, detecção de erros e suporte mobile completo.</p>
-    </header>
-
-    <form id="publishForm" novalidate>
-      <div class="form-section">
-        <div class="field-group">
-          <label for="filename">
-            <span>Nome do arquivo (.html)</span>
-            <span id="sanitizedPreview" class="hint">Nome resultante: minha-pagina.html</span>
-          </label>
-          <input type="text" id="filename" name="filename" value="minha-pagina.html" autocomplete="off" required>
-        </div>
-      </div>
-
-      <div class="editor-section">
-        <div class="editor-header">
-          <label for="htmlContent" style="font-weight: 600; color: var(--text-main);">
-            Editor de Código HTML
-          </label>
-          <div class="editor-controls">
-            <select id="themeSelector" title="Tema do Editor">
-              <option value="default">Claro</option>
-              <option value="dracula" selected>Dracula</option>
-              <option value="monokai">Monokai</option>
-              <option value="material">Material</option>
-              <option value="one-dark">One Dark</option>
-            </select>
-            <button type="button" id="formatCode" class="btn-editor-action" title="Formatar Código">
-              ✨ Formatar
-            </button>
-            <button type="button" id="validateCode" class="btn-editor-action" title="Validar HTML">
-              🔍 Validar
-            </button>
-          </div>
-        </div>
-        
-        <div class="editor-container">
-          <div class="editor-toolbar">
-            <div class="editor-info">
-              <span id="lineCount">Linhas: 1</span>
-              <span id="charCount">Caracteres: 0</span>
-              <span id="cursorPos">Posição: 1:1</span>
-            </div>
-            <div class="error-indicator" id="errorIndicator">
-              ⚠️ <span id="errorCount">0 erros</span>
-            </div>
-          </div>
-          <textarea id="htmlContent" name="htmlContent" style="display: none;" required></textarea>
-        </div>
-      </div>
-
-      <div class="button-row">
-        <button type="button" class="btn btn-secondary" id="loadExampleBtn">
-          📋 Carregar Exemplo
-        </button>
-        <button type="submit" class="btn btn-primary" id="publishBtn" disabled>
-          🚀 Publicar no GitHub
-        </button>
-      </div>
-    </form>
-
-    <div id="status" class="status" role="alert" aria-live="polite"></div>
-
-    <section class="file-list">
-      <div class="file-list-header">
-        <h2>Arquivos existentes</h2>
-        <button type="button" class="btn-refresh" id="refreshBtn">🔄 Atualizar lista</button>
-      </div>
-      <div id="fileList" class="file-list-content">
-        <span class="small">Carregando arquivos...</span>
-      </div>
-      <p class="small">Tempo de deploy: ~30s após salvar, criar ou remover arquivos.</p>
-    </section>
-  </div>
-
-  <!-- CodeMirror Scripts -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchtags.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldcode.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/xml-fold.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/search.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/searchcursor.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/jump-to-line.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/dialog/dialog.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/lint/lint.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/html-hint.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/css-hint.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/javascript-hint.min.js"></script>
-
-  <script>
-    (function () {
-      'use strict';
-
-      const config = {
-        repoOwner: 'tehewdev',
-        repoName: 'tehew.space',
-        folder: 'testeHTML',
-        previewBaseUrl: 'https://tehew.space',
-        binId: '68df49ae43b1c97be95893d1',
-        accessKey: '$2a$10$f9KK7vSowGnJI5elo/dAPurqjZAJ3bJaWnsinl/caDfgIcNt28kNi'
-      };
-
-      const state = {
-        token: null,
-        isPublishing: false,
-        statusTimer: null,
-        editor: null,
-        currentErrors: []
-      };
-
-      const ui = {
-        form: document.getElementById('publishForm'),
-        filename: document.getElementById('filename'),
-        htmlContent: document.getElementById('htmlContent'),
-        publishBtn: document.getElementById('publishBtn'),
-        loadExampleBtn: document.getElementById('loadExampleBtn'),
-        refreshBtn: document.getElementById('refreshBtn'),
-        fileList: document.getElementById('fileList'),
-        status: document.getElementById('status'),
-        sanitizedPreview: document.getElementById('sanitizedPreview'),
-        themeSelector: document.getElementById('themeSelector'),
-        formatCode: document.getElementById('formatCode'),
-        validateCode: document.getElementById('validateCode'),
-        lineCount: document.getElementById('lineCount'),
-        charCount: document.getElementById('charCount'),
-        cursorPos: document.getElementById('cursorPos'),
-        errorIndicator: document.getElementById('errorIndicator'),
-        errorCount: document.getElementById('errorCount')
-      };
-
-      const defaultExample = `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página Exemplo Enhanced</title>
+    <title>TesteHTML Publisher</title>
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImEiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjNjY3ZWVhIiAvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3NjRiYTIiIC8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxNCIgZmlsbD0idXJsKCNhKSIgLz4KICA8cGF0aCBmaWxsPSIjZmZmZmZmIiBkPSJNMjEgMThoOGw1IDkgNS05aDhsLTkgMTZ2MTJoLThWMzR6IiAvPgo8L3N2Zz4=">
     <style>
+        :root {
+            --bg-main: #18181b;
+            --bg-container: #222127;
+            --border: #2e2e37;
+            --gradient-start: #6366f1;
+            --gradient-end: #764ba2;
+            --accent: #8484f7;
+            --accent-strong: #6464fa;
+            --success: #2dff71;
+            --danger: #f45a7e;
+            --neutral: #27272a;
+            --text-main: #f8f8f2;
+            --text-muted: #a1a1aa;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: #333;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Verdana, sans-serif;
+            background: var(--bg-main);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            color: var(--text-main);
+            overflow-y: auto;
         }
         .container {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            background: var(--bg-container);
+            border-radius: 18px;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
+            width: 100%;
+            max-width: 840px;
+            padding: clamp(32px, 5vw, 40px) clamp(24px, 6vw, 44px);
+            border: 1.5px solid var(--border);
         }
-        .highlight {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: bold;
+        .hero { text-align: center; margin-bottom: 32px; }
+        .hero h1 {
+            margin: 0 0 8px;
+            font-size: clamp(28px, 6vw, 32px);
+            letter-spacing: -0.02em;
+            color: var(--text-main);
+            text-shadow: 0 2px 24px rgba(46, 47, 66, 0.34);
+        }
+        .hero .intro { margin: 0; color: var(--text-muted); font-size: clamp(14px, 3.4vw, 15px);}
+        form { display: grid; gap: 18px; margin-bottom: 28px; }
+        .field-group { display: flex; flex-direction: column; gap: 6px;}
+        .field-group label {
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
+        }
+        .field-group input, .field-group textarea {
+            width: 100%;
+            font-size: 15px;
+            padding: 14px 12px;
+            border-radius: 10px;
+            background-color: var(--neutral);
+            border: 2px solid var(--border);
+            color: var(--text-main);
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.22s;
+        }
+        .field-group input:focus, .field-group textarea:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        }
+        .field-group input:invalid:not(:placeholder-shown),
+        .field-group textarea:invalid:not(:placeholder-shown) { border-color: var(--danger); }
+        .field-group input:valid:not(:placeholder-shown),
+        .field-group textarea:valid:not(:placeholder-shown) { border-color: var(--success); }
+        #htmlContent {
+            min-height: 240px;
+            font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+            line-height: 1.45;
+            resize: vertical;
+            background: var(--neutral);
+            color: var(--text-main);
+        }
+        .hint { font-size: 12px; color: var(--text-muted); font-weight: 500; white-space: nowrap;}
+        .button-row { display: flex; flex-wrap: wrap; gap: 12px;}
+        .btn {
+            flex: 1 1 220px;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--border);
+            color: var(--text-main);
+            transition: transform 0.18s, box-shadow 0.18s, background 0.18s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: #fff;
+            box-shadow: 0 14px 28px rgba(99,102,241,0.22);
+        }
+        .btn-primary:disabled {
+            cursor: not-allowed;
+            opacity: 0.55;
+            box-shadow: none;
+            transform: none;
+        }
+        .btn-primary:not(:disabled):hover {
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 0 18px 32px rgba(99,102,241,0.34);
+            background: linear-gradient(135deg, var(--gradient-end), var(--gradient-start));
+        }
+        .btn-secondary {
+            background: var(--neutral);
+            color: var(--accent);
+            border: 1.5px solid var(--border);
+        }
+        .btn-secondary:hover { background: var(--bg-main);}
+        .btn-refresh {
+            padding: 7px 14px;
+            border-radius: 7px;
+            border: 1px solid var(--accent);
+            background: var(--neutral);
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 2px;
+            margin-right: 2px;
+            transition: background 0.18s, border-color 0.18s;
+        }
+        .btn-refresh:hover { background: var(--bg-main); border-color: var(--accent-strong); }
+        .status {
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin-top: -4px;
+            font-size: 14px;
+            display: none;
+            will-change: opacity;
+        }
+        .status a { color: inherit; font-weight: 600; text-decoration: underline;}
+        .status-info { display: block; background: #222152; color: var(--accent); border: 1px solid var(--accent);}
+        .status-success { display: block; background: #212f2e; color: var(--success); border: 1px solid var(--success);}
+        .status-error { display: block; background: #21181e; color: var(--danger); border: 1px solid var(--danger);}
+        .file-list {
+            margin-top: 34px;
+            background: var(--neutral);
+            border-radius: 14px;
+            padding: 20px 22px;
+            border: 1px solid var(--border);
+        }
+        .file-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            gap: 12px;
+        }
+        .file-list-header h2 { margin: 0; font-size: 18px; color: var(--text-main);}
+        .file-list-content { display: flex; flex-direction: column; gap: 10px;}
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-main);
+            border-radius: 10px;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            gap: 12px;
+        }
+        .file-info { display: flex; flex-direction: column; gap: 4px;}
+        .file-info a { color: var(--accent); font-weight: 600; text-decoration: none;}
+        .file-info a:hover { text-decoration: underline;}
+        .file-path { font-size: 12px; color: var(--text-muted);}
+        .file-actions { display: flex; gap: 8px;}
+        .btn-ghost,
+        .btn-del {
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.16s, box-shadow 0.16s, background 0.17s;
+        }
+        .btn-ghost { background: var(--neutral); color: var(--accent-strong); }
+        .btn-ghost:hover { background: var(--bg-main);}
+        .btn-del { background: #212122; color: var(--danger);}
+        .btn-del:hover { transform: translateY(-1px); background: #301625;}
+        .small { font-size: 12px; color: var(--text-muted);}
+        @media (max-width: 640px) {
+            body { display: block; padding: 18px 16px;}
+            .container { padding: 26px 20px; border-radius: 16px;}
+            .hero {margin-bottom: 24px; text-align: left;}
+            .hero h1 {font-size: clamp(24px, 8vw, 30px);}
+            .hero .intro {font-size: 14px;}
+            .field-group label {flex-direction: column; align-items: flex-start; gap: 4px;}
+            .button-row {flex-direction: column;}
+            .btn {width: 100%;}
+            #htmlContent {min-height: 200px;}
+            .file-list {padding: 18px 16px;}
+            .file-item {flex-direction: column; align-items: flex-start;}
+            .file-actions {width: 100%; justify-content: flex-start;}
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="highlight">🚀 Exemplo Carregado com Sucesso!</h1>
-        <p>Este é um exemplo melhorado com:</p>
-        <ul>
-            <li>✨ Formatação de código</li>
-            <li>📝 Numeração de linhas</li>
-            <li>🔍 Detecção de erros</li>
-            <li>📱 Suporte mobile completo</li>
-            <li>🎨 Temas personalizados</li>
-        </ul>
-        <p>O token é carregado automaticamente da bin privada.</p>
-        
-        <script>
-            console.log('Exemplo carregado no editor enhanced! 🎉');
-            
-            // Função de demonstração
-            function exemploFuncao() {
-                alert('TesteHTML Publisher Enhanced funcionando!');
-            }
-        </script>
+        <header class="hero">
+            <h1>🚀 TesteHTML Publisher</h1>
+            <p class="intro">Publique rapidamente páginas HTML diretamente no repositório GitHub.</p>
+        </header>
+        <form id="publishForm" novalidate>
+            <div class="field-group">
+                <label for="filename">
+                    <span>Nome do arquivo (.html)</span>
+                    <span id="sanitizedPreview" class="hint">Nome resultante: minha-pagina.html</span>
+                </label>
+                <input type="text" id="filename" name="filename" value="minha-pagina.html" autocomplete="off" required
+                    aria-describedby="sanitizedPreview">
+            </div>
+            <div class="field-group">
+                <label for="htmlContent">Código HTML</label>
+                <textarea id="htmlContent" name="htmlContent" required
+                    aria-label="Campo de código HTML"><!DOCTYPE html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"><title>Exemplo</title></head>
+<body><h1>Publicação dinâmica via jsonbin.</h1></body>
+</html></textarea>
+            </div>
+            <div class="button-row">
+                <button type="button" class="btn btn-secondary" id="loadExampleBtn"
+                    aria-label="Carregar exemplo">📋 Carregar Exemplo</button>
+                <button type="submit" class="btn btn-primary" id="publishBtn" disabled
+                    aria-label="Publicar no GitHub">🚀 Publicar no GitHub</button>
+            </div>
+        </form>
+        <div id="status" class="status" role="alert" aria-live="polite"></div>
+        <section class="file-list" aria-label="Lista de arquivos existentes">
+            <div class="file-list-header">
+                <h2>Arquivos existentes</h2>
+                <button type="button" class="btn-refresh" id="refreshBtn"
+                    aria-label="Atualizar lista de arquivos">Atualizar lista</button>
+            </div>
+            <div id="fileList" class="file-list-content">
+                <span class="small">Carregando arquivos...</span>
+            </div>
+            <p class="small">Tempo de deploy: ~30s após salvar, criar ou remover arquivos.</p>
+        </section>
     </div>
+    <script>
+        'use strict';
+        // CONFIGURAÇÕES, GERENCIADORES E APP conforme o código anterior modularizado!
+        // Pode copiar literalmente todo JS abaixo, é igual ao seu último funcional.
+        const CONFIG = {
+            repo: {
+                owner: 'tehewdev',
+                name: 'tehew.space',
+                folder: 'testeHTML',
+                branch: 'main'
+            },
+            preview: {
+                baseUrl: 'https://tehew.space'
+            },
+            jsonbin: {
+                binId: '68df49ae43b1c97be95893d1',
+                accessKey: '$2a$10$f9KK7vSowGnJI5elo/dAPurqjZAJ3bJaWnsinl/caDfgIcNt28kNi'
+            },
+            cache: {
+                tokenKey: 'gh_token_cache',
+                filesKey: 'gh_files_cache',
+                duration: 1000 * 60 * 15
+            }
+        };
+        const DEFAULT_EXAMPLE = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"><title>Página Exemplo</title></head>
+<body>
+  <h1>Exemplo carregado do botão!</h1>
+  <p>O token é carregado da bin privada.</p>
 </body>
 </html>`;
-
-      // Initialize application
-      init();
-
-      function init() {
-        initializeCodeEditor();
-        bindEvents();
-        updateSanitizedPreview();
-        updatePublishAvailability();
-        loadToken();
-      }
-
-      function initializeCodeEditor() {
-        // Initialize CodeMirror editor
-        state.editor = CodeMirror.fromTextArea(ui.htmlContent, {
-          mode: 'htmlmixed',
-          theme: 'dracula',
-          lineNumbers: true,
-          lineWrapping: true,
-          autoCloseTags: true,
-          autoCloseBrackets: true,
-          matchTags: { bothTags: true },
-          styleActiveLine: true,
-          foldGutter: true,
-          gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter', 'CodeMirror-lint-markers'],
-          extraKeys: {
-            'Ctrl-Space': 'autocomplete',
-            'F11': function(cm) { 
-              cm.setOption('fullScreen', !cm.getOption('fullScreen'));
-            },
-            'Esc': function(cm) { 
-              if (cm.getOption('fullScreen')) cm.setOption('fullScreen', false);
-            },
-            'Ctrl-F': 'findPersistent',
-            'Ctrl-H': 'replace',
-            'Ctrl-G': 'jumpToLine',
-            'Ctrl-/': 'toggleComment',
-            'Tab': function(cm) {
-              if (cm.somethingSelected()) {
-                cm.indentSelection('add');
-              } else {
-                cm.replaceSelection('  ', 'end');
-              }
+        class GitHubTokenManager {
+            constructor(config) { this.config = config; this.token = null;}
+            async load() {
+                const cached = this.getCache();
+                if (cached) { this.token = cached; return cached;}
+                try {
+                    const url = `https://api.jsonbin.io/v3/b/${this.config.jsonbin.binId}/latest`;
+                    const response = await fetch(url, {
+                        headers: { 'X-Access-Key': this.config.jsonbin.accessKey, 'X-Bin-Meta': 'false' }
+                    });
+                    if (!response.ok) throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                    const data = await response.json();
+                    const token = data?.github_token;
+                    if (!token) throw new Error('Token não encontrado na bin (campo "github_token")');
+                    this.token = token; this.setCache(token); return token;
+                } catch (error) { console.error('Erro ao carregar token:', error); throw error;}
             }
-          },
-          hintOptions: {
-            completeSingle: false,
-            closeOnUnfocus: false
-          },
-          indentUnit: 2,
-          tabSize: 2,
-          indentWithTabs: false,
-          viewportMargin: Infinity
-        });
-
-        // Set initial content
-        state.editor.setValue(defaultExample);
-        
-        // Update editor info on changes
-        state.editor.on('change', function(editor) {
-          updateEditorInfo();
-          updatePublishAvailability();
-          clearTimeout(state.validationTimer);
-          state.validationTimer = setTimeout(() => validateHTML(), 1000);
-        });
-
-        // Update cursor position
-        state.editor.on('cursorActivity', function(editor) {
-          const cursor = editor.getCursor();
-          ui.cursorPos.textContent = `Posição: ${cursor.line + 1}:${cursor.ch + 1}`;
-        });
-
-        // Initial info update
-        updateEditorInfo();
-      }
-
-      function bindEvents() {
-        ui.form.addEventListener('submit', publicar);
-        ui.filename.addEventListener('input', handleFilenameChange);
-        ui.loadExampleBtn.addEventListener('click', carregarExemplo);
-        ui.refreshBtn.addEventListener('click', listFiles);
-        ui.fileList.addEventListener('click', handleFileListAction);
-        ui.themeSelector.addEventListener('change', changeTheme);
-        ui.formatCode.addEventListener('click', formatCode);
-        ui.validateCode.addEventListener('click', validateHTML);
-
-        // Mobile optimizations
-        if ('ontouchstart' in window) {
-          // Enable touch scrolling for editor
-          state.editor.getWrapperElement().style.touchAction = 'manipulation';
-        }
-      }
-
-      function updateEditorInfo() {
-        const doc = state.editor.getDoc();
-        const lineCount = doc.lineCount();
-        const content = doc.getValue();
-        
-        ui.lineCount.textContent = `Linhas: ${lineCount}`;
-        ui.charCount.textContent = `Caracteres: ${content.length}`;
-      }
-
-      function changeTheme() {
-        const theme = ui.themeSelector.value;
-        state.editor.setOption('theme', theme);
-        
-        // Save theme preference
-        localStorage.setItem('editorTheme', theme);
-      }
-
-      function formatCode() {
-        try {
-          const content = state.editor.getValue();
-          const formatted = formatHTML(content);
-          state.editor.setValue(formatted);
-          setStatus('✨ Código formatado com sucesso!', 'success', { autoHide: 2500 });
-        } catch (error) {
-          setStatus('❌ Erro ao formatar código: ' + error.message, 'error');
-        }
-      }
-
-      function formatHTML(html) {
-        let formatted = html;
-        let indent = 0;
-        const indentSize = 2;
-        
-        // Remove extra whitespace and normalize
-        formatted = formatted.replace(/>\s*</g, '><').trim();
-        
-        // Add proper indentation
-        const tags = formatted.split(/(<[^>]*>)/);
-        let result = '';
-        
-        tags.forEach(tag => {
-          if (tag.trim() === '') return;
-          
-          if (tag.startsWith('</')) {
-            // Closing tag
-            indent = Math.max(0, indent - indentSize);
-            result += ' '.repeat(indent) + tag + '\n';
-          } else if (tag.startsWith('<') && !tag.endsWith('/>') && !isSelfClosingTag(tag)) {
-            // Opening tag
-            result += ' '.repeat(indent) + tag + '\n';
-            if (!isInlineTag(tag)) {
-              indent += indentSize;
+            getCache() {
+                try {
+                    const cached = localStorage.getItem(this.config.cache.tokenKey);
+                    if (!cached) return null;
+                    const { token, timestamp } = JSON.parse(cached);
+                    if (Date.now() - timestamp > this.config.cache.duration) { localStorage.removeItem(this.config.cache.tokenKey); return null;}
+                    return token;
+                } catch { return null;}
             }
-          } else if (tag.startsWith('<')) {
-            // Self-closing tag
-            result += ' '.repeat(indent) + tag + '\n';
-          } else {
-            // Text content
-            if (tag.trim()) {
-              result += ' '.repeat(indent) + tag.trim() + '\n';
+            setCache(token) {
+                try { localStorage.setItem(this.config.cache.tokenKey, JSON.stringify({token, timestamp: Date.now()})); }
+                catch (error) { console.warn('Não foi possível salvar token no cache:', error);}
             }
-          }
-        });
-        
-        return result.trim();
-      }
-
-      function isSelfClosingTag(tag) {
-        const selfClosing = ['br', 'hr', 'img', 'input', 'meta', 'link', 'area', 'base', 'col', 'embed', 'source', 'track', 'wbr'];
-        const tagName = tag.match(/<(\w+)/);
-        return tagName && selfClosing.includes(tagName[1].toLowerCase());
-      }
-
-      function isInlineTag(tag) {
-        const inline = ['span', 'a', 'strong', 'b', 'em', 'i', 'code', 'small', 'sub', 'sup'];
-        const tagName = tag.match(/<(\w+)/);
-        return tagName && inline.includes(tagName[1].toLowerCase());
-      }
-
-      function validateHTML() {
-        const content = state.editor.getValue();
-        state.currentErrors = [];
-        
-        // Clear existing error markers
-        state.editor.getAllMarks().forEach(mark => mark.clear());
-        
-        // Basic HTML validation
-        const errors = [];
-        
-        // Check for basic structure
-        if (!content.includes('<!DOCTYPE')) {
-          errors.push({ line: 0, message: 'Missing DOCTYPE declaration' });
+            getAuthHeaders() {
+                if (!this.token) throw new Error('Token não carregado');
+                return { 'Authorization': `Bearer ${this.token}`, 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
+            }
+            isLoaded() { return Boolean(this.token);}
         }
-        
-        if (!content.includes('<html')) {
-          errors.push({ line: 0, message: 'Missing <html> tag' });
+        class GitHubFileManager {
+            constructor(config, tokenManager) { this.config = config; this.tokenManager = tokenManager; }
+            async list() {
+                if (!this.tokenManager.isLoaded()) throw new Error('Token não carregado');
+                const cached = this.getCache(); if (cached) return cached;
+                try {
+                    const url = `https://api.github.com/repos/${this.config.repo.owner}/${this.config.repo.name}/contents/${this.config.repo.folder}?ref=${this.config.repo.branch}`;
+                    const response = await fetch(url, { headers: this.tokenManager.getAuthHeaders() });
+                    if (response.status === 404) return [];
+                    if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+                    const files = await response.json();
+                    if (!Array.isArray(files)) throw new Error('Resposta inesperada da API');
+                    const htmlFiles = files.filter(f => f.name?.endsWith('.html') && f.name !== 'index.html').sort((a, b) => a.name.localeCompare(b.name));
+                    this.setCache(htmlFiles); return htmlFiles;
+                } catch (error) { console.error('Erro ao listar arquivos:', error); throw error; }
+            }
+            async get(filename) {
+                if (!this.tokenManager.isLoaded()) throw new Error('Token não carregado');
+                const path = `${this.config.repo.folder}/${filename}`;
+                const url = `https://api.github.com/repos/${this.config.repo.owner}/${this.config.repo.name}/contents/${path}`;
+                const response = await fetch(url, { headers: this.tokenManager.getAuthHeaders() });
+                if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+                const data = await response.json();
+                return { content: data.content ? this.decodeBase64(data.content) : '', sha: data.sha };
+            }
+            async save(filename, content) {
+                if (!this.tokenManager.isLoaded()) throw new Error('Token não carregado');
+                const path = `${this.config.repo.folder}/${filename}`;
+                const url = `https://api.github.com/repos/${this.config.repo.owner}/${this.config.repo.name}/contents/${path}`;
+                let sha = null; try { const existing = await this.get(filename); sha = existing.sha;} catch {}
+                const body = { message: `${sha ? 'Atualiza' : 'Cria'} ${filename}`, content: this.encodeBase64(content), branch: this.config.repo.branch };
+                if (sha) body.sha = sha;
+                const response = await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json', ...this.tokenManager.getAuthHeaders() }, body: JSON.stringify(body)});
+                if (!response.ok) { const data = await response.json(); throw new Error(data.message || `${response.status}: ${response.statusText}`);}
+                this.clearCache(); return await response.json();
+            }
+            async delete(filename) {
+                if (!this.tokenManager.isLoaded()) throw new Error('Token não carregado');
+                const file = await this.get(filename);
+                const path = `${this.config.repo.folder}/${filename}`;
+                const url = `https://api.github.com/repos/${this.config.repo.owner}/${this.config.repo.name}/contents/${path}`;
+                const response = await fetch(url, { method: 'DELETE', headers: { 'Content-Type': 'application/json', ...this.tokenManager.getAuthHeaders() }, body: JSON.stringify({message: `Remove ${filename}`, sha: file.sha, branch: this.config.repo.branch}) });
+                if (!response.ok) { const data = await response.json(); throw new Error(data.message || `${response.status}: ${response.statusText}`);}
+                this.clearCache(); return true;
+            }
+            encodeBase64(str) { return btoa(unescape(encodeURIComponent(str))); }
+            decodeBase64(str) { try { return decodeURIComponent(escape(atob(str.replace(/\s/g, ''))));} catch { throw new Error('Erro ao decodificar conteúdo'); }}
+            getCache() {
+                try { const cached = localStorage.getItem(this.config.cache.filesKey); if (!cached) return null;
+                    const { files, timestamp } = JSON.parse(cached);
+                    if (Date.now() - timestamp > this.config.cache.duration) { this.clearCache(); return null;}
+                    return files;
+                } catch { return null;}
+            }
+            setCache(files) {
+                try { localStorage.setItem(this.config.cache.filesKey, JSON.stringify({files, timestamp: Date.now()})); }
+                catch (error) { console.warn('Não foi possível salvar cache:', error);}
+            }
+            clearCache() { try { localStorage.removeItem(this.config.cache.filesKey); } catch {} }
         }
-        
-        if (!content.includes('<head')) {
-          errors.push({ line: 0, message: 'Missing <head> tag' });
-        }
-        
-        if (!content.includes('<body')) {
-          errors.push({ line: 0, message: 'Missing <body> tag' });
-        }
-
-        // Check for unclosed tags
-        const openTags = [];
-        const lines = content.split('\n');
-        
-        lines.forEach((line, lineIndex) => {
-          const tagMatches = line.match(/<\/?[\w\s="/.':;#-\/\?]+>/gi);
-          if (tagMatches) {
-            tagMatches.forEach(tag => {
-              if (tag.startsWith('</')) {
-                // Closing tag
-                const tagName = tag.match(/<\/(\w+)/)[1];
-                const lastOpenTag = openTags[openTags.length - 1];
-                if (!lastOpenTag || lastOpenTag.name !== tagName) {
-                  errors.push({ 
-                    line: lineIndex, 
-                    message: `Unexpected closing tag: ${tag}` 
-                  });
-                } else {
-                  openTags.pop();
+        class UIManager {
+            constructor(elements) { this.elements = elements; this.statusTimer = null;}
+            setStatus(message, type = 'info', options = {}) {
+                clearTimeout(this.statusTimer);
+                if (!message) {
+                    this.elements.status.className = 'status';
+                    this.elements.status.style.display = 'none';
+                    this.elements.status.textContent = '';
+                    return;
                 }
-              } else if (!tag.endsWith('/>') && !isSelfClosingTag(tag)) {
-                // Opening tag
-                const tagName = tag.match(/<(\w+)/)[1];
-                openTags.push({ name: tagName, line: lineIndex });
-              }
-            });
-          }
-        });
-
-        // Mark unclosed tags as errors
-        openTags.forEach(tag => {
-          errors.push({ 
-            line: tag.line, 
-            message: `Unclosed tag: <${tag.name}>` 
-          });
-        });
-
-        // Display errors
-        errors.forEach(error => {
-          const line = Math.max(0, error.line);
-          state.editor.addLineClass(line, 'background', 'error-line');
-          state.currentErrors.push(error);
-        });
-
-        // Update error indicator
-        if (errors.length > 0) {
-          ui.errorIndicator.classList.add('active');
-          ui.errorCount.textContent = `${errors.length} erro${errors.length > 1 ? 's' : ''}`;
-        } else {
-          ui.errorIndicator.classList.remove('active');
-        }
-
-        if (errors.length === 0) {
-          setStatus('✅ HTML válido!', 'success', { autoHide: 2500 });
-        }
-      }
-
-      function handleFilenameChange() {
-        updateSanitizedPreview();
-        updatePublishAvailability();
-      }
-
-      function carregarExemplo() {
-        state.editor.setValue(defaultExample);
-        updateEditorInfo();
-        updatePublishAvailability();
-        setStatus('📋 Exemplo carregado no editor!', 'success', { autoHide: 3200 });
-      }
-
-      function handleFileListAction(event) {
-        const button = event.target.closest('button[data-action]');
-        if (!button) return;
-        
-        const action = button.dataset.action;
-        const filename = button.dataset.file;
-        if (!filename) return;
-
-        if (action === 'load') {
-          loadFile(filename);
-        } else if (action === 'delete') {
-          deleteFile(filename);
-        }
-      }
-
-      async function loadToken() {
-        setStatus('🔄 Carregando token...', 'info');
-        try {
-          const url = `https://api.jsonbin.io/v3/b/${config.binId}/latest`;
-          const response = await fetch(url, {
-            headers: {
-              'X-Access-Key': config.accessKey,
-              'X-Bin-Meta': 'false'
+                this.elements.status.className = `status status-${type}`;
+                this.elements.status.style.display = 'block';
+                if (options.asHtml) { this.elements.status.innerHTML = this.sanitizeHtml(message);}
+                else { this.elements.status.textContent = message;}
+                if (options.autoHide) { this.statusTimer = setTimeout(() => this.setStatus(null), options.autoHide);}
             }
-          });
-
-          if (!response.ok) {
-            throw new Error(`${response.status} ${response.statusText}`);
-          }
-
-          const data = await parseJsonResponse(response);
-          const token = data && data.github_token;
-
-          if (!token) {
-            throw new Error('Token não encontrado na bin (campo "github_token").');
-          }
-
-          state.token = token;
-          updatePublishAvailability();
-          setStatus('✅ Token carregado com sucesso!', 'success', { autoHide: 3200 });
-          await listFiles();
-        } catch (error) {
-          state.token = null;
-          updatePublishAvailability();
-          setStatus('❌ Erro ao carregar token: ' + error.message, 'error');
+            updateFilenamePreview(filename) {
+                const sanitized = this.sanitizeFilename(filename) || '—';
+                this.elements.sanitizedPreview.textContent = `Nome resultante: ${sanitized}`;
+            }
+            renderFileList(files) {
+                if (!files.length) { this.elements.fileList.innerHTML = '<span class="small">Nenhum arquivo HTML encontrado.</span>'; return;}
+                const html = files.map(file => `
+                    <div class="file-item">
+                        <div class="file-info">
+                            <a href="${this.getPreviewUrl(file.name)}" target="_blank" rel="noopener">${this.escapeHtml(file.name)}</a>
+                            <span class="file-path">${this.escapeHtml(`${CONFIG.repo.folder}/${file.name}`)}</span>
+                        </div>
+                        <div class="file-actions">
+                            <button type="button" class="btn-ghost" data-action="load" data-file="${this.escapeAttr(file.name)}">Editar</button>
+                            <button type="button" class="btn-del" data-action="delete" data-file="${this.escapeAttr(file.name)}">Apagar</button>
+                        </div>
+                    </div>
+                `).join('');
+                this.elements.fileList.innerHTML = html;
+            }
+            setPublishing(isPublishing) {
+                this.elements.publishBtn.disabled = isPublishing;
+                this.elements.publishBtn.textContent = isPublishing ? '⏳ Publicando...' : '🚀 Publicar no GitHub';
+            }
+            getPreviewUrl(filename) { return `${CONFIG.preview.baseUrl}/${CONFIG.repo.folder}/${encodeURIComponent(filename)}`;}
+            sanitizeFilename(name) {
+                if (!name) return '';
+                let base = name;
+                if (base.normalize) { base = base.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+                base = base.toLowerCase().trim().replace(/\.html?$/g, '').replace(/[^a-z0-9._-]+/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '').replace(/\.+/g, '.').replace(/^\.+|\.+$/g, '');
+                return base ? `${base}.html` : '';
+            }
+            escapeHtml(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML;}
+            escapeAttr(str) { return this.escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, ''');}
+            sanitizeHtml(html) { return html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ''); }
         }
-      }
-
-      async function listFiles() {
-        if (!state.token) {
-          ui.fileList.innerHTML = '<span class="small">Token não carregado.</span>';
-          return;
+        class PublisherApp {
+            constructor(config) {
+                this.config = config;
+                this.tokenManager = new GitHubTokenManager(config);
+                this.fileManager = new GitHubFileManager(config, this.tokenManager);
+                this.elements = {
+                    form: document.getElementById('publishForm'),
+                    filename: document.getElementById('filename'),
+                    htmlContent: document.getElementById('htmlContent'),
+                    publishBtn: document.getElementById('publishBtn'),
+                    loadExampleBtn: document.getElementById('loadExampleBtn'),
+                    refreshBtn: document.getElementById('refreshBtn'),
+                    fileList: document.getElementById('fileList'),
+                    status: document.getElementById('status'),
+                    sanitizedPreview: document.getElementById('sanitizedPreview')
+                };
+                this.ui = new UIManager(this.elements);
+                this.init();
+            }
+            async init() {
+                this.setupEventListeners();
+                this.ui.updateFilenamePreview(this.elements.filename.value);
+                await this.loadToken();
+            }
+            setupEventListeners() {
+                this.elements.form.addEventListener('submit', (e) => this.handlePublish(e));
+                this.elements.filename.addEventListener('input', () => this.handleFilenameChange());
+                this.elements.htmlContent.addEventListener('input', () => this.updatePublishButton());
+                this.elements.loadExampleBtn.addEventListener('click', () => this.loadExample());
+                this.elements.refreshBtn.addEventListener('click', () => this.refreshFileList());
+                this.elements.fileList.addEventListener('click', (e) => this.handleFileAction(e));
+            }
+            async loadToken() {
+                this.ui.setStatus('Carregando token...', 'info');
+                try { await this.tokenManager.load(); this.updatePublishButton(); this.ui.setStatus('Token carregado com sucesso!', 'success', { autoHide: 3200 }); await this.refreshFileList();}
+                catch (error) { this.ui.setStatus(`Erro ao carregar token: ${error.message}`, 'error'); this.updatePublishButton(); }
+            }
+            async refreshFileList() {
+                if (!this.tokenManager.isLoaded()) { this.elements.fileList.innerHTML = '<span class="small">Token não carregado.</span>'; return;}
+                this.elements.fileList.innerHTML = '<span class="small">Carregando arquivos...</span>';
+                try { const files = await this.fileManager.list(); this.ui.renderFileList(files);}
+                catch (error) { this.elements.fileList.innerHTML = `<span class="small" style="color:#b72136;">Erro: ${this.ui.escapeHtml(error.message)}</span>`;}
+            }
+            handleFilenameChange() { this.ui.updateFilenamePreview(this.elements.filename.value); this.updatePublishButton();}
+            loadExample() {
+                this.elements.htmlContent.value = DEFAULT_EXAMPLE;
+                this.updatePublishButton();
+                this.ui.setStatus('Exemplo carregado no editor!', 'success', { autoHide: 3200 });
+            }
+            async handleFileAction(event) {
+                const button = event.target.closest('button[data-action]'); if (!button) return;
+                const action = button.dataset.action; const filename = button.dataset.file; if (!filename) return;
+                if (action === 'load') { await this.loadFile(filename);}
+                else if (action === 'delete') { await this.deleteFile(filename);}
+            }
+            async loadFile(filename) {
+                this.ui.setStatus(`Carregando "${filename}"...`, 'info');
+                try {
+                    const file = await this.fileManager.get(filename);
+                    this.elements.filename.value = filename;
+                    this.elements.htmlContent.value = file.content;
+                    this.handleFilenameChange();
+                    this.ui.setStatus(`Arquivo "${filename}" carregado para edição.`, 'success', { autoHide: 3600 });
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } catch (error) {
+                    this.ui.setStatus(`Erro ao carregar "${filename}": ${error.message}`, 'error');
+                }
+            }
+            async deleteFile(filename) {
+                if (!confirm(`Tem certeza que deseja apagar "${filename}"?`)) { return;}
+                this.ui.setStatus(`Apagando "${filename}"...`, 'info');
+                try {
+                    await this.fileManager.delete(filename);
+                    this.ui.setStatus(`Arquivo "${filename}" removido com sucesso.`, 'success', { autoHide: 3600 });
+                    await this.refreshFileList();
+                } catch (error) {
+                    this.ui.setStatus(`Erro ao apagar "${filename}": ${error.message}`, 'error');
+                }
+            }
+            async handlePublish(event) {
+                event.preventDefault();
+                const rawFilename = this.elements.filename.value.trim();
+                const sanitized = this.ui.sanitizeFilename(rawFilename);
+                const htmlContent = this.elements.htmlContent.value.trim();
+                if (!sanitized) { this.ui.setStatus('Informe um nome de arquivo válido.', 'error'); return; }
+                if (!htmlContent) { this.ui.setStatus('Informe o conteúdo HTML.', 'error'); return;}
+                if (sanitized !== rawFilename) {
+                    this.elements.filename.value = sanitized;
+                    this.ui.updateFilenamePreview(sanitized);
+                }
+                this.ui.setPublishing(true);
+                this.ui.setStatus(`Publicando "${sanitized}"...`, 'info');
+                try {
+                    await this.fileManager.save(sanitized, htmlContent);
+                    const previewUrl = this.ui.getPreviewUrl(sanitized);
+                    this.ui.setStatus(`Publicado! <a href="${previewUrl}" target="_blank" rel="noopener">Abrir página publicada</a>`, 'success', { asHtml: true });
+                    await this.refreshFileList();
+                } catch (error) {
+                    this.ui.setStatus(`Erro ao publicar: ${error.message}`, 'error');
+                } finally {
+                    this.ui.setPublishing(false);
+                }
+            }
+            updatePublishButton() {
+                const hasContent = this.elements.htmlContent.value.trim().length > 0;
+                const hasValidFilename = Boolean(this.ui.sanitizeFilename(this.elements.filename.value.trim()));
+                const canPublish = this.tokenManager.isLoaded() && hasContent && hasValidFilename;
+                this.elements.publishBtn.disabled = !canPublish;
+            }
         }
-
-        ui.fileList.innerHTML = '<span class="small">🔄 Carregando arquivos...</span>';
-
-        try {
-          const url = `https://api.github.com/repos/${config.repoOwner}/${config.repoName}/contents/${config.folder}?ref=main`;
-          const response = await fetch(url, {
-            headers: authHeaders()
-          });
-
-          if (response.status === 404) {
-            renderFileList([]);
-            return;
-          }
-
-          if (!response.ok) {
-            throw new Error(`${response.status} ${response.statusText}`);
-          }
-
-          const files = await parseJsonResponse(response);
-          if (!Array.isArray(files)) {
-            throw new Error('Resposta inesperada da API do GitHub.');
-          }
-
-          const htmlFiles = files
-            .filter(file => file.name && file.name.endsWith('.html') && file.name !== 'index.html')
-            .sort((a, b) => a.name.localeCompare(b.name));
-
-          renderFileList(htmlFiles);
-        } catch (error) {
-          const safeError = escapeHtml(error.message || 'Erro desconhecido');
-          ui.fileList.innerHTML = `<span class="small" style="color:#b72136;">❌ Erro ao listar arquivos: ${safeError}</span>`;
-        }
-      }
-
-      function renderFileList(files) {
-        if (!files.length) {
-          ui.fileList.innerHTML = '<span class="small">📁 Nenhum arquivo HTML encontrado.</span>';
-          return;
-        }
-
-        const content = files.map(file => {
-          const filename = file.name;
-          const safeFilename = escapeHtml(filename);
-          const pathInfo = escapeHtml(`${config.folder}/${filename}`);
-          const encodedFilename = encodeURIComponent(filename);
-          const dataAttr = escapeAttribute(filename);
-          const viewUrl = `${config.previewBaseUrl}/${config.folder}/${encodedFilename}`;
-          
-          return `
-            <div class="file-item" data-filename="${dataAttr}">
-              <div class="file-info">
-                <a href="${viewUrl}" target="_blank" rel="noopener">${safeFilename}</a>
-                <span class="file-path">${pathInfo}</span>
-              </div>
-              <div class="file-actions">
-                <button type="button" class="btn-ghost" data-action="load" data-file="${dataAttr}">📝 Editar</button>
-                <button type="button" class="btn-del" data-action="delete" data-file="${dataAttr}">🗑️ Apagar</button>
-              </div>
-            </div>
-          `;
-        }).join('');
-
-        ui.fileList.innerHTML = content;
-      }
-
-      async function loadFile(name) {
-        if (!state.token) {
-          setStatus('❌ Token GitHub não carregado.', 'error');
-          return;
-        }
-
-        setStatus(`🔄 Carregando "${name}"...`, 'info');
-
-        try {
-          const path = `${config.folder}/${name}`;
-          const url = `https://api.github.com/repos/${config.repoOwner}/${config.repoName}/contents/${path}`;
-          const response = await fetch(url, { headers: authHeaders() });
-
-          if (!response.ok) {
-            throw new Error(`${response.status} ${response.statusText}`);
-          }
-
-          const data = await parseJsonResponse(response);
-          const content = data && data.content ? fromBase64(data.content) : '';
-
-          ui.filename.value = name;
-          state.editor.setValue(content);
-          updateSanitizedPreview();
-          updatePublishAvailability();
-          updateEditorInfo();
-
-          setStatus(`✅ Arquivo "${name}" carregado para edição.`, 'success', { autoHide: 3600 });
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        } catch (error) {
-          setStatus(`❌ Erro ao carregar "${name}": ${error.message}`, 'error');
-        }
-      }
-
-      async function deleteFile(name) {
-        if (!state.token) {
-          setStatus('❌ Token GitHub não carregado.', 'error');
-          return;
-        }
-
-        if (!confirm(`🗑️ Deseja realmente apagar "${name}"?`)) {
-          return;
-        }
-
-        setStatus(`🔄 Apagando "${name}"...`, 'info');
-
-        try {
-          const sha = await getFileSha(name);
-          if (!sha) {
-            throw new Error('Não foi possível obter o SHA do arquivo.');
-          }
-
-          const path = `${config.folder}/${name}`;
-          const url = `https://api.github.com/repos/${config.repoOwner}/${config.repoName}/contents/${path}`;
-          const body = {
-            message: `Apaga ${name}`,
-            sha: sha,
-            branch: 'main'
-          };
-
-          const response = await fetch(url, {
-            method: 'DELETE',
-            headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
-            body: JSON.stringify(body)
-          });
-
-          const data = await parseJsonResponse(response);
-          if (!response.ok) {
-            const message = data && data.message ? data.message : `${response.status} ${response.statusText}`;
-            throw new Error(message);
-          }
-
-          setStatus(`✅ Arquivo "${name}" removido com sucesso.`, 'success', { autoHide: 3600 });
-          await listFiles();
-        } catch (error) {
-          setStatus(`❌ Erro ao apagar "${name}": ${error.message}`, 'error');
-        }
-      }
-
-      async function publicar(event) {
-        event.preventDefault();
-
-        if (!state.token) {
-          setStatus('❌ Token GitHub não carregado.', 'error');
-          return;
-        }
-
-        const rawFilename = ui.filename.value.trim();
-        const sanitized = sanitizeName(rawFilename);
-        const htmlContent = state.editor.getValue().trim();
-
-        if (!sanitized) {
-          setStatus('❌ Informe um nome de arquivo válido.', 'error');
-          return;
-        }
-
-        if (!htmlContent) {
-          setStatus('❌ Informe o conteúdo HTML que será publicado.', 'error');
-          return;
-        }
-
-        if (sanitized !== rawFilename) {
-          ui.filename.value = sanitized;
-          updateSanitizedPreview();
-        }
-
-        setPublishing(true);
-        setStatus(`🚀 Publicando "${sanitized}"...`, 'info');
-
-        try {
-          const sha = await getFileSha(sanitized);
-          const path = `${config.folder}/${sanitized}`;
-          const url = `https://api.github.com/repos/${config.repoOwner}/${config.repoName}/contents/${path}`;
-
-          const body = {
-            message: `Publicando ${sanitized}`,
-            content: toBase64(htmlContent),
-            branch: 'main'
-          };
-          
-          if (sha) {
-            body.sha = sha;
-          }
-
-          const response = await fetch(url, {
-            method: 'PUT',
-            headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
-            body: JSON.stringify(body)
-          });
-
-          const data = await parseJsonResponse(response);
-          if (!response.ok) {
-            const message = data && data.message ? data.message : `${response.status} ${response.statusText}`;
-            throw new Error(message);
-          }
-
-          const previewUrl = `${config.previewBaseUrl}/${config.folder}/${encodeURIComponent(sanitized)}`;
-          setStatus(`🎉 Publicado! <a href="${previewUrl}" target="_blank" rel="noopener">🔗 Abrir página publicada</a>`, 'success', { asHtml: true });
-          await listFiles();
-        } catch (error) {
-          setStatus(`❌ Erro ao publicar: ${error.message}`, 'error');
-        } finally {
-          setPublishing(false);
-        }
-      }
-
-      async function getFileSha(name) {
-        if (!state.token) return null;
-        
-        const path = `${config.folder}/${name}`;
-        const url = `https://api.github.com/repos/${config.repoOwner}/${config.repoName}/contents/${path}`;
-        const response = await fetch(url, { headers: authHeaders() });
-
-        if (response.status === 404) return null;
-
-        if (!response.ok) {
-          throw new Error(`${response.status} ${response.statusText}`);
-        }
-
-        const data = await parseJsonResponse(response);
-        return data && data.sha ? data.sha : null;
-      }
-
-      function updateSanitizedPreview() {
-        const raw = ui.filename.value.trim();
-        if (!raw) {
-          ui.sanitizedPreview.textContent = 'Nome resultante: —';
-          return;
-        }
-        const sanitized = sanitizeName(raw);
-        ui.sanitizedPreview.textContent = `Nome resultante: ${sanitized || '—'}`;
-      }
-
-      function updatePublishAvailability() {
-        const hasContent = state.editor && state.editor.getValue().trim().length > 0;
-        const sanitized = sanitizeName(ui.filename.value.trim());
-        const canPublish = Boolean(state.token && hasContent && sanitized);
-        ui.publishBtn.disabled = state.isPublishing || !canPublish;
-      }
-
-      function setPublishing(isPublishing) {
-        state.isPublishing = isPublishing;
-        updatePublishAvailability();
-        ui.publishBtn.innerHTML = isPublishing ? 
-          '⏳ <span>Publicando...</span>' : 
-          '🚀 <span>Publicar no GitHub</span>';
-      }
-
-      function sanitizeName(name) {
-        if (!name) return '';
-        
-        let base = name;
-        if (typeof base.normalize === 'function') {
-          base = base.normalize('NFD');
-        }
-        
-        base = base.replace(/[\u0300-\u036f]/g, '');
-        base = base.toLowerCase().trim();
-        base = base.replace(/\.html?$/g, '');
-        base = base.replace(/[^a-z0-9._-]+/g, '-');
-        base = base.replace(/-+/g, '-');
-        base = base.replace(/^-+|-+$/g, '');
-        base = base.replace(/\.+/g, '.');
-        base = base.replace(/^\.+|\.+$/g, '');
-
-        if (!base) return '';
-        if (!base.endsWith('.html')) base += '.html';
-
-        return base;
-      }
-
-      function authHeaders() {
-        return {
-          'Authorization': `Bearer ${state.token}`,
-          'Accept': 'application/vnd.github+json',
-          'X-GitHub-Api-Version': '2022-11-28'
-        };
-      }
-
-      function setStatus(message, type, options) {
-        clearTimeout(state.statusTimer);
-        
-        if (!message) {
-          ui.status.className = 'status';
-          ui.status.style.display = 'none';
-          ui.status.textContent = '';
-          return;
-        }
-
-        const cssClass = type ? `status-${type}` : 'status-info';
-        ui.status.className = `status ${cssClass}`;
-        ui.status.style.display = 'block';
-        
-        if (options && options.asHtml) {
-          ui.status.innerHTML = message;
-        } else {
-          ui.status.textContent = message;
-        }
-
-        if (options && options.autoHide) {
-          state.statusTimer = setTimeout(() => setStatus(null), options.autoHide);
-        }
-      }
-
-      async function parseJsonResponse(response) {
-        const text = await response.text();
-        if (!text) return {};
-        
-        try {
-          return JSON.parse(text);
-        } catch (error) {
-          throw new Error('Resposta inválida do servidor.');
-        }
-      }
-
-      function toBase64(value) {
-        return btoa(unescape(encodeURIComponent(value)));
-      }
-
-      function fromBase64(value) {
-        if (!value) return '';
-        
-        try {
-          return decodeURIComponent(escape(atob(value.replace(/\s/g, ''))));
-        } catch (error) {
-          throw new Error('Não foi possível decodificar o conteúdo base64.');
-        }
-      }
-
-      function escapeHtml(value) {
-        return String(value)
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#39;');
-      }
-
-      function escapeAttribute(value) {
-        return escapeHtml(value);
-      }
-
-      // Load saved theme preference
-      document.addEventListener('DOMContentLoaded', function() {
-        const savedTheme = localStorage.getItem('editorTheme');
-        if (savedTheme && ui.themeSelector) {
-          ui.themeSelector.value = savedTheme;
-          if (state.editor) {
-            state.editor.setOption('theme', savedTheme);
-          }
-        }
-      });
-
-    })();
-  </script>
+        document.addEventListener('DOMContentLoaded', () => { new PublisherApp(CONFIG); });
+    </script>
 </body>
 </html>
