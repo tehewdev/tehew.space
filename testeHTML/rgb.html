@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RGB Fullscreen Color Show</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #000000;
+            transition: background-color 0.5s ease;
+            font-family: sans-serif;
+            color: white;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 15px 25px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+
+        .controls.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        label {
+            font-size: 14px;
+        }
+
+        input[type="color"] {
+            -webkit-appearance: none;
+            width: 50px;
+            height: 50px;
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 50%;
+        }
+
+        input[type="range"] {
+            width: 150px;
+            cursor: pointer;
+        }
+
+        button {
+            background-color: #333;
+            border: 1px solid #555;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+        
+        button.active {
+            background-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+
+<div id="controls" class="controls">
+    <div class="control-group">
+        <label for="colorPicker">Cor Fixa</label>
+        <input type="color" id="colorPicker" value="#0000ff">
+    </div>
+    <div class="control-group">
+        <label for="speedControl">Velocidade</label>
+        <input type="range" id="speedControl" min="1" max="100" value="50">
+    </div>
+    <div class="control-group">
+        <label>Modo de Transição</label>
+        <div>
+            <button id="modeStatic" class="active">Estático</button>
+            <button id="modeAuto">Automático</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const body = document.body;
+    const controls = document.getElementById('controls');
+    const colorPicker = document.getElementById('colorPicker');
+    const speedControl = document.getElementById('speedControl');
+    const modeStaticBtn = document.getElementById('modeStatic');
+    const modeAutoBtn = document.getElementById('modeAuto');
+
+    let mouseMoveTimeout;
+    let autoColorInterval;
+    let currentMode = 'static'; // 'static' or 'auto'
+
+    // Mostra os controles ao mover o mouse e os esconde após um tempo
+    window.addEventListener('mousemove', () => {
+        controls.classList.add('visible');
+        clearTimeout(mouseMoveTimeout);
+        mouseMoveTimeout = setTimeout(() => {
+            controls.classList.remove('visible');
+        }, 3000); // Esconde após 3 segundos de inatividade
+    });
+
+    // Lógica para a troca de cor
+    const setBackgroundColor = (color) => {
+        body.style.backgroundColor = color;
+    };
+
+    // Modo Estático: atualiza a cor de fundo com o color picker
+    colorPicker.addEventListener('input', (event) => {
+        if (currentMode === 'static') {
+            setBackgroundColor(event.target.value);
+        }
+    });
+
+    // Inicia a transição automática de cores
+    const startAutoMode = () => {
+        if (autoColorInterval) clearInterval(autoColorInterval);
+        
+        let hue = 0;
+        const speed = 101 - speedControl.value; // Inverte o valor para que maior seja mais rápido
+
+        autoColorInterval = setInterval(() => {
+            hue = (hue + 1) % 360;
+            const color = `hsl(${hue}, 100%, 50%)`;
+            setBackgroundColor(color);
+        }, speed);
+    };
+    
+    // Para a transição automática
+    const stopAutoMode = () => {
+        clearInterval(autoColorInterval);
+    };
+    
+    // Troca para o modo estático
+    modeStaticBtn.addEventListener('click', () => {
+        currentMode = 'static';
+        modeStaticBtn.classList.add('active');
+        modeAutoBtn.classList.remove('active');
+        stopAutoMode();
+        setBackgroundColor(colorPicker.value);
+    });
+    
+    // Troca para o modo automático
+    modeAutoBtn.addEventListener('click', () => {
+        currentMode = 'auto';
+        modeAutoBtn.classList.add('active');
+        modeStaticBtn.classList.remove('active');
+        startAutoMode();
+    });
+
+    // Atualiza a velocidade da transição quando o slider é movido
+    speedControl.addEventListener('input', () => {
+        if (currentMode === 'auto') {
+            startAutoMode();
+        }
+    });
+    
+    // Inicia com a cor do picker
+    setBackgroundColor(colorPicker.value);
+
+</script>
+
+</body>
+</html>
