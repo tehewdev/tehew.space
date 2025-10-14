@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌸 Meu Ciclo Menstrual</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .calendar-container {
+            grid-column: 1 / -1;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-header button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .calendar-header h3 {
+            color: #333;
+            font-size: 1.3em;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .day-header {
+            text-align: center;
+            padding: 10px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .day-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            background: #f5f5f5;
+        }
+
+        .day-cell:hover {
+            transform: scale(1.1);
+        }
+
+        .day-cell.other-month {
+            opacity: 0.3;
+        }
+
+        .day-cell.today {
+            border: 3px solid #667eea;
+            font-weight: bold;
+        }
+
+        .day-cell.period {
+            background: linear-gradient(135deg, #FF6B9D 0%, #C06C84 100%);
+            color: white;
+            font-weight: bold;
+        }
+
+        .day-cell.fertile {
+            background: linear-gradient(135deg, #A8E6CF 0%, #56CCF2 100%);
+            color: white;
+            font-weight: bold;
+        }
+
+        .day-cell.ovulation {
+            background: linear-gradient(135deg, #FFD93D 0%, #6BCB77 100%);
+            color: white;
+            font-weight: bold;
+        }
+
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #FF6B9D 0%, #C06C84 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .info-card.fertile {
+            background: linear-gradient(135deg, #A8E6CF 0%, #56CCF2 100%);
+        }
+
+        .info-card h3 {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .info-card .value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-item button {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .legend {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .calendar-grid {
+                gap: 3px;
+            }
+
+            .day-cell {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌸 Rastreador de Ciclo Menstrual</h1>
+            <p>Acompanhe seu ciclo e período fértil</p>
+        </header>
+
+        <div class="main-grid">
+            <div class="card">
+                <h2>➕ Registrar Período</h2>
+                <form id="periodForm">
+                    <div class="form-group">
+                        <label for="startDate">Data de Início</label>
+                        <input type="date" id="startDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">Data de Término</label>
+                        <input type="date" id="endDate" required>
+                    </div>
+                    <button type="submit" class="btn">Adicionar Período</button>
+                </form>
+
+                <div class="info-cards" style="margin-top: 20px;">
+                    <div class="info-card">
+                        <h3>Próxima Menstruação</h3>
+                        <div class="value" id="nextPeriod">-</div>
+                    </div>
+                    <div class="info-card fertile">
+                        <h3>Próximo Período Fértil</h3>
+                        <div class="value" id="nextFertile">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📋 Histórico</h2>
+                <div class="history-list" id="historyList">
+                    <p style="text-align: center; color: #999;">Nenhum registro ainda</p>
+                </div>
+            </div>
+
+            <div class="card calendar-container">
+                <div class="calendar-header">
+                    <button onclick="changeMonth(-1)">◀ Anterior</button>
+                    <h3 id="currentMonth"></h3>
+                    <button onclick="changeMonth(1)">Próximo ▶</button>
+                </div>
+                <div class="calendar-grid">
+                    <div class="day-header">Dom</div>
+                    <div class="day-header">Seg</div>
+                    <div class="day-header">Ter</div>
+                    <div class="day-header">Qua</div>
+                    <div class="day-header">Qui</div>
+                    <div class="day-header">Sex</div>
+                    <div class="day-header">Sáb</div>
+                    <div id="calendarDays"></div>
+                </div>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(135deg, #FF6B9D 0%, #C06C84 100%);"></div>
+                        <span>Menstruação</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(135deg, #FFD93D 0%, #6BCB77 100%);"></div>
+                        <span>Ovulação</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(135deg, #A8E6CF 0%, #56CCF2 100%);"></div>
+                        <span>Período Fértil</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDate = new Date();
+        let periods = JSON.parse(localStorage.getItem('periods')) || [];
+
+        // Adicionar período
+        document.getElementById('periodForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            if (new Date(startDate) > new Date(endDate)) {
+                alert('A data de início deve ser anterior à data de término!');
+                return;
+            }
+
+            periods.push({ start: startDate, end: endDate });
+            periods.sort((a, b) => new Date(a.start) - new Date(b.start));
+            localStorage.setItem('periods', JSON.stringify(periods));
+
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+
+            updateUI();
+            alert('Período adicionado com sucesso!');
+        });
+
+        // Calcular próxima menstruação
+        function calculateNextPeriod() {
+            if (periods.length === 0) return null;
+
+            const lastPeriod = periods[periods.length - 1];
+            const lastStart = new Date(lastPeriod.start);
+            const nextStart = new Date(lastStart);
+            nextStart.setDate(nextStart.getDate() + 28); // Ciclo de 28 dias
+
+            return nextStart;
+        }
+
+        // Calcular período fértil
+        function calculateFertilePeriod() {
+            const nextPeriod = calculateNextPeriod();
+            if (!nextPeriod) return null;
+
+            const ovulation = new Date(nextPeriod);
+            ovulation.setDate(ovulation.getDate() - 14); // 14 dias antes
+
+            return {
+                start: new Date(ovulation.getTime() - 2 * 24 * 60 * 60 * 1000),
+                ovulation: ovulation,
+                end: new Date(ovulation.getTime() + 2 * 24 * 60 * 60 * 1000)
+            };
+        }
+
+        // Renderizar calendário
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            document.getElementById('currentMonth').textContent = 
+                currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+                .replace(/^w/, c => c.toUpperCase());
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+            const calendarDays = document.getElementById('calendarDays');
+            calendarDays.innerHTML = '';
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Dias do mês anterior
+            for (let i = firstDay - 1; i >= 0; i--) {
+                const day = daysInPrevMonth - i;
+                const cell = createDayCell(day, true);
+                calendarDays.appendChild(cell);
+            }
+
+            // Dias do mês atual
+            for (let day = 1; day <= daysInMonth; day++) {
+                const cellDate = new Date(year, month, day);
+                const cell = createDayCell(day, false, cellDate);
+
+                // Verificar se é hoje
+                if (cellDate.getTime() === today.getTime()) {
+                    cell.classList.add('today');
+                }
+
+                // Verificar se está no período
+                const dateStr = cellDate.toISOString().split('T')[0];
+                periods.forEach(period => {
+                    const start = new Date(period.start);
+                    const end = new Date(period.end);
+                    if (cellDate >= start && cellDate <= end) {
+                        cell.classList.add('period');
+                    }
+                });
+
+                // Verificar período fértil previsto
+                const fertile = calculateFertilePeriod();
+                if (fertile && cellDate >= fertile.start && cellDate <= fertile.end) {
+                    if (cellDate.toDateString() === fertile.ovulation.toDateString()) {
+                        cell.classList.add('ovulation');
+                    } else if (!cell.classList.contains('period')) {
+                        cell.classList.add('fertile');
+                    }
+                }
+
+                // Próxima menstruação prevista
+                const nextPeriod = calculateNextPeriod();
+                if (nextPeriod) {
+                    const nextEnd = new Date(nextPeriod);
+                    nextEnd.setDate(nextEnd.getDate() + 5); // 6 dias de duração
+                    if (cellDate >= nextPeriod && cellDate <= nextEnd && !cell.classList.contains('period')) {
+                        cell.classList.add('period');
+                        cell.style.opacity = '0.6';
+                    }
+                }
+
+                calendarDays.appendChild(cell);
+            }
+
+            // Dias do próximo mês
+            const remainingCells = 42 - (firstDay + daysInMonth);
+            for (let day = 1; day <= remainingCells; day++) {
+                const cell = createDayCell(day, true);
+                calendarDays.appendChild(cell);
+            }
+        }
+
+        function createDayCell(day, otherMonth, date = null) {
+            const cell = document.createElement('div');
+            cell.className = 'day-cell';
+            cell.textContent = day;
+            if (otherMonth) cell.classList.add('other-month');
+            return cell;
+        }
+
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            renderCalendar();
+        }
+
+        // Renderizar histórico
+        function renderHistory() {
+            const historyList = document.getElementById('historyList');
+            
+            if (periods.length === 0) {
+                historyList.innerHTML = '<p style="text-align: center; color: #999;">Nenhum registro ainda</p>';
+                return;
+            }
+
+            historyList.innerHTML = '';
+            periods.slice().reverse().forEach((period, index) => {
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                
+                const start = new Date(period.start).toLocaleDateString('pt-BR');
+                const end = new Date(period.end).toLocaleDateString('pt-BR');
+                const duration = Math.ceil((new Date(period.end) - new Date(period.start)) / (1000 * 60 * 60 * 24)) + 1;
+                
+                item.innerHTML = `
+                    <div>
+                        <strong>${start} - ${end}</strong>
+                        <br>
+                        <small>${duration} dias</small>
+                    </div>
+                    <button onclick="deletePeriod(${periods.length - 1 - index})">🗑️</button>
+                `;
+                
+                historyList.appendChild(item);
+            });
+        }
+
+        function deletePeriod(index) {
+            if (confirm('Deseja realmente excluir este registro?')) {
+                periods.splice(index, 1);
+                localStorage.setItem('periods', JSON.stringify(periods));
+                updateUI();
+            }
+        }
+
+        // Atualizar informações
+        function updateInfo() {
+            const nextPeriod = calculateNextPeriod();
+            const nextFertile = calculateFertilePeriod();
+
+            if (nextPeriod) {
+                const days = Math.ceil((nextPeriod - new Date()) / (1000 * 60 * 60 * 24));
+                document.getElementById('nextPeriod').textContent = days > 0 ? `${days} dias` : 'Hoje';
+            } else {
+                document.getElementById('nextPeriod').textContent = '-';
+            }
+
+            if (nextFertile) {
+                const days = Math.ceil((nextFertile.ovulation - new Date()) / (1000 * 60 * 60 * 24));
+                document.getElementById('nextFertile').textContent = days > 0 ? `${days} dias` : 'Hoje';
+            } else {
+                document.getElementById('nextFertile').textContent = '-';
+            }
+        }
+
+        function updateUI() {
+            renderCalendar();
+            renderHistory();
+            updateInfo();
+        }
+
+        // Inicializar
+        updateUI();
+
+        // Definir data máxima como hoje
+        document.getElementById('startDate').max = new Date().toISOString().split('T')[0];
+        document.getElementById('endDate').max = new Date().toISOString().split('T')[0];
+    </script>
+</body>
+</html>
