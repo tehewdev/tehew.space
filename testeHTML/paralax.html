@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DSA Parallax Visualizer</title>
+  <style>
+    body, html { margin: 0; padding: 0; overflow-x: hidden; }
+    
+    .wrapper {
+      height: 100vh;
+      perspective: 2px;
+      transform-style: preserve-3d;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    
+    .section {
+      position: relative;
+      height: 100vh;
+      transform-style: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .section::before {
+      content: "";
+      position: absolute;
+      top: 0; right: 0; bottom: 0; left: 0;
+      z-index: -1;
+      transform: translateZ(-1px) scale(1.5);
+      background-size: cover;
+      background-position: center;
+    }
+    
+    .bg-sort::before {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .bg-tree::before {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    .content {
+      background: rgba(255,255,255,0.9);
+      padding: 40px;
+      border-radius: 10px;
+      max-width: 800px;
+      z-index: 1;
+    }
+    
+    .visual-container {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+      justify-content: center;
+    }
+    
+    .bar {
+      width: 40px;
+      background: #667eea;
+      transition: all 0.3s ease;
+    }
+    
+    .bar:hover {
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <section class="section bg-sort">
+      <div class="content">
+        <h1>Algoritmos de Ordenação</h1>
+        <div class="visual-container" id="sortBars"></div>
+        <button onclick="startSort()">Iniciar Bubble Sort</button>
+      </div>
+    </section>
+    
+    <section class="section bg-tree">
+      <div class="content">
+        <h1>Árvore Binária</h1>
+        <canvas id="treeCanvas" width="700" height="400"></canvas>
+        <button onclick="drawTree()">Visualizar Árvore</button>
+      </div>
+    </section>
+  </div>
+  
+  <script>
+    // Inicializar barras de ordenação
+    const container = document.getElementById('sortBars');
+    const heights = [100, 180, 140, 220, 80, 160, 200];
+    heights.forEach(h => {
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.height = h + 'px';
+      container.appendChild(bar);
+    });
+    
+    // Animação Bubble Sort
+    async function startSort() {
+      const bars = document.querySelectorAll('.bar');
+      for(let i = 0; i < bars.length; i++) {
+        for(let j = 0; j < bars.length - i - 1; j++) {
+          bars[j].style.background = '#f5576c';
+          bars[j+1].style.background = '#f5576c';
+          
+          await new Promise(r => setTimeout(r, 500));
+          
+          const h1 = parseInt(bars[j].style.height);
+          const h2 = parseInt(bars[j+1].style.height);
+          
+          if(h1 > h2) {
+            bars[j].style.height = h2 + 'px';
+            bars[j+1].style.height = h1 + 'px';
+          }
+          
+          bars[j].style.background = '#667eea';
+          bars[j+1].style.background = '#667eea';
+        }
+      }
+    }
+    
+    // Desenhar árvore binária
+    function drawTree() {
+      const canvas = document.getElementById('treeCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      function drawNode(x, y, val) {
+        ctx.beginPath();
+        ctx.arc(x, y, 25, 0, 2 * Math.PI);
+        ctx.fillStyle = '#667eea';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = '16px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(val, x, y);
+      }
+      
+      function drawLine(x1, y1, x2, y2) {
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = '#764ba2';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+      
+      // Estrutura da árvore
+      const tree = [
+        {x: 350, y: 50, val: 50},
+        {x: 250, y: 120, val: 30},
+        {x: 450, y: 120, val: 70},
+        {x: 180, y: 190, val: 20},
+        {x: 320, y: 190, val: 40},
+        {x: 380, y: 190, val: 60},
+        {x: 520, y: 190, val: 80}
+      ];
+      
+      // Desenhar conexões
+      drawLine(350, 50, 250, 120);
+      drawLine(350, 50, 450, 120);
+      drawLine(250, 120, 180, 190);
+      drawLine(250, 120, 320, 190);
+      drawLine(450, 120, 380, 190);
+      drawLine(450, 120, 520, 190);
+      
+      // Desenhar nós
+      tree.forEach(node => drawNode(node.x, node.y, node.val));
+    }
+    
+    drawTree(); // Desenhar árvore inicial
+  </script>
+</body>
+</html>
