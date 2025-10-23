@@ -45,8 +45,9 @@
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             pointer-events: none;
-            animation: ripple-effect 1.5s ease-out;
+            animation: ripple-effect 1.5s ease-out forwards;
             z-index: 1000;
+            transform: translate(-50%, -50%);
         }
 
         @keyframes ripple-effect {
@@ -198,17 +199,23 @@
             background: rgba(255, 255, 255, 0.1);
             border-radius: 50%;
             pointer-events: none;
-            animation: float 20s infinite ease-in-out;
+            animation: float-up 20s infinite ease-in-out;
         }
 
-        @keyframes float {
-            0%, 100% { 
-                transform: translateY(0) translateX(0) rotate(0deg);
+        @keyframes float-up {
+            0% { 
+                transform: translate(0, 0) rotate(0deg);
                 opacity: 0;
             }
-            50% { 
-                transform: translateY(-100vh) translateX(50px) rotate(360deg);
+            10% {
                 opacity: 0.3;
+            }
+            90% {
+                opacity: 0.3;
+            }
+            100% { 
+                transform: translate(var(--drift), -100vh) rotate(360deg);
+                opacity: 0;
             }
         }
 
@@ -223,11 +230,12 @@
 
         .sequence-indicator.active {
             color: rgba(255, 255, 255, 0.3);
+            animation: pulse 0.5s ease;
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
         }
 
         .hint {
@@ -242,8 +250,15 @@
             transition: opacity 0.3s;
         }
 
-        .hint:hover {
-            opacity: 0.1;
+        .keyboard-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.03);
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-align: center;
         }
     </style>
 </head>
@@ -251,11 +266,12 @@
     <!-- Cursor personalizado -->
     <div class="cursor"></div>
 
-    <!-- Indicador de sequência (quase invisível) -->
+    <!-- Indicador de sequência -->
     <div class="sequence-indicator">○○○○○</div>
 
     <!-- Dica sutil -->
     <div class="hint">👁</div>
+    <div class="keyboard-hint">Digite "OBSERVE" para revelar</div>
 
     <!-- Zonas ocultas para cliques -->
     <div class="hidden-zone" data-zone="1" style="top: 10%; left: 10%;"></div>
@@ -292,9 +308,14 @@
         // Audio Context para sons espaciais
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        // Sequência secreta: cantos e centro
-        const secretSequence = [1, 3, 5, 2, 4]; // Ordem: superior-esquerdo, inferior-esquerdo, centro, superior-direito, inferior-direito
+        // Sequência secreta por cliques
+        const secretSequence = [1, 3, 5, 2, 4];
         let currentSequence = [];
+        
+        // Sequência secreta por teclado
+        const keyboardCode = 'OBSERVE';
+        let typedKeys = [];
+        
         let isRevealed = false;
 
         // Cursor personalizado
@@ -337,18 +358,28 @@
             }
         }
 
-        // Iniciar sons ambientes
         setTimeout(createAmbientSound, 3000);
 
-        // Criar partículas flutuantes
+        // Criar partículas flutuantes do centro
         function createParticles() {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            
             for (let i = 0; i < 20; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'particle';
-                particle.style.width = Math.random() * 4 + 1 + 'px';
-                particle.style.height = particle.style.width;
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.top = '100%';
+                const size = Math.random() * 4 + 1;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                
+                // Posição inicial no centro
+                particle.style.left = centerX + 'px';
+                particle.style.bottom = centerY + 'px';
+                
+                // Drift aleatório
+                const drift = (Math.random() - 0.5) * 200;
+                particle.style.setProperty('--drift', drift + 'px');
+                
                 particle.style.animationDelay = Math.random() * 20 + 's';
                 particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
                 document.body.appendChild(particle);
@@ -360,8 +391,8 @@
         function createRipple(x, y) {
             const ripple = document.createElement('div');
             ripple.className = 'ripple';
-            ripple.style.left = x - 150 + 'px';
-            ripple.style.top = y - 150 + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
             document.body.appendChild(ripple);
             
             setTimeout(() => ripple.remove(), 1500);
@@ -383,24 +414,45 @@
             setTimeout(() => indicator.classList.remove('active'), 1000);
         }
 
+        // Detectar sequência de teclado
+        document.addEventListener('keydown', (e) => {
+            if (isRevealed) return;
+            
+            const key = e.key.toUpperCase();
+            typedKeys.push(key);
+            
+            // Manter apenas os últimos caracteres do tamanho do código
+            if (typedKeys.length > keyboardCode.length) {
+                typedKeys.shift();
+            }
+            
+            // Verificar se a sequência está correta
+            if (typedKeys.join('') === keyboardCode) {
+                playSpatialTone(180, 0.5, 0, 0.2);
+                revealObserver();
+                typedKeys = [];
+            } else if (keyboardCode.startsWith(typedKeys.join(''))) {
+                // Feedback sonoro de progresso
+                playSpatialTone(100 + typedKeys.length * 20, 0.2, 0, 0.1);
+            }
+        });
+
         // Detectar cliques nas zonas ocultas
         document.querySelectorAll('.hidden-zone').forEach(zone => {
             zone.addEventListener('click', (e) => {
-                const zoneNum = parseInt(zone.dataset.zone);
+                if (isRevealed) return;
                 
-                // Som de feedback baseado na zona
+                const zoneNum = parseInt(zone.dataset.zone);
                 const frequencies = [80, 100, 120, 140, 160];
                 const pan = (e.clientX / window.innerWidth) * 2 - 1;
                 playSpatialTone(frequencies[zoneNum - 1], 0.3, pan, 0.15);
                 
                 createRipple(e.clientX, e.clientY);
                 
-                // Verificar sequência
                 if (currentSequence.length === 0 || zoneNum === secretSequence[currentSequence.length]) {
                     currentSequence.push(zoneNum);
                     updateSequenceIndicator();
                     
-                    // Feedback visual
                     cursor.style.width = '30px';
                     cursor.style.height = '30px';
                     cursor.style.borderColor = 'rgba(255, 255, 255, 0.5)';
@@ -410,12 +462,10 @@
                         cursor.style.borderColor = 'rgba(255, 255, 255, 0.1)';
                     }, 300);
                     
-                    // Verificar se completou a sequência
                     if (currentSequence.length === secretSequence.length) {
                         revealObserver();
                     }
                 } else {
-                    // Sequência errada - resetar com feedback
                     playSpatialTone(40, 1, 0, 0.2);
                     document.querySelector('.glitch').classList.add('active');
                     setTimeout(() => {
@@ -431,24 +481,19 @@
         function revealObserver() {
             isRevealed = true;
             
-            // Som de revelação
             playSpatialTone(200, 2, 0, 0.2);
             setTimeout(() => playSpatialTone(150, 2, 0, 0.15), 500);
             setTimeout(() => playSpatialTone(100, 3, 0, 0.1), 1000);
             
-            // Glitch effect
             const glitch = document.querySelector('.glitch');
             glitch.classList.add('active');
             setTimeout(() => glitch.classList.remove('active'), 2000);
             
-            // Transição para interface branca
             document.body.style.background = '#fff';
             document.querySelector('.observer-interface').style.display = 'flex';
             
-            // Iniciar piscadas aleatórias
             startBlinking();
             
-            // Sons ambientes para interface revelada
             setInterval(() => {
                 playSpatialTone(60, 2, 0, 0.02);
             }, 8000);
@@ -498,7 +543,6 @@
                 const eyes = [leftEye, rightEye];
                 const randomEye = eyes[Math.floor(Math.random() * eyes.length)];
                 
-                // Som sutil de piscada
                 playSpatialTone(100, 0.1, Math.random() - 0.5, 0.05);
                 
                 randomEye.classList.add('blinking');
@@ -506,7 +550,6 @@
                     randomEye.classList.remove('blinking');
                 }, 300);
 
-                // Próxima piscada em intervalo aleatório
                 setTimeout(blink, Math.random() * 5000 + 2000);
             }
             
@@ -539,11 +582,9 @@
                 eye.addEventListener('click', () => {
                     if (!isRevealed) return;
                     
-                    // Glitch effect intenso
                     const glitch = document.querySelector('.glitch');
                     glitch.classList.add('active');
                     
-                    // Sons intensos
                     for (let i = 0; i < 5; i++) {
                         setTimeout(() => {
                             playSpatialTone(50 + i * 20, 0.2, (Math.random() - 0.5) * 2, 0.15);
@@ -557,21 +598,10 @@
             });
         }, 3000);
 
-        // Efeito de pulsação na mensagem
-        setTimeout(() => {
-            const message = document.querySelector('.message');
-            if (message) {
-                setInterval(() => {
-                    if (isRevealed) {
-                        playSpatialTone(70, 1.5, 0, 0.02);
-                    }
-                }, 8000);
-            }
-        }, 5000);
-
         // Console easter egg
         console.log('%c👁 Você foi observado desde o início...', 'font-size: 20px; color: #000; background: #fff; padding: 10px;');
-        console.log('%cSequência: superior-esquerdo → inferior-esquerdo → centro → superior-direito → inferior-direito', 'font-size: 12px; color: #666;');
+        console.log('%cSequência por cliques: superior-esquerdo → inferior-esquerdo → centro → superior-direito → inferior-direito', 'font-size: 12px; color: #666;');
+        console.log('%cSequência por teclado: OBSERVE', 'font-size: 12px; color: #666;');
     </script>
 </body>
 </html>
