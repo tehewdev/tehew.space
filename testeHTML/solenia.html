@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>...</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+        }
+
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            transition: background 2s ease;
+        }
+
+        .cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: all 0.1s ease;
+            mix-blend-mode: difference;
+        }
+
+        .hidden-zone {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .ripple {
+            position: fixed;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: ripple-effect 1.5s ease-out;
+            z-index: 1000;
+        }
+
+        @keyframes ripple-effect {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+            100% {
+                width: 300px;
+                height: 300px;
+                opacity: 0;
+            }
+        }
+
+        .observer-interface {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            animation: reveal 3s ease;
+        }
+
+        @keyframes reveal {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .eye-container {
+            display: flex;
+            gap: 100px;
+            position: relative;
+        }
+
+        .eye {
+            width: 150px;
+            height: 150px;
+            background: #fff;
+            border: 5px solid #000;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                inset 0 0 30px rgba(0, 0, 0, 0.3),
+                0 10px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .iris {
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #1a1a1a 30%, #000 70%);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.15s ease-out;
+            box-shadow: 
+                0 0 20px rgba(0, 0, 0, 0.8),
+                inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .pupil {
+            width: 40px;
+            height: 40px;
+            background: #000;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.9);
+        }
+
+        .reflection {
+            width: 15px;
+            height: 15px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            position: absolute;
+            top: 20%;
+            left: 30%;
+        }
+
+        .eyelid {
+            width: 100%;
+            height: 0;
+            background: #000;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: height 0.3s ease;
+            z-index: 10;
+        }
+
+        .eye.blinking .eyelid {
+            height: 100%;
+        }
+
+        .glitch {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            pointer-events: none;
+            z-index: 9998;
+            mix-blend-mode: difference;
+            opacity: 0;
+        }
+
+        .glitch.active {
+            animation: glitch-effect 0.3s infinite;
+        }
+
+        @keyframes glitch-effect {
+            0%, 100% { opacity: 0; }
+            25% { opacity: 0.3; transform: translate(2px, 2px); }
+            50% { opacity: 0.5; transform: translate(-2px, -2px); }
+            75% { opacity: 0.3; transform: translate(2px, -2px); }
+        }
+
+        .message {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #000;
+            font-size: 14px;
+            letter-spacing: 3px;
+            opacity: 0;
+            animation: fade-in-out 4s ease-in-out infinite;
+            text-transform: uppercase;
+        }
+
+        @keyframes fade-in-out {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 0.3; }
+        }
+
+        .particle {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { 
+                transform: translateY(0) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            50% { 
+                transform: translateY(-100vh) translateX(50px) rotate(360deg);
+                opacity: 0.3;
+            }
+        }
+
+        .sequence-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: rgba(255, 255, 255, 0.05);
+            font-size: 12px;
+            letter-spacing: 2px;
+        }
+
+        .sequence-indicator.active {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .hint {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.02);
+            font-size: 200px;
+            pointer-events: none;
+            user-select: none;
+            transition: opacity 0.3s;
+        }
+
+        .hint:hover {
+            opacity: 0.1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Cursor personalizado -->
+    <div class="cursor"></div>
+
+    <!-- Indicador de sequência (quase invisível) -->
+    <div class="sequence-indicator">○○○○○</div>
+
+    <!-- Dica sutil -->
+    <div class="hint">👁</div>
+
+    <!-- Zonas ocultas para cliques -->
+    <div class="hidden-zone" data-zone="1" style="top: 10%; left: 10%;"></div>
+    <div class="hidden-zone" data-zone="2" style="top: 10%; right: 10%;"></div>
+    <div class="hidden-zone" data-zone="3" style="bottom: 10%; left: 10%;"></div>
+    <div class="hidden-zone" data-zone="4" style="bottom: 10%; right: 10%;"></div>
+    <div class="hidden-zone" data-zone="5" style="top: 50%; left: 50%; transform: translate(-50%, -50%);"></div>
+
+    <!-- Efeito glitch -->
+    <div class="glitch"></div>
+
+    <!-- Interface do Observador -->
+    <div class="observer-interface">
+        <div class="eye-container">
+            <div class="eye" id="leftEye">
+                <div class="iris" id="leftIris">
+                    <div class="pupil"></div>
+                    <div class="reflection"></div>
+                </div>
+                <div class="eyelid"></div>
+            </div>
+            <div class="eye" id="rightEye">
+                <div class="iris" id="rightIris">
+                    <div class="pupil"></div>
+                    <div class="reflection"></div>
+                </div>
+                <div class="eyelid"></div>
+            </div>
+        </div>
+        <div class="message">Você está sendo observado</div>
+    </div>
+
+    <script>
+        // Audio Context para sons espaciais
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Sequência secreta: cantos e centro
+        const secretSequence = [1, 3, 5, 2, 4]; // Ordem: superior-esquerdo, inferior-esquerdo, centro, superior-direito, inferior-direito
+        let currentSequence = [];
+        let isRevealed = false;
+
+        // Cursor personalizado
+        const cursor = document.querySelector('.cursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX - 10 + 'px';
+            cursor.style.top = e.clientY - 10 + 'px';
+        });
+
+        // Função para criar som espacial de baixa frequência
+        function playSpatialTone(frequency, duration, pan = 0, volume = 0.1) {
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            const panner = audioCtx.createStereoPanner();
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+            
+            gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            
+            panner.pan.setValueAtTime(pan, audioCtx.currentTime);
+
+            oscillator.connect(gainNode);
+            gainNode.connect(panner);
+            panner.connect(audioCtx.destination);
+
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + duration);
+        }
+
+        // Função para criar sons de ambiente aleatórios
+        function createAmbientSound() {
+            if (!isRevealed) {
+                const frequencies = [40, 60, 80, 100, 120];
+                const freq = frequencies[Math.floor(Math.random() * frequencies.length)];
+                const pan = (Math.random() - 0.5) * 2;
+                playSpatialTone(freq, 3, pan, 0.03);
+                setTimeout(createAmbientSound, Math.random() * 15000 + 10000);
+            }
+        }
+
+        // Iniciar sons ambientes
+        setTimeout(createAmbientSound, 3000);
+
+        // Criar partículas flutuantes
+        function createParticles() {
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.width = Math.random() * 4 + 1 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = '100%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                document.body.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        // Criar efeito ripple
+        function createRipple(x, y) {
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple';
+            ripple.style.left = x - 150 + 'px';
+            ripple.style.top = y - 150 + 'px';
+            document.body.appendChild(ripple);
+            
+            setTimeout(() => ripple.remove(), 1500);
+        }
+
+        // Atualizar indicador de sequência
+        function updateSequenceIndicator() {
+            const indicator = document.querySelector('.sequence-indicator');
+            let display = '';
+            for (let i = 0; i < 5; i++) {
+                if (i < currentSequence.length) {
+                    display += '●';
+                } else {
+                    display += '○';
+                }
+            }
+            indicator.textContent = display;
+            indicator.classList.add('active');
+            setTimeout(() => indicator.classList.remove('active'), 1000);
+        }
+
+        // Detectar cliques nas zonas ocultas
+        document.querySelectorAll('.hidden-zone').forEach(zone => {
+            zone.addEventListener('click', (e) => {
+                const zoneNum = parseInt(zone.dataset.zone);
+                
+                // Som de feedback baseado na zona
+                const frequencies = [80, 100, 120, 140, 160];
+                const pan = (e.clientX / window.innerWidth) * 2 - 1;
+                playSpatialTone(frequencies[zoneNum - 1], 0.3, pan, 0.15);
+                
+                createRipple(e.clientX, e.clientY);
+                
+                // Verificar sequência
+                if (currentSequence.length === 0 || zoneNum === secretSequence[currentSequence.length]) {
+                    currentSequence.push(zoneNum);
+                    updateSequenceIndicator();
+                    
+                    // Feedback visual
+                    cursor.style.width = '30px';
+                    cursor.style.height = '30px';
+                    cursor.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+                    setTimeout(() => {
+                        cursor.style.width = '20px';
+                        cursor.style.height = '20px';
+                        cursor.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                    }, 300);
+                    
+                    // Verificar se completou a sequência
+                    if (currentSequence.length === secretSequence.length) {
+                        revealObserver();
+                    }
+                } else {
+                    // Sequência errada - resetar com feedback
+                    playSpatialTone(40, 1, 0, 0.2);
+                    document.querySelector('.glitch').classList.add('active');
+                    setTimeout(() => {
+                        document.querySelector('.glitch').classList.remove('active');
+                    }, 300);
+                    currentSequence = [];
+                    updateSequenceIndicator();
+                }
+            });
+        });
+
+        // Revelar interface do observador
+        function revealObserver() {
+            isRevealed = true;
+            
+            // Som de revelação
+            playSpatialTone(200, 2, 0, 0.2);
+            setTimeout(() => playSpatialTone(150, 2, 0, 0.15), 500);
+            setTimeout(() => playSpatialTone(100, 3, 0, 0.1), 1000);
+            
+            // Glitch effect
+            const glitch = document.querySelector('.glitch');
+            glitch.classList.add('active');
+            setTimeout(() => glitch.classList.remove('active'), 2000);
+            
+            // Transição para interface branca
+            document.body.style.background = '#fff';
+            document.querySelector('.observer-interface').style.display = 'flex';
+            
+            // Iniciar piscadas aleatórias
+            startBlinking();
+            
+            // Sons ambientes para interface revelada
+            setInterval(() => {
+                playSpatialTone(60, 2, 0, 0.02);
+            }, 8000);
+        }
+
+        // Sistema de olhos seguindo o mouse
+        let leftEye, rightEye, leftIris, rightIris;
+        
+        setTimeout(() => {
+            leftEye = document.getElementById('leftEye');
+            rightEye = document.getElementById('rightEye');
+            leftIris = document.getElementById('leftIris');
+            rightIris = document.getElementById('rightIris');
+        }, 100);
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isRevealed || !leftIris) return;
+
+            const eyes = [
+                { element: leftEye, iris: leftIris },
+                { element: rightEye, iris: rightIris }
+            ];
+
+            eyes.forEach(eye => {
+                const eyeRect = eye.element.getBoundingClientRect();
+                const eyeCenterX = eyeRect.left + eyeRect.width / 2;
+                const eyeCenterY = eyeRect.top + eyeRect.height / 2;
+
+                const deltaX = e.clientX - eyeCenterX;
+                const deltaY = e.clientY - eyeCenterY;
+
+                const angle = Math.atan2(deltaY, deltaX);
+                const distance = Math.min(Math.sqrt(deltaX * deltaX + deltaY * deltaY), 35);
+
+                const irisX = Math.cos(angle) * distance;
+                const irisY = Math.sin(angle) * distance;
+
+                eye.iris.style.transform = `translate(calc(-50% + ${irisX}px), calc(-50% + ${irisY}px))`;
+            });
+        });
+
+        // Sistema de piscadas aleatórias
+        function startBlinking() {
+            function blink() {
+                if (!isRevealed) return;
+                
+                const eyes = [leftEye, rightEye];
+                const randomEye = eyes[Math.floor(Math.random() * eyes.length)];
+                
+                // Som sutil de piscada
+                playSpatialTone(100, 0.1, Math.random() - 0.5, 0.05);
+                
+                randomEye.classList.add('blinking');
+                setTimeout(() => {
+                    randomEye.classList.remove('blinking');
+                }, 300);
+
+                // Próxima piscada em intervalo aleatório
+                setTimeout(blink, Math.random() * 5000 + 2000);
+            }
+            
+            setTimeout(blink, 2000);
+        }
+
+        // Efeito de hover nas zonas ocultas
+        document.querySelectorAll('.hidden-zone').forEach(zone => {
+            zone.addEventListener('mouseenter', () => {
+                if (!isRevealed) {
+                    cursor.style.width = '30px';
+                    cursor.style.height = '30px';
+                    cursor.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                    playSpatialTone(150, 0.1, 0, 0.05);
+                }
+            });
+            
+            zone.addEventListener('mouseleave', () => {
+                if (!isRevealed) {
+                    cursor.style.width = '20px';
+                    cursor.style.height = '20px';
+                    cursor.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                }
+            });
+        });
+
+        // Easter egg: clicar nos olhos revelados
+        setTimeout(() => {
+            document.querySelectorAll('.eye').forEach(eye => {
+                eye.addEventListener('click', () => {
+                    if (!isRevealed) return;
+                    
+                    // Glitch effect intenso
+                    const glitch = document.querySelector('.glitch');
+                    glitch.classList.add('active');
+                    
+                    // Sons intensos
+                    for (let i = 0; i < 5; i++) {
+                        setTimeout(() => {
+                            playSpatialTone(50 + i * 20, 0.2, (Math.random() - 0.5) * 2, 0.15);
+                        }, i * 100);
+                    }
+                    
+                    setTimeout(() => {
+                        glitch.classList.remove('active');
+                    }, 500);
+                });
+            });
+        }, 3000);
+
+        // Efeito de pulsação na mensagem
+        setTimeout(() => {
+            const message = document.querySelector('.message');
+            if (message) {
+                setInterval(() => {
+                    if (isRevealed) {
+                        playSpatialTone(70, 1.5, 0, 0.02);
+                    }
+                }, 8000);
+            }
+        }, 5000);
+
+        // Console easter egg
+        console.log('%c👁 Você foi observado desde o início...', 'font-size: 20px; color: #000; background: #fff; padding: 10px;');
+        console.log('%cSequência: superior-esquerdo → inferior-esquerdo → centro → superior-direito → inferior-direito', 'font-size: 12px; color: #666;');
+    </script>
+</body>
+</html>
