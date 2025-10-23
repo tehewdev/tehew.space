@@ -3,180 +3,1623 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DSA Parallax Visualizer</title>
+  <title>DSA Visualizer Pro - Estruturas de Dados e Algoritmos</title>
   <style>
-    body, html { margin: 0; padding: 0; overflow-x: hidden; }
-    
-    .wrapper {
+    /* ==================== RESET E CONFIGURAÇÕES GLOBAIS ==================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow-x: hidden;
+      background: #0a0a0a;
+      color: #fff;
+    }
+
+    /* ==================== CONTAINER PARALLAX COM PERSPECTIVA 3D ==================== */
+    .parallax-wrapper {
       height: 100vh;
-      perspective: 2px;
-      transform-style: preserve-3d;
       overflow-y: auto;
       overflow-x: hidden;
+      perspective: 2px;
+      transform-style: preserve-3d;
+      scroll-behavior: smooth;
     }
-    
-    .section {
+
+    /* ==================== SEÇÕES COM PROFUNDIDADE PARALLAX ==================== */
+    .parallax-section {
       position: relative;
       height: 100vh;
-      transform-style: inherit;
       display: flex;
       align-items: center;
       justify-content: center;
+      transform-style: inherit;
+      padding: 20px;
     }
-    
-    .section::before {
+
+    /* Camadas de fundo com diferentes profundidades */
+    .parallax-section::before {
       content: "";
       position: absolute;
-      top: 0; right: 0; bottom: 0; left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
       z-index: -1;
-      transform: translateZ(-1px) scale(1.5);
-      background-size: cover;
-      background-position: center;
+      transform: translateZ(-1px) scale(1.5); /* Fundo se move mais devagar */
     }
-    
-    .bg-sort::before {
+
+    /* Gradientes específicos para cada seção */
+    .bg-sorting::before {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
-    
+
     .bg-tree::before {
       background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     }
-    
-    .content {
-      background: rgba(255,255,255,0.9);
-      padding: 40px;
-      border-radius: 10px;
-      max-width: 800px;
-      z-index: 1;
+
+    .bg-graph::before {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     }
-    
-    .visual-container {
+
+    .bg-linked::before {
+      background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    }
+
+    .bg-stack::before {
+      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    }
+
+    .bg-complexity::before {
+      background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+    }
+
+    /* ==================== CONTAINER DE CONTEÚDO COM PROFUNDIDADE ==================== */
+    .content-box {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 40px;
+      border-radius: 20px;
+      max-width: 1100px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      transform: translateZ(0.5px) scale(0.75); /* Conteúdo com profundidade intermediária */
+      color: #333;
+      transition: transform 0.3s ease;
+    }
+
+    .content-box:hover {
+      transform: translateZ(0.5px) scale(0.78);
+    }
+
+    /* ==================== TÍTULOS E TEXTOS ==================== */
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    h2 {
+      font-size: 1.8em;
+      margin: 20px 0 15px;
+      color: #667eea;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 10px;
+    }
+
+    h3 {
+      font-size: 1.3em;
+      margin: 15px 0 10px;
+      color: #764ba2;
+    }
+
+    p {
+      line-height: 1.8;
+      margin-bottom: 15px;
+      color: #555;
+    }
+
+    /* ==================== PAINEL DE CONTROLES ==================== */
+    .controls {
       display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin: 25px 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      border-radius: 15px;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 0.9em;
+      color: #333;
+    }
+
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    select, input[type="range"], input[type="number"] {
+      padding: 10px;
+      border: 2px solid #667eea;
+      border-radius: 8px;
+      font-size: 1em;
+      background: white;
+      cursor: pointer;
+    }
+
+    input[type="range"] {
+      width: 150px;
+    }
+
+    /* ==================== ÁREA DE VISUALIZAÇÃO DOS ALGORITMOS ==================== */
+    .visualization-area {
+      min-height: 350px;
+      padding: 30px;
+      background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+      border-radius: 15px;
+      margin: 25px 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 4px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    /* ==================== BARRAS DE ORDENAÇÃO ==================== */
+    .bar {
+      background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+      border-radius: 5px 5px 0 0;
+      transition: all 0.3s ease;
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 0.8em;
+      padding-bottom: 5px;
+      box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+    }
+
+    .bar:hover {
+      transform: scaleY(1.05);
+      filter: brightness(1.2);
+    }
+
+    .bar.comparing {
+      background: linear-gradient(180deg, #f093fb 0%, #f5576c 100%);
+      transform: scaleY(1.1);
+    }
+
+    .bar.swapping {
+      background: linear-gradient(180deg, #fa709a 0%, #fee140 100%);
+      transform: scaleY(1.15) translateY(-10px);
+    }
+
+    .bar.sorted {
+      background: linear-gradient(180deg, #43e97b 0%, #38f9d7 100%);
+    }
+
+    .bar.pivot {
+      background: linear-gradient(180deg, #fa709a 0%, #fee140 100%);
+      border: 3px solid #fff;
+    }
+
+    /* ==================== MÉTRICAS E ESTATÍSTICAS ==================== */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin: 25px 0;
+    }
+
+    .metric-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      color: white;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      transition: transform 0.3s ease;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .metric-label {
+      font-size: 0.9em;
+      opacity: 0.9;
+      margin-bottom: 5px;
+    }
+
+    .metric-value {
+      font-size: 2em;
+      font-weight: bold;
+    }
+
+    /* ==================== CANVAS PARA ESTRUTURAS DE DADOS ==================== */
+    canvas {
+      border-radius: 15px;
+      background: white;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      max-width: 100%;
+    }
+
+    /* ==================== LISTA LIGADA ==================== */
+    .linked-list-container {
+      display: flex;
+      align-items: center;
       gap: 10px;
-      margin: 20px 0;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 30px;
+      min-height: 200px;
+    }
+
+    .node {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px 30px;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 1.2em;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      position: relative;
+      animation: nodeAppear 0.5s ease;
+    }
+
+    @keyframes nodeAppear {
+      from {
+        opacity: 0;
+        transform: scale(0);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .arrow {
+      font-size: 2em;
+      color: #667eea;
+      font-weight: bold;
+    }
+
+    /* ==================== STACK E QUEUE ==================== */
+    .stack-container, .queue-container {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      align-items: center;
+      padding: 30px;
+      min-height: 300px;
+      justify-content: flex-end;
+    }
+
+    .queue-container {
+      flex-direction: row;
       justify-content: center;
     }
-    
-    .bar {
-      width: 40px;
-      background: #667eea;
-      transition: all 0.3s ease;
+
+    .stack-item, .queue-item {
+      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+      color: white;
+      padding: 15px 40px;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 1.1em;
+      box-shadow: 0 4px 15px rgba(250, 112, 154, 0.4);
+      animation: itemPush 0.4s ease;
+      min-width: 100px;
+      text-align: center;
     }
-    
-    .bar:hover {
-      transform: scale(1.1);
+
+    @keyframes itemPush {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ==================== TABELA DE COMPLEXIDADE ==================== */
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .complexity-table th {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 15px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .complexity-table td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .complexity-table tr:nth-child(even) {
+      background: #f5f5f5;
+    }
+
+    .complexity-table tr:hover {
+      background: #e8f0fe;
+    }
+
+    .complexity-o1 { color: #43e97b; font-weight: bold; }
+    .complexity-ologn { color: #38f9d7; font-weight: bold; }
+    .complexity-on { color: #4facfe; font-weight: bold; }
+    .complexity-onlogn { color: #f093fb; font-weight: bold; }
+    .complexity-on2 { color: #fa709a; font-weight: bold; }
+    .complexity-on3 { color: #f5576c; font-weight: bold; }
+
+    /* ==================== CÓDIGO EXEMPLO ==================== */
+    .code-block {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 20px;
+      border-radius: 10px;
+      overflow-x: auto;
+      margin: 20px 0;
+      font-family: 'Courier New', monospace;
+      line-height: 1.6;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .code-keyword { color: #ff79c6; }
+    .code-function { color: #50fa7b; }
+    .code-string { color: #f1fa8c; }
+    .code-number { color: #bd93f9; }
+    .code-comment { color: #6272a4; font-style: italic; }
+
+    /* ==================== LOADING ANIMATION ==================== */
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ==================== RESPONSIVIDADE ==================== */
+    @media (max-width: 768px) {
+      h1 { font-size: 1.8em; }
+      h2 { font-size: 1.4em; }
+      .content-box { padding: 20px; }
+      .controls { flex-direction: column; }
+      .metric-value { font-size: 1.5em; }
+    }
+
+    /* ==================== SCROLL INDICATOR ==================== */
+    .scroll-indicator {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      animation: bounce 2s infinite;
+      color: white;
+      font-size: 2em;
+      opacity: 0.7;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+      40% { transform: translateX(-50%) translateY(-20px); }
+      60% { transform: translateX(-50%) translateY(-10px); }
     }
   </style>
 </head>
 <body>
-  <div class="wrapper">
-    <section class="section bg-sort">
-      <div class="content">
-        <h1>Algoritmos de Ordenação</h1>
-        <div class="visual-container" id="sortBars"></div>
-        <button onclick="startSort()">Iniciar Bubble Sort</button>
-      </div>
-    </section>
+  <div class="parallax-wrapper">
     
-    <section class="section bg-tree">
-      <div class="content">
-        <h1>Árvore Binária</h1>
-        <canvas id="treeCanvas" width="700" height="400"></canvas>
-        <button onclick="drawTree()">Visualizar Árvore</button>
-      </div>
-    </section>
-  </div>
-  
-  <script>
-    // Inicializar barras de ordenação
-    const container = document.getElementById('sortBars');
-    const heights = [100, 180, 140, 220, 80, 160, 200];
-    heights.forEach(h => {
-      const bar = document.createElement('div');
-      bar.className = 'bar';
-      bar.style.height = h + 'px';
-      container.appendChild(bar);
-    });
-    
-    // Animação Bubble Sort
-    async function startSort() {
-      const bars = document.querySelectorAll('.bar');
-      for(let i = 0; i < bars.length; i++) {
-        for(let j = 0; j < bars.length - i - 1; j++) {
-          bars[j].style.background = '#f5576c';
-          bars[j+1].style.background = '#f5576c';
-          
-          await new Promise(r => setTimeout(r, 500));
-          
-          const h1 = parseInt(bars[j].style.height);
-          const h2 = parseInt(bars[j+1].style.height);
-          
-          if(h1 > h2) {
-            bars[j].style.height = h2 + 'px';
-            bars[j+1].style.height = h1 + 'px';
-          }
-          
-          bars[j].style.background = '#667eea';
-          bars[j+1].style.background = '#667eea';
-        }
+    <!-- ==================== SEÇÃO 1: ALGORITMOS DE ORDENAÇÃO ==================== -->
+    <section class="parallax-section bg-sorting">
+      <div class="content-box">
+        <h1>🔢 Algoritmos de Ordenação</h1>
+        <p>Visualize e compare diferentes algoritmos de ordenação em tempo real. Observe como cada algoritmo organiza os elementos com suas características únicas de comparações e trocas.</p>
+
+        <!-- Painel de Controles -->
+        <div class="controls">
+          <div class="control-group">
+            <label for="algorithm-select">Algoritmo:</label>
+            <select id="algorithm-select">
+              <option value="bubble">Bubble Sort - O(n²)</option>
+              <option value="selection">Selection Sort - O(n²)</option>
+              <option value="insertion">Insertion Sort - O(n²)</option>
+              <option value="quick">Quick Sort - O(n log n)</option>
+              <option value="merge">Merge Sort - O(n log n)</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label for="array-size">Tamanho: <span id="size-value">15</span></label>
+            <input type="range" id="array-size" min="5" max="50" value="15">
+          </div>
+
+          <div class="control-group">
+            <label for="speed">Velocidade: <span id="speed-value">50</span>ms</label>
+            <input type="range" id="speed" min="10" max="500" value="50" step="10">
+          </div>
+
+          <button id="generate-btn">🔄 Gerar Novo Array</button>
+          <button id="sort-btn">▶️ Ordenar</button>
+          <button id="pause-btn" disabled>⏸️ Pausar</button>
+          <button id="reset-btn">🔁 Resetar</button>
+        </div>
+
+        <!-- Métricas -->
+        <div class="metrics">
+          <div class="metric-card">
+            <div class="metric-label">Comparações</div>
+            <div class="metric-value" id="comparisons">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Trocas</div>
+            <div class="metric-value" id="swaps">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Tempo (ms)</div>
+            <div class="metric-value" id="time">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Acessos ao Array</div>
+            <div class="metric-value" id="accesses">0</div>
+          </div>
+        </div>
+
+        <!-- Área de Visualização -->
+        <div class="visualization-area" id="sort-container"></div>
+
+        <!-- Explicação do Algoritmo Atual -->
+        <div id="algorithm-explanation">
+          <h3>📚 Sobre o Bubble Sort</h3>
+          <p><strong>Complexidade:</strong> O(n²) no pior caso | O(n) no melhor caso | O(n²) médio</p>
+          <p><strong>Como funciona:</strong> Compara elementos adjacentes e os troca se estiverem na ordem errada. O maior elemento "borbulha" para o final em cada passagem.</p>
+          <p><strong>Vantagens:</strong> Simples de implementar, estável, detecta arrays já ordenados.</p>
+          <p><strong>Desvantagens:</strong> Muito lento para arrays grandes.</p>
+        </div>
+
+        <!-- Código Exemplo -->
+        <h3>💻 Implementação em JavaScript</h3>
+        <div class="code-block" id="code-example">
+<span class="code-comment">// Bubble Sort - Algoritmo de Ordenação</span>
+<span class="code-keyword">function</span> <span class="code-function">bubbleSort</span>(arr) {
+  <span class="code-keyword">let</span> n = arr.<span class="code-function">length</span>;
+  <span class="code-keyword">for</span> (<span class="code-keyword">let</span> i = <span class="code-number">0</span>; i < n; i++) {
+    <span class="code-keyword">for</span> (<span class="code-keyword">let</span> j = <span class="code-number">0</span>; j < n - i - <span class="code-number">1</span>; j++) {
+      <span class="code-keyword">if</span> (arr[j] > arr[j + <span class="code-number">1</span>]) {
+        <span class="code-comment">// Troca os elementos</span>
+        [arr[j], arr[j + <span class="code-number">1</span>]] = [arr[j + <span class="code-number">1</span>], arr[j]];
       }
     }
+  }
+  <span class="code-keyword">return</span> arr;
+}
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SEÇÃO 2: ÁRVORE BINÁRIA ==================== -->
+    <section class="parallax-section bg-tree">
+      <div class="content-box">
+        <h1>🌳 Árvore Binária de Busca (BST)</h1>
+        <p>Uma estrutura hierárquica onde cada nó tem no máximo dois filhos. O filho esquerdo é sempre menor e o direito sempre maior que o nó pai.</p>
+
+        <div class="controls">
+          <div class="control-group">
+            <label for="tree-value">Valor:</label>
+            <input type="number" id="tree-value" value="50" min="1" max="100">
+          </div>
+          <button id="tree-insert">➕ Inserir</button>
+          <button id="tree-delete">➖ Remover</button>
+          <button id="tree-search">🔍 Buscar</button>
+          <button id="tree-clear">🗑️ Limpar</button>
+          <button id="tree-random">🎲 Árvore Aleatória</button>
+        </div>
+
+        <canvas id="tree-canvas" width="1000" height="500"></canvas>
+
+        <h3>📊 Complexidades da BST</h3>
+        <p><strong>Busca:</strong> O(log n) balanceada | O(n) desbalanceada</p>
+        <p><strong>Inserção:</strong> O(log n) balanceada | O(n) desbalanceada</p>
+        <p><strong>Remoção:</strong> O(log n) balanceada | O(n) desbalanceada</p>
+
+        <h3>💻 Implementação de Inserção</h3>
+        <div class="code-block">
+<span class="code-keyword">class</span> <span class="code-function">Node</span> {
+  <span class="code-function">constructor</span>(value) {
+    <span class="code-keyword">this</span>.value = value;
+    <span class="code-keyword">this</span>.left = <span class="code-keyword">null</span>;
+    <span class="code-keyword">this</span>.right = <span class="code-keyword">null</span>;
+  }
+}
+
+<span class="code-keyword">function</span> <span class="code-function">insert</span>(root, value) {
+  <span class="code-keyword">if</span> (root === <span class="code-keyword">null</span>) {
+    <span class="code-keyword">return new</span> <span class="code-function">Node</span>(value);
+  }
+  <span class="code-keyword">if</span> (value < root.value) {
+    root.left = <span class="code-function">insert</span>(root.left, value);
+  } <span class="code-keyword">else if</span> (value > root.value) {
+    root.right = <span class="code-function">insert</span>(root.right, value);
+  }
+  <span class="code-keyword">return</span> root;
+}
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SEÇÃO 3: GRAFO ==================== -->
+    <section class="parallax-section bg-graph">
+      <div class="content-box">
+        <h1>🕸️ Grafos e Algoritmos de Busca</h1>
+        <p>Grafos representam relações entre objetos. Visualize algoritmos de busca em largura (BFS) e profundidade (DFS).</p>
+
+        <div class="controls">
+          <button id="graph-bfs">🔄 BFS (Largura)</button>
+          <button id="graph-dfs">⬇️ DFS (Profundidade)</button>
+          <button id="graph-dijkstra">📍 Dijkstra (Menor Caminho)</button>
+          <button id="graph-reset">🔁 Resetar Grafo</button>
+        </div>
+
+        <canvas id="graph-canvas" width="1000" height="500"></canvas>
+
+        <h3>🎯 Algoritmos de Busca</h3>
+        <p><strong>BFS (Breadth-First Search):</strong> Explora todos os vizinhos antes de ir mais fundo. Usa uma fila. Complexidade: O(V + E)</p>
+        <p><strong>DFS (Depth-First Search):</strong> Explora o máximo de profundidade antes de retroceder. Usa uma pilha. Complexidade: O(V + E)</p>
+        <p><strong>Dijkstra:</strong> Encontra o caminho mais curto entre dois vértices. Complexidade: O((V + E) log V)</p>
+      </div>
+    </section>
+
+    <!-- ==================== SEÇÃO 4: LISTA LIGADA ==================== -->
+    <section class="parallax-section bg-linked">
+      <div class="content-box">
+        <h1>🔗 Lista Ligada (Linked List)</h1>
+        <p>Estrutura de dados dinâmica onde cada elemento (nó) contém um valor e uma referência para o próximo nó.</p>
+
+        <div class="controls">
+          <div class="control-group">
+            <label for="linked-value">Valor:</label>
+            <input type="number" id="linked-value" value="10" min="1" max="99">
+          </div>
+          <button id="linked-prepend">⬅️ Inserir Início</button>
+          <button id="linked-append">➡️ Inserir Fim</button>
+          <button id="linked-delete-first">❌ Remover Início</button>
+          <button id="linked-delete-last">❌ Remover Fim</button>
+          <button id="linked-clear">🗑️ Limpar Lista</button>
+        </div>
+
+        <div class="visualization-area">
+          <div class="linked-list-container" id="linked-container"></div>
+        </div>
+
+        <h3>📊 Complexidades</h3>
+        <p><strong>Inserir no início:</strong> O(1) | <strong>Inserir no fim:</strong> O(n) sem tail, O(1) com tail</p>
+        <p><strong>Buscar:</strong> O(n) | <strong>Deletar:</strong> O(n)</p>
+
+        <h3>💻 Implementação</h3>
+        <div class="code-block">
+<span class="code-keyword">class</span> <span class="code-function">ListNode</span> {
+  <span class="code-function">constructor</span>(value) {
+    <span class="code-keyword">this</span>.value = value;
+    <span class="code-keyword">this</span>.next = <span class="code-keyword">null</span>;
+  }
+}
+
+<span class="code-keyword">class</span> <span class="code-function">LinkedList</span> {
+  <span class="code-function">constructor</span>() {
+    <span class="code-keyword">this</span>.head = <span class="code-keyword">null</span>;
+    <span class="code-keyword">this</span>.size = <span class="code-number">0</span>;
+  }
+  
+  <span class="code-function">prepend</span>(value) {
+    <span class="code-keyword">const</span> newNode = <span class="code-keyword">new</span> <span class="code-function">ListNode</span>(value);
+    newNode.next = <span class="code-keyword">this</span>.head;
+    <span class="code-keyword">this</span>.head = newNode;
+    <span class="code-keyword">this</span>.size++;
+  }
+}
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SEÇÃO 5: STACK E QUEUE ==================== -->
+    <section class="parallax-section bg-stack">
+      <div class="content-box">
+        <h1>📚 Stack (Pilha) & Queue (Fila)</h1>
+        <p>Estruturas lineares com regras específicas de inserção e remoção.</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+          <!-- STACK -->
+          <div>
+            <h2>📚 Stack (LIFO)</h2>
+            <p><strong>Last In, First Out:</strong> O último a entrar é o primeiro a sair.</p>
+            
+            <div class="controls" style="flex-direction: column;">
+              <div class="control-group">
+                <label for="stack-value">Valor:</label>
+                <input type="number" id="stack-value" value="10" min="1" max="99">
+              </div>
+              <button id="stack-push">⬇️ Push</button>
+              <button id="stack-pop">⬆️ Pop</button>
+              <button id="stack-peek">👁️ Peek</button>
+              <button id="stack-clear">🗑️ Clear</button>
+            </div>
+
+            <div class="visualization-area">
+              <div class="stack-container" id="stack-container"></div>
+            </div>
+
+            <p><strong>Complexidade:</strong> Push O(1) | Pop O(1) | Peek O(1)</p>
+          </div>
+
+          <!-- QUEUE -->
+          <div>
+            <h2>🚶 Queue (FIFO)</h2>
+            <p><strong>First In, First Out:</strong> O primeiro a entrar é o primeiro a sair.</p>
+            
+            <div class="controls" style="flex-direction: column;">
+              <div class="control-group">
+                <label for="queue-value">Valor:</label>
+                <input type="number" id="queue-value" value="10" min="1" max="99">
+              </div>
+              <button id="queue-enqueue">➡️ Enqueue</button>
+              <button id="queue-dequeue">⬅️ Dequeue</button>
+              <button id="queue-front">👁️ Front</button>
+              <button id="queue-clear">🗑️ Clear</button>
+            </div>
+
+            <div class="visualization-area">
+              <div class="queue-container" id="queue-container"></div>
+            </div>
+
+            <p><strong>Complexidade:</strong> Enqueue O(1) | Dequeue O(1) | Front O(1)</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SEÇÃO 6: TABELA DE COMPLEXIDADES ==================== -->
+    <section class="parallax-section bg-complexity">
+      <div class="content-box">
+        <h1>⚡ Análise de Complexidade</h1>
+        <p>Comparação completa das complexidades de tempo e espaço das estruturas de dados e algoritmos.</p>
+
+        <h2>🔢 Algoritmos de Ordenação</h2>
+        <table class="complexity-table">
+          <thead>
+            <tr>
+              <th>Algoritmo</th>
+              <th>Melhor Caso</th>
+              <th>Caso Médio</th>
+              <th>Pior Caso</th>
+              <th>Espaço</th>
+              <th>Estável</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Bubble Sort</strong></td>
+              <td class="complexity-on">O(n)</td>
+              <td class="complexity-on2">O(n²)</td>
+              <td class="complexity-on2">O(n²)</td>
+              <td class="complexity-o1">O(1)</td>
+              <td>✅ Sim</td>
+            </tr>
+            <tr>
+              <td><strong>Selection Sort</strong></td>
+              <td class="complexity-on2">O(n²)</td>
+              <td class="complexity-on2">O(n²)</td>
+              <td class="complexity-on2">O(n²)</td>
+              <td class="complexity-o1">O(1)</td>
+              <td>❌ Não</td>
+            </tr>
+            <tr>
+              <td><strong>Insertion Sort</strong></td>
+              <td class="complexity-on">O(n)</td>
+              <td class="complexity-on2">O(n²)</td>
+              <td class="complexity-on2">O(n²)</td>
+              <td class="complexity-o1">O(1)</td>
+              <td>✅ Sim</td>
+            </tr>
+            <tr>
+              <td><strong>Quick Sort</strong></td>
+              <td class="complexity-onlogn">O(n log n)</td>
+              <td class="complexity-onlogn">O(n log n)</td>
+              <td class="complexity-on2">O(n²)</td>
+              <td class="complexity-ologn">O(log n)</td>
+              <td>❌ Não</td>
+            </tr>
+            <tr>
+              <td><strong>Merge Sort</strong></td>
+              <td class="complexity-onlogn">O(n log n)</td>
+              <td class="complexity-onlogn">O(n log n)</td>
+              <td class="complexity-onlogn">O(n log n)</td>
+              <td class="complexity-on">O(n)</td>
+              <td>✅ Sim</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>🗂️ Estruturas de Dados</h2>
+        <table class="complexity-table">
+          <thead>
+            <tr>
+              <th>Estrutura</th>
+              <th>Acesso</th>
+              <th>Busca</th>
+              <th>Inserção</th>
+              <th>Remoção</th>
+              <th>Espaço</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Array</strong></td>
+              <td class="complexity-o1">O(1)</td>
+              <td class="complexity-on">O(n)</td>
+              <td class="complexity-on">O(n)</td>
+              <td class="complexity-on">O(n)</td>
+              <td class="complexity-on">O(n)</td>
+            </tr>
+            <tr>
+              <td><strong>Stack</strong></td>
+              <td class="complexity-on">O(n)</td>
+              <td class="complexity-on">O(n)</td>
+              <td class="complexity-o1">O(1)</td>
+              <td class="complexity-o1">O(1)</td>
+              <td class="complexity-on">O(n)</td>
+            </tr>
+            <tr>
+              <td><strong>Queue</strong></td>
+              <td class="complexity-on">O(n)</td>
+              <td class="complexity-on">O(n)</td>
+              <td class="complexity-o1">O(1)</td>
+              <td class="complexity-o1">O(1)</td>
+              <td class="complexity-on">O(n)</td>
+            </tr>
+            <tr>
+              <td><strong>Linked List</strong></td>
+              <td class="complexity-on">O(n)</td>
+              <td class="complexity-on">O(n)</td>
+              <td class="complexity-o1">O(1)</td>
+              <td class="complexity-o1">O(1)</td>
+              <td class="complexity-on">O(n)</td>
+            </tr>
+            <tr>
+              <td><strong>BST (Balanceada)</strong></td>
+              <td class="complexity-ologn">O(log n)</td>
+              <td class="complexity-ologn">O(log n)</td>
+              <td class="complexity-ologn">O(log n)</td>
+              <td class="complexity-ologn">O(log n)</td>
+              <td class="complexity-on">O(n)</td>
+            </tr>
+            <tr>
+              <td><strong>Hash Table</strong></td>
+              <td>-</td>
+              <td class="complexity-o1">O(1)</td>
+              <td class="complexity-o1">O(1)</td>
+              <td class="complexity-o1">O(1)</td>
+              <td class="complexity-on">O(n)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>📈 Notação Big O Explicada</h2>
+        <p><strong class="complexity-o1">O(1) - Constante:</strong> Tempo fixo, não depende do tamanho da entrada.</p>
+        <p><strong class="complexity-ologn">O(log n) - Logarítmica:</strong> Divide o problema pela metade a cada iteração.</p>
+        <p><strong class="complexity-on">O(n) - Linear:</strong> Tempo cresce proporcionalmente ao tamanho da entrada.</p>
+        <p><strong class="complexity-onlogn">O(n log n) - Linearítmica:</strong> Comum em algoritmos eficientes de ordenação.</p>
+        <p><strong class="complexity-on2">O(n²) - Quadrática:</strong> Loops aninhados, cresce rapidamente.</p>
+      </div>
+    </section>
+
+    <!-- Indicador de Scroll -->
+    <div class="scroll-indicator">⬇️</div>
+  </div>
+
+  <script>
+    // ==================== VARIÁVEIS GLOBAIS ====================
+    let array = [];
+    let comparisons = 0;
+    let swaps = 0;
+    let accesses = 0;
+    let startTime = 0;
+    let isPaused = false;
+    let isSorting = false;
+    let animationSpeed = 50;
+
+    // ==================== ESTRUTURAS DE DADOS ====================
+    let bstRoot = null;
+    let linkedList = [];
+    let stack = [];
+    let queue = [];
+
+    // ==================== ALGORITMO DE ORDENAÇÃO ====================
     
-    // Desenhar árvore binária
+    // Função para gerar array aleatório
+    function generateArray() {
+      const size = parseInt(document.getElementById('array-size').value);
+      array = [];
+      for (let i = 0; i < size; i++) {
+        array.push(Math.floor(Math.random() * 200) + 10);
+      }
+      resetMetrics();
+      renderBars();
+    }
+
+    // Renderizar barras
+    function renderBars(comparing = [], swapping = [], sorted = [], pivot = -1) {
+      const container = document.getElementById('sort-container');
+      container.innerHTML = '';
+      
+      const containerWidth = container.offsetWidth;
+      const barWidth = Math.max(10, (containerWidth / array.length) - 4);
+      
+      array.forEach((value, idx) => {
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.height = `${value}px`;
+        bar.style.width = `${barWidth}px`;
+        bar.textContent = value;
+        
+        if (sorted.includes(idx)) bar.classList.add('sorted');
+        else if (comparing.includes(idx)) bar.classList.add('comparing');
+        else if (swapping.includes(idx)) bar.classList.add('swapping');
+        if (idx === pivot) bar.classList.add('pivot');
+        
+        container.appendChild(bar);
+      });
+    }
+
+    // Resetar métricas
+    function resetMetrics() {
+      comparisons = 0;
+      swaps = 0;
+      accesses = 0;
+      document.getElementById('comparisons').textContent = '0';
+      document.getElementById('swaps').textContent = '0';
+      document.getElementById('time').textContent = '0';
+      document.getElementById('accesses').textContent = '0';
+    }
+
+    // Atualizar métricas
+    function updateMetrics() {
+      document.getElementById('comparisons').textContent = comparisons;
+      document.getElementById('swaps').textContent = swaps;
+      document.getElementById('accesses').textContent = accesses;
+      const elapsed = Date.now() - startTime;
+      document.getElementById('time').textContent = elapsed;
+    }
+
+    // Sleep function para animação
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // ==================== BUBBLE SORT ====================
+    async function bubbleSort() {
+      const n = array.length;
+      const sorted = [];
+      
+      for (let i = 0; i < n - 1; i++) {
+        let swapped = false;
+        for (let j = 0; j < n - i - 1; j++) {
+          if (isPaused) await waitForResume();
+          
+          comparisons++;
+          accesses += 2;
+          updateMetrics();
+          
+          renderBars([j, j + 1], [], sorted);
+          await sleep(animationSpeed);
+          
+          if (array[j] > array[j + 1]) {
+            [array[j], array[j + 1]] = [array[j + 1], array[j]];
+            swaps++;
+            renderBars([], [j, j + 1], sorted);
+            await sleep(animationSpeed);
+            swapped = true;
+          }
+        }
+        sorted.push(n - i - 1);
+        if (!swapped) break;
+      }
+      sorted.push(0);
+      renderBars([], [], sorted);
+    }
+
+    // ==================== SELECTION SORT ====================
+    async function selectionSort() {
+      const n = array.length;
+      const sorted = [];
+      
+      for (let i = 0; i < n - 1; i++) {
+        let minIdx = i;
+        
+        for (let j = i + 1; j < n; j++) {
+          if (isPaused) await waitForResume();
+          
+          comparisons++;
+          accesses += 2;
+          updateMetrics();
+          
+          renderBars([minIdx, j], [], sorted);
+          await sleep(animationSpeed);
+          
+          if (array[j] < array[minIdx]) {
+            minIdx = j;
+          }
+        }
+        
+        if (minIdx !== i) {
+          [array[i], array[minIdx]] = [array[minIdx], array[i]];
+          swaps++;
+          renderBars([], [i, minIdx], sorted);
+          await sleep(animationSpeed);
+        }
+        sorted.push(i);
+      }
+      sorted.push(n - 1);
+      renderBars([], [], sorted);
+    }
+
+    // ==================== INSERTION SORT ====================
+    async function insertionSort() {
+      const n = array.length;
+      const sorted = [0];
+      
+      for (let i = 1; i < n; i++) {
+        let key = array[i];
+        let j = i - 1;
+        
+        accesses++;
+        
+        while (j >= 0 && array[j] > key) {
+          if (isPaused) await waitForResume();
+          
+          comparisons++;
+          accesses += 2;
+          updateMetrics();
+          
+          renderBars([j, j + 1], [], sorted);
+          await sleep(animationSpeed);
+          
+          array[j + 1] = array[j];
+          swaps++;
+          renderBars([], [j, j + 1], sorted);
+          await sleep(animationSpeed);
+          
+          j--;
+        }
+        
+        array[j + 1] = key;
+        sorted.push(i);
+      }
+      renderBars([], [], sorted);
+    }
+
+    // ==================== QUICK SORT ====================
+    async function quickSort(low = 0, high = array.length - 1, sorted = []) {
+      if (low < high) {
+        const pi = await partition(low, high, sorted);
+        await quickSort(low, pi - 1, sorted);
+        await quickSort(pi + 1, high, sorted);
+      } else if (low === high) {
+        sorted.push(low);
+      }
+      return sorted;
+    }
+
+    async function partition(low, high, sorted) {
+      const pivot = array[high];
+      let i = low - 1;
+      
+      for (let j = low; j < high; j++) {
+        if (isPaused) await waitForResume();
+        
+        comparisons++;
+        accesses += 2;
+        updateMetrics();
+        
+        renderBars([j], [], sorted, high);
+        await sleep(animationSpeed);
+        
+        if (array[j] < pivot) {
+          i++;
+          [array[i], array[j]] = [array[j], array[i]];
+          swaps++;
+          renderBars([], [i, j], sorted, high);
+          await sleep(animationSpeed);
+        }
+      }
+      
+      [array[i + 1], array[high]] = [array[high], array[i + 1]];
+      swaps++;
+      sorted.push(i + 1);
+      renderBars([], [i + 1, high], sorted);
+      await sleep(animationSpeed);
+      
+      return i + 1;
+    }
+
+    // ==================== MERGE SORT ====================
+    async function mergeSort(start = 0, end = array.length - 1) {
+      if (start < end) {
+        const mid = Math.floor((start + end) / 2);
+        await mergeSort(start, mid);
+        await mergeSort(mid + 1, end);
+        await merge(start, mid, end);
+      }
+    }
+
+    async function merge(start, mid, end) {
+      const left = array.slice(start, mid + 1);
+      const right = array.slice(mid + 1, end + 1);
+      
+      let i = 0, j = 0, k = start;
+      
+      while (i < left.length && j < right.length) {
+        if (isPaused) await waitForResume();
+        
+        comparisons++;
+        accesses += 2;
+        updateMetrics();
+        
+        renderBars([k], []);
+        await sleep(animationSpeed);
+        
+        if (left[i] <= right[j]) {
+          array[k] = left[i];
+          i++;
+        } else {
+          array[k] = right[j];
+          j++;
+        }
+        swaps++;
+        k++;
+      }
+      
+      while (i < left.length) {
+        array[k] = left[i];
+        i++;
+        k++;
+        swaps++;
+      }
+      
+      while (j < right.length) {
+        array[k] = right[j];
+        j++;
+        k++;
+        swaps++;
+      }
+      
+      const sorted = [];
+      for (let idx = start; idx <= end; idx++) {
+        sorted.push(idx);
+      }
+      renderBars([], [], sorted);
+      await sleep(animationSpeed);
+    }
+
+    // ==================== CONTROLE DE PAUSA ====================
+    function waitForResume() {
+      return new Promise(resolve => {
+        const check = setInterval(() => {
+          if (!isPaused) {
+            clearInterval(check);
+            resolve();
+          }
+        }, 100);
+      });
+    }
+
+    // ==================== EVENT LISTENERS ====================
+    document.getElementById('generate-btn').addEventListener('click', generateArray);
+    
+    document.getElementById('sort-btn').addEventListener('click', async () => {
+      if (isSorting) return;
+      
+      isSorting = true;
+      isPaused = false;
+      resetMetrics();
+      startTime = Date.now();
+      
+      document.getElementById('sort-btn').disabled = true;
+      document.getElementById('pause-btn').disabled = false;
+      document.getElementById('generate-btn').disabled = true;
+      
+      const algorithm = document.getElementById('algorithm-select').value;
+      
+      switch(algorithm) {
+        case 'bubble': await bubbleSort(); break;
+        case 'selection': await selectionSort(); break;
+        case 'insertion': await insertionSort(); break;
+        case 'quick': await quickSort(); break;
+        case 'merge': await mergeSort(); break;
+      }
+      
+      isSorting = false;
+      document.getElementById('sort-btn').disabled = false;
+      document.getElementById('pause-btn').disabled = true;
+      document.getElementById('generate-btn').disabled = false;
+      
+      updateMetrics();
+    });
+    
+    document.getElementById('pause-btn').addEventListener('click', () => {
+      isPaused = !isPaused;
+      document.getElementById('pause-btn').textContent = isPaused ? '▶️ Continuar' : '⏸️ Pausar';
+    });
+    
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      location.reload();
+    });
+    
+    document.getElementById('array-size').addEventListener('input', (e) => {
+      document.getElementById('size-value').textContent = e.target.value;
+      generateArray();
+    });
+    
+    document.getElementById('speed').addEventListener('input', (e) => {
+      animationSpeed = parseInt(e.target.value);
+      document.getElementById('speed-value').textContent = e.target.value;
+    });
+
+    // Atualizar explicação do algoritmo
+    document.getElementById('algorithm-select').addEventListener('change', (e) => {
+      const explanations = {
+        bubble: {
+          title: 'Bubble Sort',
+          complexity: 'O(n²) no pior caso | O(n) no melhor caso | O(n²) médio',
+          how: 'Compara elementos adjacentes e os troca se estiverem na ordem errada. O maior elemento "borbulha" para o final em cada passagem.',
+          pros: 'Simples de implementar, estável, detecta arrays já ordenados.',
+          cons: 'Muito lento para arrays grandes.',
+          code: `<span class="code-comment">// Bubble Sort</span>
+<span class="code-keyword">function</span> <span class="code-function">bubbleSort</span>(arr) {
+  <span class="code-keyword">for</span> (<span class="code-keyword">let</span> i = 0; i < arr.length; i++) {
+    <span class="code-keyword">for</span> (<span class="code-keyword">let</span> j = 0; j < arr.length - i - 1; j++) {
+      <span class="code-keyword">if</span> (arr[j] > arr[j + 1]) {
+        [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+      }
+    }
+  }
+}`
+        },
+        selection: {
+          title: 'Selection Sort',
+          complexity: 'O(n²) em todos os casos',
+          how: 'Encontra o menor elemento e move para a posição correta. Divide o array em parte ordenada e não ordenada.',
+          pros: 'Faz poucas trocas (máximo n trocas), funciona bem em memória limitada.',
+          cons: 'Sempre O(n²), mesmo se array já estiver ordenado.',
+          code: `<span class="code-comment">// Selection Sort</span>
+<span class="code-keyword">function</span> <span class="code-function">selectionSort</span>(arr) {
+  <span class="code-keyword">for</span> (<span class="code-keyword">let</span> i = 0; i < arr.length - 1; i++) {
+    <span class="code-keyword">let</span> minIdx = i;
+    <span class="code-keyword">for</span> (<span class="code-keyword">let</span> j = i + 1; j < arr.length; j++) {
+      <span class="code-keyword">if</span> (arr[j] < arr[minIdx]) minIdx = j;
+    }
+    [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
+  }
+}`
+        },
+        insertion: {
+          title: 'Insertion Sort',
+          complexity: 'O(n²) no pior caso | O(n) no melhor caso',
+          how: 'Constrói o array ordenado um elemento por vez, inserindo cada elemento na posição correta.',
+          pros: 'Eficiente para arrays pequenos ou quase ordenados, estável, online.',
+          cons: 'Lento para arrays grandes e desordenados.',
+          code: `<span class="code-comment">// Insertion Sort</span>
+<span class="code-keyword">function</span> <span class="code-function">insertionSort</span>(arr) {
+  <span class="code-keyword">for</span> (<span class="code-keyword">let</span> i = 1; i < arr.length; i++) {
+    <span class="code-keyword">let</span> key = arr[i], j = i - 1;
+    <span class="code-keyword">while</span> (j >= 0 && arr[j] > key) {
+      arr[j + 1] = arr[j];
+      j--;
+    }
+    arr[j + 1] = key;
+  }
+}`
+        },
+        quick: {
+          title: 'Quick Sort',
+          complexity: 'O(n log n) médio | O(n²) pior caso',
+          how: 'Escolhe um pivô e particiona o array. Elementos menores à esquerda, maiores à direita. Recursivamente ordena as partições.',
+          pros: 'Muito rápido na prática, usa pouca memória extra.',
+          cons: 'Pior caso O(n²) se pivô mal escolhido, não é estável.',
+          code: `<span class="code-comment">// Quick Sort</span>
+<span class="code-keyword">function</span> <span class="code-function">quickSort</span>(arr, low = 0, high = arr.length - 1) {
+  <span class="code-keyword">if</span> (low < high) {
+    <span class="code-keyword">let</span> pi = <span class="code-function">partition</span>(arr, low, high);
+    <span class="code-function">quickSort</span>(arr, low, pi - 1);
+    <span class="code-function">quickSort</span>(arr, pi + 1, high);
+  }
+}`
+        },
+        merge: {
+          title: 'Merge Sort',
+          complexity: 'O(n log n) em todos os casos',
+          how: 'Divide o array recursivamente até elementos individuais, depois mescla as partes ordenadas.',
+          pros: 'Sempre O(n log n), estável, previsível.',
+          cons: 'Usa O(n) de memória extra.',
+          code: `<span class="code-comment">// Merge Sort</span>
+<span class="code-keyword">function</span> <span class="code-function">mergeSort</span>(arr) {
+  <span class="code-keyword">if</span> (arr.length <= 1) <span class="code-keyword">return</span> arr;
+  <span class="code-keyword">const</span> mid = Math.floor(arr.length / 2);
+  <span class="code-keyword">const</span> left = <span class="code-function">mergeSort</span>(arr.slice(0, mid));
+  <span class="code-keyword">const</span> right = <span class="code-function">mergeSort</span>(arr.slice(mid));
+  <span class="code-keyword">return</span> <span class="code-function">merge</span>(left, right);
+}`
+        }
+      };
+      
+      const info = explanations[e.target.value];
+      document.getElementById('algorithm-explanation').innerHTML = `
+        <h3>📚 Sobre o ${info.title}</h3>
+        <p><strong>Complexidade:</strong> ${info.complexity}</p>
+        <p><strong>Como funciona:</strong> ${info.how}</p>
+        <p><strong>Vantagens:</strong> ${info.pros}</p>
+        <p><strong>Desvantagens:</strong> ${info.cons}</p>
+      `;
+      document.getElementById('code-example').innerHTML = info.code;
+    });
+
+    // ==================== ÁRVORE BINÁRIA ====================
+    class TreeNode {
+      constructor(value) {
+        this.value = value;
+        this.left = null;
+        this.right = null;
+      }
+    }
+
+    function insertBST(root, value) {
+      if (root === null) return new TreeNode(value);
+      if (value < root.value) root.left = insertBST(root.left, value);
+      else if (value > root.value) root.right = insertBST(root.right, value);
+      return root;
+    }
+
     function drawTree() {
-      const canvas = document.getElementById('treeCanvas');
+      const canvas = document.getElementById('tree-canvas');
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      function drawNode(x, y, val) {
+      if (!bstRoot) return;
+      
+      function drawNode(node, x, y, offset) {
+        if (!node) return;
+        
+        // Desenhar linhas primeiro
+        if (node.left) {
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(x - offset, y + 80);
+          ctx.strokeStyle = '#764ba2';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          drawNode(node.left, x - offset, y + 80, offset / 2);
+        }
+        
+        if (node.right) {
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(x + offset, y + 80);
+          ctx.strokeStyle = '#764ba2';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          drawNode(node.right, x + offset, y + 80, offset / 2);
+        }
+        
+        // Desenhar nó
         ctx.beginPath();
-        ctx.arc(x, y, 25, 0, 2 * Math.PI);
-        ctx.fillStyle = '#667eea';
+        ctx.arc(x, y, 30, 0, 2 * Math.PI);
+        const gradient = ctx.createLinearGradient(x - 30, y - 30, x + 30, y + 30);
+        gradient.addColorStop(0, '#667eea');
+        gradient.addColorStop(1, '#764ba2');
+        ctx.fillStyle = gradient;
         ctx.fill();
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 3;
         ctx.stroke();
         
         ctx.fillStyle = '#fff';
-        ctx.font = '16px Arial';
+        ctx.font = 'bold 18px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(val, x, y);
+        ctx.fillText(node.value, x, y);
       }
       
-      function drawLine(x1, y1, x2, y2) {
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.strokeStyle = '#764ba2';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      }
+      drawNode(bstRoot, canvas.width / 2, 50, 200);
+    }
+
+    document.getElementById('tree-insert').addEventListener('click', () => {
+      const value = parseInt(document.getElementById('tree-value').value);
+      bstRoot = insertBST(bstRoot, value);
+      drawTree();
+    });
+
+    document.getElementById('tree-clear').addEventListener('click', () => {
+      bstRoot = null;
+      drawTree();
+    });
+
+    document.getElementById('tree-random').addEventListener('click', () => {
+      bstRoot = null;
+      const values = [50, 30, 70, 20, 40, 60, 80, 10, 25, 35, 65];
+      values.forEach(v => bstRoot = insertBST(bstRoot, v));
+      drawTree();
+    });
+
+    // ==================== GRAFO ====================
+    function drawGraph() {
+      const canvas = document.getElementById('graph-canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      // Estrutura da árvore
-      const tree = [
-        {x: 350, y: 50, val: 50},
-        {x: 250, y: 120, val: 30},
-        {x: 450, y: 120, val: 70},
-        {x: 180, y: 190, val: 20},
-        {x: 320, y: 190, val: 40},
-        {x: 380, y: 190, val: 60},
-        {x: 520, y: 190, val: 80}
+      const nodes = [
+        {id: 'A', x: 150, y: 150},
+        {id: 'B', x: 400, y: 100},
+        {id: 'C', x: 650, y: 150},
+        {id: 'D', x: 300, y: 300},
+        {id: 'E', x: 500, y: 350},
+        {id: 'F', x: 750, y: 300}
       ];
       
-      // Desenhar conexões
-      drawLine(350, 50, 250, 120);
-      drawLine(350, 50, 450, 120);
-      drawLine(250, 120, 180, 190);
-      drawLine(250, 120, 320, 190);
-      drawLine(450, 120, 380, 190);
-      drawLine(450, 120, 520, 190);
+      const edges = [
+        ['A', 'B'], ['A', 'D'], ['B', 'C'], ['B', 'E'],
+        ['C', 'E'], ['C', 'F'], ['D', 'E'], ['E', 'F']
+      ];
+      
+      // Desenhar arestas
+      edges.forEach(([from, to]) => {
+        const n1 = nodes.find(n => n.id === from);
+        const n2 = nodes.find(n => n.id === to);
+        
+        ctx.beginPath();
+        ctx.moveTo(n1.x, n1.y);
+        ctx.lineTo(n2.x, n2.y);
+        ctx.strokeStyle = '#4facfe';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      });
       
       // Desenhar nós
-      tree.forEach(node => drawNode(node.x, node.y, node.val));
+      nodes.forEach(node => {
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, 35, 0, 2 * Math.PI);
+        const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, 35);
+        gradient.addColorStop(0, '#4facfe');
+        gradient.addColorStop(1, '#00f2fe');
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 24px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(node.id, node.x, node.y);
+      });
     }
-    
-    drawTree(); // Desenhar árvore inicial
+
+    document.getElementById('graph-reset').addEventListener('click', drawGraph);
+
+    // ==================== LISTA LIGADA ====================
+    function renderLinkedList() {
+      const container = document.getElementById('linked-container');
+      container.innerHTML = '';
+      
+      linkedList.forEach((value, idx) => {
+        const node = document.createElement('div');
+        node.className = 'node';
+        node.textContent = value;
+        container.appendChild(node);
+        
+        if (idx < linkedList.length - 1) {
+          const arrow = document.createElement('div');
+          arrow.className = 'arrow';
+          arrow.textContent = '→';
+          container.appendChild(arrow);
+        }
+      });
+      
+      if (linkedList.length === 0) {
+        container.innerHTML = '<p style="color: #999;">Lista vazia</p>';
+      }
+    }
+
+    document.getElementById('linked-prepend').addEventListener('click', () => {
+      const value = parseInt(document.getElementById('linked-value').value);
+      linkedList.unshift(value);
+      renderLinkedList();
+    });
+
+    document.getElementById('linked-append').addEventListener('click', () => {
+      const value = parseInt(document.getElementById('linked-value').value);
+      linkedList.push(value);
+      renderLinkedList();
+    });
+
+    document.getElementById('linked-delete-first').addEventListener('click', () => {
+      linkedList.shift();
+      renderLinkedList();
+    });
+
+    document.getElementById('linked-delete-last').addEventListener('click', () => {
+      linkedList.pop();
+      renderLinkedList();
+    });
+
+    document.getElementById('linked-clear').addEventListener('click', () => {
+      linkedList = [];
+      renderLinkedList();
+    });
+
+    // ==================== STACK ====================
+    function renderStack() {
+      const container = document.getElementById('stack-container');
+      container.innerHTML = '';
+      
+      if (stack.length === 0) {
+        container.innerHTML = '<p style="color: #999;">Stack vazia</p>';
+        return;
+      }
+      
+      [...stack].reverse().forEach(value => {
+        const item = document.createElement('div');
+        item.className = 'stack-item';
+        item.textContent = value;
+        container.appendChild(item);
+      });
+    }
+
+    document.getElementById('stack-push').addEventListener('click', () => {
+      const value = parseInt(document.getElementById('stack-value').value);
+      stack.push(value);
+      renderStack();
+    });
+
+    document.getElementById('stack-pop').addEventListener('click', () => {
+      if (stack.length > 0) {
+        stack.pop();
+        renderStack();
+      }
+    });
+
+    document.getElementById('stack-peek').addEventListener('click', () => {
+      if (stack.length > 0) {
+        alert(`Topo da stack: ${stack[stack.length - 1]}`);
+      } else {
+        alert('Stack vazia!');
+      }
+    });
+
+    document.getElementById('stack-clear').addEventListener('click', () => {
+      stack = [];
+      renderStack();
+    });
+
+    // ==================== QUEUE ====================
+    function renderQueue() {
+      const container = document.getElementById('queue-container');
+      container.innerHTML = '';
+      
+      if (queue.length === 0) {
+        container.innerHTML = '<p style="color: #999;">Queue vazia</p>';
+        return;
+      }
+      
+      queue.forEach(value => {
+        const item = document.createElement('div');
+        item.className = 'queue-item';
+        item.textContent = value;
+        container.appendChild(item);
+      });
+    }
+
+    document.getElementById('queue-enqueue').addEventListener('click', () => {
+      const value = parseInt(document.getElementById('queue-value').value);
+      queue.push(value);
+      renderQueue();
+    });
+
+    document.getElementById('queue-dequeue').addEventListener('click', () => {
+      if (queue.length > 0) {
+        queue.shift();
+        renderQueue();
+      }
+    });
+
+    document.getElementById('queue-front').addEventListener('click', () => {
+      if (queue.length > 0) {
+        alert(`Primeiro da fila: ${queue[0]}`);
+      } else {
+        alert('Queue vazia!');
+      }
+    });
+
+    document.getElementById('queue-clear').addEventListener('click', () => {
+      queue = [];
+      renderQueue();
+    });
+
+    // ==================== INICIALIZAÇÃO ====================
+    window.addEventListener('load', () => {
+      generateArray();
+      drawGraph();
+      renderLinkedList();
+      renderStack();
+      renderQueue();
+      
+      // Esconder indicador de scroll após rolar
+      const scrollIndicator = document.querySelector('.scroll-indicator');
+      document.querySelector('.parallax-wrapper').addEventListener('scroll', () => {
+        if (scrollIndicator) {
+          scrollIndicator.style.opacity = '0';
+        }
+      });
+    });
   </script>
 </body>
 </html>
