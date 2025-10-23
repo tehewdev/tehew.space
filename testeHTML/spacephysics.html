@@ -39,6 +39,8 @@
             backdrop-filter: blur(10px);
             max-width: 300px;
             z-index: 1000;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .control-panel h2 {
@@ -146,13 +148,12 @@
             background: linear-gradient(135deg, #ffa502, #ff6348);
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .sun-toggle {
+            background: linear-gradient(135deg, #ffd700, #ffa500);
         }
 
-        .loading {
-            animation: pulse 1.5s infinite;
+        .sun-toggle.active {
+            background: linear-gradient(135deg, #ff8c00, #ff6347);
         }
     </style>
 </head>
@@ -182,16 +183,22 @@
             <input type="range" id="particleCount" min="10" max="200" step="10" value="50">
         </div>
 
+        <div class="control-group">
+            <label>Tamanho do Rastro: <span class="value-display" id="trailLengthValue">30</span></label>
+            <input type="range" id="trailLength" min="10" max="100" step="5" value="30">
+        </div>
+
+        <button id="addSun" class="sun-toggle">☀️ Adicionar Sol Fixo</button>
         <button id="addBody">➕ Adicionar Corpo Celeste</button>
         <button id="addExplosion">💥 Criar Explosão</button>
         <button id="toggleTrails" class="toggle-trails">✨ Rastros: ON</button>
-        <button id="toggleMode" class="mode-toggle">🌌 Modo: Orbital</button>
         <button id="clear">🗑️ Limpar Tudo</button>
     </div>
 
     <div class="info-panel">
         <h3>📊 Estatísticas</h3>
         <p>Corpos: <span class="stats" id="bodyCount">0</span></p>
+        <p>Sol Fixo: <span class="stats" id="sunStatus">OFF</span></p>
         <p>FPS: <span class="stats" id="fps">60</span></p>
         <p>Energia Total: <span class="stats" id="energy">0</span></p>
         <p class="stats" style="margin-top: 10px; color: #aaa;">
@@ -214,18 +221,25 @@
             velocity: 3,
             particleCount: 50,
             trails: true,
-            mode: 'orbital' // orbital, chaos, blackhole
+            trailLength: 30
         };
 
         let bodies = [];
+        let sun = null;
         let mouseDown = false;
         let startPos = null;
         let lastTime = Date.now();
         let frameCount = 0;
 
+        // Canvas offscreen para otimização de rastros
+        const trailCanvas = document.createElement('canvas');
+        const trailCtx = trailCanvas.getContext('2d');
+        trailCanvas.width = canvas.width;
+        trailCanvas.height = canvas.height;
+
         // Classe para corpos celestes
         class CelestialBody {
-            constructor(x, y, vx, vy, mass, color) {
+            constructor(x, y, vx, vy, mass, color, isFixed = false) {
                 this.x = x;
                 this.y = y;
                 this.vx = vx;
@@ -234,7 +248,7 @@
                 this.radius = Math.sqrt(mass) * 3;
                 this.color = color || this.randomColor();
                 this.trail = [];
-                this.maxTrail = 50;
+                this.isFixed = isFixed;
             }
 
             randomColor() {
@@ -243,16 +257,31 @@
             }
 
             update() {
+                if (this.isFixed) return; // Sol fixo não se move
+
+                // Aplicar gravidade do sol fixo primeiro (otimização)
+                if (sun && sun !== this) {
+                    const dx = sun.x - this.x;
+                    const dy = sun.y - this.y;
+                    const dist = Math.max(Math.sqrt(dx * dx + dy * dy), 5);
+                    
+                    const force = (config.gravity * this.mass * sun.mass) / (dist * dist);
+                    const fx = (force * dx) / dist;
+                    const fy = (force * dy) / dist;
+
+                    this.vx += fx / this.mass;
+                    this.vy += fy / this.mass;
+                }
+
                 // Aplicar gravidade de outros corpos
                 bodies.forEach(other => {
-                    if (other === this) return;
+                    if (other === this || other === sun) return;
                     
                     const dx = other.x - this.x;
                     const dy = other.y - this.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const dist = Math.max(Math.sqrt(dx * dx + dy * dy), 5);
                     
                     if (dist < this.radius + other.radius) {
-                        // Colisão - fusão de corpos
                         this.merge(other);
                         return;
                     }
@@ -265,57 +294,69 @@
                     this.vy += fy / this.mass;
                 });
 
-                // Atualizar posição
-                this.x += this.vx;
-                this.y += this.vy;
+                // Atualizar posição com coordenadas inteiras (otimização)
+                this.x = Math.floor(this.x + this.vx);
+                this.y = Math.floor(this.y + this.vy);
 
-                // Adicionar à trilha
+                // Adicionar à trilha otimizada
                 if (config.trails) {
                     this.trail.push({ x: this.x, y: this.y });
-                    if (this.trail.length > this.maxTrail) {
+                    if (this.trail.length > config.trailLength) {
                         this.trail.shift();
                     }
                 }
 
                 // Limites da tela (wrap around)
-                if (this.x < 0) this.x = canvas.width;
-                if (this.x > canvas.width) this.x = 0;
-                if (this.y < 0) this.y = canvas.height;
-                if (this.y > canvas.height) this.y = 0;
+                if (this.x < -50) this.x = canvas.width + 50;
+                if (this.x > canvas.width + 50) this.x = -50;
+                if (this.y < -50) this.y = canvas.height + 50;
+                if (this.y > canvas.height + 50) this.y = -50;
             }
 
             merge(other) {
-                // Conservação de momentum
+                if (other.isFixed) return; // Não pode fundir com o sol fixo
+                
                 const totalMass = this.mass + other.mass;
                 this.vx = (this.vx * this.mass + other.vx * other.mass) / totalMass;
                 this.vy = (this.vy * this.mass + other.vy * other.mass) / totalMass;
                 this.mass = totalMass;
                 this.radius = Math.sqrt(this.mass) * 3;
                 
-                // Remover outro corpo
                 const index = bodies.indexOf(other);
                 if (index > -1) bodies.splice(index, 1);
             }
 
             draw() {
-                // Desenhar trilha
-                if (config.trails && this.trail.length > 1) {
-                    ctx.beginPath();
-                    for (let i = 0; i < this.trail.length - 1; i++) {
-                        const alpha = i / this.trail.length;
-                        ctx.strokeStyle = this.color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
-                        ctx.lineWidth = 2;
-                        ctx.moveTo(this.trail[i].x, this.trail[i].y);
-                        ctx.lineTo(this.trail[i + 1].x, this.trail[i + 1].y);
-                        ctx.stroke();
-                    }
-                }
-
                 // Desenhar corpo com brilho
                 const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
-                gradient.addColorStop(0, this.color);
-                gradient.addColorStop(0.5, this.color + '99');
-                gradient.addColorStop(1, this.color + '00');
+                
+                if (this.isFixed) {
+                    // Sol com efeito especial
+                    gradient.addColorStop(0, '#fff');
+                    gradient.addColorStop(0.3, '#ffff00');
+                    gradient.addColorStop(0.6, '#ffa500');
+                    gradient.addColorStop(1, '#ff8c00' + '00');
+
+                    // Raios do sol
+                    for (let i = 0; i < 12; i++) {
+                        const angle = (Math.PI * 2 * i) / 12 + Date.now() / 1000;
+                        const x1 = this.x + Math.cos(angle) * this.radius;
+                        const y1 = this.y + Math.sin(angle) * this.radius;
+                        const x2 = this.x + Math.cos(angle) * (this.radius * 1.5);
+                        const y2 = this.y + Math.sin(angle) * (this.radius * 1.5);
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(x1, y1);
+                        ctx.lineTo(x2, y2);
+                        ctx.strokeStyle = '#ffa50066';
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+                    }
+                } else {
+                    gradient.addColorStop(0, this.color);
+                    gradient.addColorStop(0.5, this.color + '99');
+                    gradient.addColorStop(1, this.color + '00');
+                }
 
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
@@ -325,8 +366,8 @@
                 // Borda brilhante
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.strokeStyle = this.color;
-                ctx.lineWidth = 2;
+                ctx.strokeStyle = this.isFixed ? '#ffff00' : this.color;
+                ctx.lineWidth = this.isFixed ? 3 : 2;
                 ctx.stroke();
             }
         }
@@ -349,6 +390,12 @@
 
         canvas.addEventListener('mousemove', (e) => {
             if (mouseDown && startPos) {
+                // Limpar apenas a área da linha de previsão
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Redesenhar tudo
+                drawScene();
+                
                 // Desenhar linha de previsão
                 ctx.strokeStyle = 'rgba(100, 149, 255, 0.5)';
                 ctx.lineWidth = 3;
@@ -390,6 +437,30 @@
             document.getElementById('particleCountValue').textContent = config.particleCount;
         });
 
+        document.getElementById('trailLength').addEventListener('input', (e) => {
+            config.trailLength = parseInt(e.target.value);
+            document.getElementById('trailLengthValue').textContent = config.trailLength;
+        });
+
+        document.getElementById('addSun').addEventListener('click', (e) => {
+            if (sun) {
+                // Remover sol
+                const index = bodies.indexOf(sun);
+                if (index > -1) bodies.splice(index, 1);
+                sun = null;
+                e.target.textContent = '☀️ Adicionar Sol Fixo';
+                e.target.classList.remove('active');
+                document.getElementById('sunStatus').textContent = 'OFF';
+            } else {
+                // Adicionar sol fixo no centro
+                sun = new CelestialBody(canvas.width / 2, canvas.height / 2, 0, 0, config.mass * 20, '#ffd700', true);
+                bodies.push(sun);
+                e.target.textContent = '🌑 Remover Sol';
+                e.target.classList.add('active');
+                document.getElementById('sunStatus').textContent = 'ON';
+            }
+        });
+
         document.getElementById('addBody').addEventListener('click', () => {
             const x = Math.random() * canvas.width;
             const y = Math.random() * canvas.height;
@@ -413,44 +484,72 @@
             e.target.textContent = config.trails ? '✨ Rastros: ON' : '✨ Rastros: OFF';
             if (!config.trails) {
                 bodies.forEach(b => b.trail = []);
-            }
-        });
-
-        document.getElementById('toggleMode').addEventListener('click', (e) => {
-            const modes = ['orbital', 'chaos', 'blackhole'];
-            const currentIndex = modes.indexOf(config.mode);
-            config.mode = modes[(currentIndex + 1) % modes.length];
-            e.target.textContent = `🌌 Modo: ${config.mode.charAt(0).toUpperCase() + config.mode.slice(1)}`;
-            
-            if (config.mode === 'blackhole') {
-                // Adicionar buraco negro central
-                addBody(canvas.width / 2, canvas.height / 2, 0, 0, config.mass * 10);
+                trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
             }
         });
 
         document.getElementById('clear').addEventListener('click', () => {
             bodies = [];
+            sun = null;
+            trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+            document.getElementById('addSun').textContent = '☀️ Adicionar Sol Fixo';
+            document.getElementById('addSun').classList.remove('active');
+            document.getElementById('sunStatus').textContent = 'OFF';
         });
 
         function addBody(x, y, vx, vy, mass = null) {
             bodies.push(new CelestialBody(x, y, vx, vy, mass || config.mass));
         }
 
-        // Loop de animação
-        function animate() {
-            // Efeito de fade para trilhas
+        // Função otimizada para desenhar rastros
+        function drawTrails() {
+            // Fade effect no canvas de rastros
+            trailCtx.fillStyle = 'rgba(10, 14, 39, 0.15)';
+            trailCtx.fillRect(0, 0, trailCanvas.width, trailCanvas.height);
+
+            bodies.forEach(body => {
+                if (body.isFixed || body.trail.length < 2) return;
+
+                // Desenhar rastro otimizado
+                trailCtx.beginPath();
+                trailCtx.moveTo(body.trail[0].x, body.trail[0].y);
+                
+                for (let i = 1; i < body.trail.length; i++) {
+                    trailCtx.lineTo(body.trail[i].x, body.trail[i].y);
+                }
+                
+                const alpha = Math.min(body.trail.length / config.trailLength, 1);
+                trailCtx.strokeStyle = body.color + Math.floor(alpha * 128).toString(16).padStart(2, '0');
+                trailCtx.lineWidth = 2;
+                trailCtx.stroke();
+            });
+        }
+
+        // Função para desenhar cena
+        function drawScene() {
+            // Desenhar rastros se ativado
             if (config.trails) {
-                ctx.fillStyle = 'rgba(10, 14, 39, 0.1)';
-            } else {
-                ctx.fillStyle = 'rgba(10, 14, 39, 1)';
+                ctx.drawImage(trailCanvas, 0, 0);
             }
+
+            // Desenhar corpos
+            bodies.forEach(body => body.draw());
+        }
+
+        // Loop de animação otimizado
+        function animate() {
+            // Limpar canvas principal
+            ctx.fillStyle = 'rgba(10, 14, 39, 1)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+            // Atualizar rastros
+            if (config.trails) {
+                drawTrails();
+            }
+
             // Atualizar e desenhar corpos
-            bodies.forEach(body => {
-                body.update();
-                body.draw();
-            });
+            bodies.forEach(body => body.update());
+            drawScene();
 
             // Calcular FPS
             frameCount++;
@@ -473,6 +572,8 @@
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            trailCanvas.width = canvas.width;
+            trailCanvas.height = canvas.height;
         });
 
         // Iniciar com alguns corpos
