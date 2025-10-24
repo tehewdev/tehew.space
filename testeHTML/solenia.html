@@ -27,8 +27,28 @@
             position: fixed;
             pointer-events: none;
             z-index: 9999;
-            transition: all 0.1s ease;
+            transition: all 0.3s ease;
             mix-blend-mode: difference;
+        }
+
+        .cursor.near {
+            width: 40px;
+            height: 40px;
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+        }
+
+        .cursor.very-near {
+            width: 60px;
+            height: 60px;
+            border-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.6);
+            animation: pulse-cursor 1s infinite;
+        }
+
+        @keyframes pulse-cursor {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
 
         .hidden-zone {
@@ -38,6 +58,39 @@
             opacity: 0;
             cursor: pointer;
             z-index: 10;
+            transition: opacity 0.3s;
+        }
+
+        .hidden-zone::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.3s;
+            pointer-events: none;
+        }
+
+        .hidden-zone.proximity-active::before {
+            width: 150px;
+            height: 150px;
+            opacity: 0.3;
+        }
+
+        .hidden-zone.proximity-very-close::before {
+            width: 100px;
+            height: 100px;
+            opacity: 0.6;
+            animation: pulse-zone 0.8s infinite;
+        }
+
+        @keyframes pulse-zone {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
         }
 
         .ripple {
@@ -260,6 +313,22 @@
             letter-spacing: 2px;
             text-align: center;
         }
+
+        .proximity-indicator {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.1);
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .proximity-indicator.active {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -268,6 +337,9 @@
 
     <!-- Indicador de sequência -->
     <div class="sequence-indicator">○○○○○</div>
+
+    <!-- Indicador de proximidade -->
+    <div class="proximity-indicator"></div>
 
     <!-- Dica sutil -->
     <div class="hint">👁</div>
@@ -317,13 +389,92 @@
         let typedKeys = [];
         
         let isRevealed = false;
+        let lastProximityTone = 0;
 
         // Cursor personalizado
         const cursor = document.querySelector('.cursor');
+        const proximityIndicator = document.querySelector('.proximity-indicator');
+        let mouseX = 0, mouseY = 0;
+
         document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX - 10 + 'px';
-            cursor.style.top = e.clientY - 10 + 'px';
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            cursor.style.left = mouseX - 10 + 'px';
+            cursor.style.top = mouseY - 10 + 'px';
+            
+            if (!isRevealed) {
+                checkProximity(mouseX, mouseY);
+            }
         });
+
+        // Função para calcular distância entre dois pontos
+        function getDistance(x1, y1, x2, y2) {
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        // Função para verificar proximidade aos pontos
+        function checkProximity(mouseX, mouseY) {
+            const zones = document.querySelectorAll('.hidden-zone');
+            let closestDistance = Infinity;
+            let closestZone = null;
+
+            zones.forEach(zone => {
+                const rect = zone.getBoundingClientRect();
+                const zoneCenterX = rect.left + rect.width / 2;
+                const zoneCenterY = rect.top + rect.height / 2;
+                
+                const distance = getDistance(mouseX, mouseY, zoneCenterX, zoneCenterY);
+                
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestZone = zone;
+                }
+
+                // Remover classes de proximidade
+                zone.classList.remove('proximity-active', 'proximity-very-close');
+            });
+
+            // Configurar zonas de proximidade
+            const nearDistance = 200;
+            const veryNearDistance = 100;
+
+            // Atualizar cursor baseado na proximidade
+            cursor.classList.remove('near', 'very-near');
+            
+            if (closestDistance < veryNearDistance) {
+                cursor.classList.add('very-near');
+                if (closestZone) {
+                    closestZone.classList.add('proximity-very-close');
+                }
+                proximityIndicator.textContent = `${Math.floor(closestDistance)}px - MUITO PERTO`;
+                proximityIndicator.classList.add('active');
+                
+                // Som contínuo de proximidade muito perto
+                const now = Date.now();
+                if (now - lastProximityTone > 300) {
+                    playSpatialTone(180, 0.15, 0, 0.08);
+                    lastProximityTone = now;
+                }
+            } else if (closestDistance < nearDistance) {
+                cursor.classList.add('near');
+                if (closestZone) {
+                    closestZone.classList.add('proximity-active');
+                }
+                proximityIndicator.textContent = `${Math.floor(closestDistance)}px - Perto`;
+                proximityIndicator.classList.add('active');
+                
+                // Som de proximidade perto
+                const now = Date.now();
+                if (now - lastProximityTone > 600) {
+                    playSpatialTone(120, 0.1, 0, 0.05);
+                    lastProximityTone = now;
+                }
+            } else {
+                proximityIndicator.classList.remove('active');
+            }
+        }
 
         // Função para criar som espacial de baixa frequência
         function playSpatialTone(frequency, duration, pan = 0, volume = 0.1) {
@@ -372,11 +523,9 @@
                 particle.style.width = size + 'px';
                 particle.style.height = size + 'px';
                 
-                // Posição inicial no centro
                 particle.style.left = centerX + 'px';
                 particle.style.bottom = centerY + 'px';
                 
-                // Drift aleatório
                 const drift = (Math.random() - 0.5) * 200;
                 particle.style.setProperty('--drift', drift + 'px');
                 
@@ -421,18 +570,15 @@
             const key = e.key.toUpperCase();
             typedKeys.push(key);
             
-            // Manter apenas os últimos caracteres do tamanho do código
             if (typedKeys.length > keyboardCode.length) {
                 typedKeys.shift();
             }
             
-            // Verificar se a sequência está correta
             if (typedKeys.join('') === keyboardCode) {
                 playSpatialTone(180, 0.5, 0, 0.2);
                 revealObserver();
                 typedKeys = [];
             } else if (keyboardCode.startsWith(typedKeys.join(''))) {
-                // Feedback sonoro de progresso
                 playSpatialTone(100 + typedKeys.length * 20, 0.2, 0, 0.1);
             }
         });
@@ -452,15 +598,6 @@
                 if (currentSequence.length === 0 || zoneNum === secretSequence[currentSequence.length]) {
                     currentSequence.push(zoneNum);
                     updateSequenceIndicator();
-                    
-                    cursor.style.width = '30px';
-                    cursor.style.height = '30px';
-                    cursor.style.borderColor = 'rgba(255, 255, 255, 0.5)';
-                    setTimeout(() => {
-                        cursor.style.width = '20px';
-                        cursor.style.height = '20px';
-                        cursor.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                    }, 300);
                     
                     if (currentSequence.length === secretSequence.length) {
                         revealObserver();
@@ -491,6 +628,7 @@
             
             document.body.style.background = '#fff';
             document.querySelector('.observer-interface').style.display = 'flex';
+            proximityIndicator.classList.remove('active');
             
             startBlinking();
             
@@ -555,26 +693,6 @@
             
             setTimeout(blink, 2000);
         }
-
-        // Efeito de hover nas zonas ocultas
-        document.querySelectorAll('.hidden-zone').forEach(zone => {
-            zone.addEventListener('mouseenter', () => {
-                if (!isRevealed) {
-                    cursor.style.width = '30px';
-                    cursor.style.height = '30px';
-                    cursor.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-                    playSpatialTone(150, 0.1, 0, 0.05);
-                }
-            });
-            
-            zone.addEventListener('mouseleave', () => {
-                if (!isRevealed) {
-                    cursor.style.width = '20px';
-                    cursor.style.height = '20px';
-                    cursor.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                }
-            });
-        });
 
         // Easter egg: clicar nos olhos revelados
         setTimeout(() => {
