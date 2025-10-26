@@ -5,21 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel de Anúncios - Múltiplas Redes</title>
 
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-SEU-ID-AQUI"
-         crossorigin="anonymous"></script>
-
-    <!-- Media.net -->
-    <script type="text/javascript">
-        window._mNHandle = window._mNHandle || {};
-        window._mNHandle.queue = window._mNHandle.queue || [];
-        medianet_width = "728";
-        medianet_height = "90";
-        medianet_crid = "SEU-CRID-AQUI";
-        medianet_versionId = "3111299";
-    </script>
-    <script src="//contextual.media.net/nmedianet.js?cid=SEU-CID-AQUI"></script>
-
     <style>
         * {
             margin: 0;
@@ -62,6 +47,19 @@
             border-radius: 10px;
             margin-top: 15px;
             font-size: 1.1em;
+        }
+
+        .demo-notice {
+            background: rgba(255, 215, 0, 0.2);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border: 2px solid rgba(255, 215, 0, 0.5);
+        }
+
+        .demo-notice strong {
+            color: #ffd700;
         }
 
         .controls {
@@ -202,6 +200,35 @@
             font-size: 0.9em;
         }
 
+        .info-box {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-box li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-box li:before {
+            content: "✓ ";
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
         @media (max-width: 768px) {
             h1 {
                 font-size: 1.8em;
@@ -222,11 +249,26 @@
                 <strong>Seu IP:</strong> <span id="user-ip">Carregando...</span> | 
                 <strong>Localização:</strong> <span id="user-location">Carregando...</span>
             </div>
+            <div class="demo-notice">
+                <strong>⚠️ MODO DEMONSTRAÇÃO</strong><br>
+                Anúncios simulados para testes locais. Para usar anúncios reais, configure IDs nas redes de publicidade.
+            </div>
         </header>
+
+        <div class="info-box">
+            <h3>📊 Como Funcionam os Anúncios Segmentados</h3>
+            <ul>
+                <li>Seu <strong>endereço IP</strong> é detectado automaticamente</li>
+                <li>A <strong>localização geográfica</strong> é determinada (país, região, cidade)</li>
+                <li>O <strong>idioma do navegador</strong> é identificado</li>
+                <li>O <strong>tipo de dispositivo</strong> (desktop/mobile) é reconhecido</li>
+                <li>Anúncios são selecionados baseado nesses critérios para máxima relevância</li>
+            </ul>
+        </div>
 
         <div class="controls">
             <button onclick="refreshAllAds()">🔄 Recarregar Todos os Anúncios</button>
-            <button onclick="toggleAutoRefresh()">⏰ Auto-Refresh (OFF)</button>
+            <button onclick="toggleAutoRefresh()" id="auto-refresh-btn">⏰ Auto-Refresh (OFF)</button>
             <button onclick="clearStats()">🗑️ Limpar Estatísticas</button>
         </div>
 
@@ -335,17 +377,19 @@
                 document.getElementById('user-location').textContent = 
                     `${data.city}, ${data.region}, ${data.country_name}`;
             } catch (error) {
-                document.getElementById('user-ip').textContent = 'Não detectado';
-                document.getElementById('user-location').textContent = 'Não detectada';
+                console.log('API de geolocalização não disponível offline');
+                document.getElementById('user-ip').textContent = 'Modo Offline';
+                document.getElementById('user-location').textContent = 'Demonstração Local';
             }
         }
 
         // Recarregar anúncio específico
         function refreshAd(iframeId) {
             const iframe = document.getElementById(iframeId);
-            iframe.src = iframe.src + '?t=' + Date.now();
+            iframe.src = iframe.src.split('?')[0] + '?t=' + Date.now();
             refreshCount++;
             updateStats();
+            console.log(`Anúncio ${iframeId} recarregado`);
         }
 
         // Recarregar todos os anúncios
@@ -356,21 +400,24 @@
             });
             refreshCount += iframes.length;
             updateStats();
+            console.log(`Todos os ${iframes.length} anúncios foram recarregados`);
         }
 
         // Toggle auto-refresh
         function toggleAutoRefresh() {
             autoRefresh = !autoRefresh;
-            const btn = event.target;
+            const btn = document.getElementById('auto-refresh-btn');
 
             if (autoRefresh) {
                 btn.textContent = '⏰ Auto-Refresh (ON)';
                 btn.style.background = '#4CAF50';
                 autoRefreshInterval = setInterval(refreshAllAds, 60000); // 60 segundos
+                console.log('Auto-refresh ativado (60s)');
             } else {
                 btn.textContent = '⏰ Auto-Refresh (OFF)';
                 btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
                 clearInterval(autoRefreshInterval);
+                console.log('Auto-refresh desativado');
             }
         }
 
@@ -379,6 +426,7 @@
             refreshCount = 0;
             sessionStart = Date.now();
             updateStats();
+            console.log('Estatísticas resetadas');
         }
 
         // Atualizar estatísticas
@@ -399,8 +447,13 @@
         detectUserInfo();
 
         // Log de carregamento
-        console.log('Painel de anúncios carregado');
-        console.log('Anúncios serão segmentados baseado em: IP, Localização, Idioma, Device');
+        console.log('%c🎯 Painel de Anúncios - MODO DEMO', 'color: #667eea; font-size: 20px; font-weight: bold;');
+        console.log('%cAnúncios serão segmentados baseado em:', 'color: #666; font-size: 14px;');
+        console.log('✓ IP e Geolocalização');
+        console.log('✓ Idioma do navegador');
+        console.log('✓ Tipo de dispositivo');
+        console.log('✓ Contexto da página');
+        console.log('%cVersão atual: DEMONSTRAÇÃO (anúncios simulados)', 'color: #ffa500; font-weight: bold;');
     </script>
 </body>
 </html>
