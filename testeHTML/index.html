@@ -263,7 +263,7 @@
         const CONFIG = {
             repo: { owner: 'tehewdev', name: 'tehew.space', folder: 'testeHTML', branch: 'main' },
             preview: { baseUrl: 'https://tehew.space' },
-            jsonbin: { binId: '68df49ae43b1c97be95893d1', accessKey: '$2a$10$f9KK7vSowGnJI5elo/dAPurqjZAJ3bJaWnsinl/caDfgIcNt28kNi' },
+            jsonbin: { binId: '690bda10ae596e708f473581', accessKey: '$2a$10$f9KK7vSowGnJI5elo/dAPurqjZAJ3bJaWnsinl/caDfgIcNt28kNi' },
             cache: { tokenKey: 'gh_token_cache', filesKey: 'gh_files_cache', duration: 1000 * 60 * 15 }
         };
         const DEFAULT_EXAMPLE = `<!DOCTYPE html>
@@ -333,7 +333,7 @@
                 const response = await fetch(url, { headers: this.tokenManager.getAuthHeaders() });
                 if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
                 const data = await response.json();
-                return { content: data.content ? this.decodeBase64(data.content) : '', sha: data.sha };
+                return { content: data.content ? this.encodeBase64(data.content) : '', sha: data.sha };
             }
             async save(filename, content) {
                 if (!this.tokenManager.isLoaded()) throw new Error('Token não carregado');
@@ -410,7 +410,7 @@
                 this.elements.publishBtn.disabled = isPublishing;
                 this.elements.publishBtn.textContent = isPublishing ? '⏳ Publicando...' : '🚀 Publicar no GitHub';
             }
-            getPreviewUrl(filename) { return `${CONFIG.preview.baseUrl}/${CONFIG.repo.folder}/${encodeURIComponent(filename)}`;}
+            getPreviewUrl(filename) { return `${CONFIG.preview.baseUrl}/${CONFIG.repo.folder}/${encodeURIComponent(filename}`;}
             sanitizeFilename(name) {
                 if (!name) return '';
                 let base = name;
@@ -419,7 +419,7 @@
                 return base ? `${base}.html` : '';
             }
             escapeHtml(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML;}
-            escapeAttr(str) { return this.escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+            escapeAttr(str) { return this.escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, ''); }
             sanitizeHtml(html) { return html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ''); }
         }
         class PublisherApp {
