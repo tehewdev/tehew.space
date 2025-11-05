@@ -333,7 +333,7 @@
                 const response = await fetch(url, { headers: this.tokenManager.getAuthHeaders() });
                 if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
                 const data = await response.json();
-                return { content: data.content ? this.encodeBase64(data.content) : '', sha: data.sha };
+                return { content: data.content ? this.decodeBase64(data.content) : '', sha: data.sha };
             }
             async save(filename, content) {
                 if (!this.tokenManager.isLoaded()) throw new Error('Token não carregado');
@@ -410,7 +410,7 @@
                 this.elements.publishBtn.disabled = isPublishing;
                 this.elements.publishBtn.textContent = isPublishing ? '⏳ Publicando...' : '🚀 Publicar no GitHub';
             }
-           getPreviewUrl(filename) { return `${CONFIG.preview.baseUrl}/${CONFIG.repo.folder}/${encodeURIComponent(filename)}`; }
+            getPreviewUrl(filename) { return `${CONFIG.preview.baseUrl}/${CONFIG.repo.folder}/${encodeURIComponent(filename)}`; }
             sanitizeFilename(name) {
                 if (!name) return '';
                 let base = name;
