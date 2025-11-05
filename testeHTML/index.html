@@ -410,7 +410,7 @@
                 this.elements.publishBtn.disabled = isPublishing;
                 this.elements.publishBtn.textContent = isPublishing ? '⏳ Publicando...' : '🚀 Publicar no GitHub';
             }
-            getPreviewUrl(filename) { return `${CONFIG.preview.baseUrl}/${CONFIG.repo.folder}/${encodeURIComponent(filename}`;}
+           getPreviewUrl(filename) { return `${CONFIG.preview.baseUrl}/${CONFIG.repo.folder}/${encodeURIComponent(filename)}`; }
             sanitizeFilename(name) {
                 if (!name) return '';
                 let base = name;
