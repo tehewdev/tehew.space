@@ -2,116 +2,249 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat Gemini 2.5 Flash</title>
+  <title>Gemini TTS - Vozes (Atualizado 2025)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: Inter, system-ui, sans-serif; background: #f8f9fa; color: #212529; }
-    .chat-container { max-width: 600px; margin: auto; background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.09); padding: 2rem; }
-    #chat-history-container { max-height: 400px; overflow-y: auto; margin-bottom: 1rem; }
-    .chat-message { padding: 0.7rem 1rem; border-radius: 10px; margin-bottom: 4px; max-width: 80%; word-break: break-word; }
-    .user-message { background: #4285f4; color: white; margin-left: 20%; text-align: right;}
-    .model-message { background: #e9ecef; color: #212529; margin-right: 20%; }
-    #chat-input { width: 80%; border-radius: 8px; border: 1px solid #ced4da; padding: 0.7rem; }
-    #send-chat-message-btn { background: #4285f4; color: white; border: none; border-radius: 8px; padding: 0.8rem 1rem; cursor: pointer; margin-left:0.5rem;}
-    #send-chat-message-btn:disabled { opacity: 0.5; }
-    #chat-error-message { display: none; color: #ea4335; margin-bottom: 5px; }
-    #chat-loading-indicator { display: none;}
-    .loading { color: #6c757d; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f8fafc;
+      color: #202124;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+    h1 { font-size: 1.6rem; color: #4285f4; }
+    section {
+      background: #fff;
+      box-shadow: 0 4px 24px rgba(66,133,244,0.07);
+      border-radius: 1rem;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    label { font-weight: 600; display: block; margin-top: 1.2rem; }
+    input, select, textarea, button {
+      font-family: inherit;
+      font-size: 1rem;
+      border-radius: .5rem;
+      padding: .6rem 1rem;
+      border: 1px solid #d5e0ea;
+      margin-top: .3rem;
+      width: 100%;
+      box-sizing: border-box;
+      outline: none;
+    }
+    textarea { min-height: 80px; resize: vertical; }
+    .btn-main {
+      background: #4285f4;
+      color: #fff;
+      border: none;
+      margin-top: 1.5rem;
+      transition: background 0.17s;
+      cursor: pointer;
+    }
+    .btn-main:disabled { background: #b3c8e6; }
+    .locutores {
+      margin-bottom: 1rem;
+      gap: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .loc-config {
+      flex:1;
+      min-width: 230px;
+      background: #f1f6fb;
+      padding: .8rem;
+      border-radius: .6rem;
+      margin-bottom: .5rem;
+    }
+    .loc-config label {
+      margin-top:0;
+      font-size:.95em;
+      color:#666;
+      font-weight:500;
+    }
+    .audio-box { margin-top:1.6rem;padding:.8rem;background:#f7fafd;border:1px solid #e5e7eb;border-radius:8px }
+    .audio-box h3 { margin-bottom:.5rem;font-size:1.1em }
+    .msg {color:#d93025;margin-top:.6em;white-space:pre-wrap;}
+    .success {color:#188038;}
+    @media (max-width:700px){
+      section{padding:1rem;}
+      .locutores{flex-direction: column;}
+    }
   </style>
 </head>
 <body>
-  <div class="chat-container">
-    <h2>Chat com Gemini Flash Lite</h2>
-    <div id="chat-history-container"></div>
-    <div id="chat-error-message" class="error-message"></div>
-    <div id="chat-loading-indicator" class="loading">
-      <span>Gemini está digitando...</span>
-    </div>
-    <div class="chat-input-container">
-      <textarea id="chat-input" rows="2" placeholder="Digite sua mensagem..."></textarea>
-      <button id="send-chat-message-btn" aria-label="Enviar mensagem">Enviar</button>
-    </div>
-  </div>
+  <h1>🗣️ Gemini TTS Atualizado (nov/2025)</h1>
+  <section>
+    <label for="texto">Texto</label>
+    <textarea id="texto" placeholder="Digite ou cole seu roteiro."></textarea>
+
+    <label for="modelo">Modelo</label>
+    <select id="modelo">
+      <option value="gemini-2.5-flash-preview-tts">Gemini 2.5 Flash</option>
+      <option value="gemini-2.5-pro-preview-tts">Gemini 2.5 Pro</option>
+    </select>
+
+    <div class="locutores" id="locutores"></div>
+    <button type="button" id="addLocutor" style="margin-top:-10px;">+ Adicionar Locutor</button>
+
+    <div id="msg" class="msg"></div>
+    <button class="btn-main" id="ttsBtn">Gerar Áudio</button>
+    <div id="audioResult"></div>
+  </section>
+  <section>
+    <h2 style="font-size:1.2rem;">Instruções</h2>
+    <ul style="padding-left:1.2em;">
+      <li>Insira sua chave da API Gemini ao abrir o site. Consiga em <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a>.</li>
+      <li>Você pode configurar até 2 locutores, personalizar nome e voz.</li>
+      <li>Áudio é gerado e tocado localmente, com link para download (.wav ou raw).</li>
+      <li>Tudo roda em HTML + JS, zero backend.</li>
+    </ul>
+  </section>
   <script>
-    // Solicita chave de API local Gemini uma vez
-    let APIKEY = localStorage.getItem('gemini-api-key');
-    if (!APIKEY) {
-      const userKey = prompt('Por favor, insira sua chave de API Gemini.\nObtenha em: https://aistudio.google.com/app/apikey');
-      if (userKey) {
-        APIKEY = userKey.trim();
-        localStorage.setItem('gemini-api-key', APIKEY);
-      }
+    // ---- Configs e variáveis iniciais ----
+    const VOZES = [
+      "Zephyr","Orus","Kore","Achernar","Aoede","Autonoe","Callirrhoe","Despina",
+      "Erinome","Gacrux","Laomedeia","Leda","Pulcherrima","Sulafat","Vindemiatrix",
+      "Achird","Algenib","Algieba","Alnilam","Charon","Enceladus","Fenrir","Iapetus",
+      "Puck","Rasalgethi","Sadachbia","Sadaltager","Schedar","Umbriel","Zubenelgenubi"
+    ];
+    let locutores = [
+      { nome:'Locutor 1', voz: VOZES[0] }
+    ];
+
+    let API_KEY = localStorage.getItem('gemini_apikey') || '';
+
+    // ---- Renderizar Locutores ----
+    function renderLocutores() {
+      const lista = document.getElementById('locutores');
+      lista.innerHTML='';
+      locutores.forEach((l,i) => {
+        const div = document.createElement('div');
+        div.className="loc-config";
+        const voiceOptions = VOZES.map(v=>`<option${l.voz==v?' selected':''}>${v}</option>`).join('');
+        const removeBtn = locutores.length>1?`<button type="button" style="margin-top:.7em" onclick="removerLocutor(${i})">Remover</button>`:'';
+        div.innerHTML = `
+          <label>Nome</label>
+          <input id="nome-${i}" value="${l.nome}" onchange="locutores[${i}].nome=this.value">
+          <label>Voz</label>
+          <select id="voz-${i}" onchange="locutores[${i}].voz=this.value">${voiceOptions}</select>
+          ${removeBtn}
+        `;
+        lista.append(div);
+      });
     }
 
-    // Elementos principais
-    const chatHistoryContainer = document.getElementById('chat-history-container');
-    const chatInput = document.getElementById('chat-input');
-    const sendChatMessageBtn = document.getElementById('send-chat-message-btn');
-    const chatLoadingIndicator = document.getElementById('chat-loading-indicator');
-    const chatErrorMessageDiv = document.getElementById('chat-error-message');
-
-    // Função para adicionar mensagens no histórico
-    function appendChatMessage(message, sender) {
-      const messageDiv = document.createElement('div');
-      messageDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'model-message');
-      messageDiv.textContent = message;
-      chatHistoryContainer.appendChild(messageDiv);
-      chatHistoryContainer.scrollTop = chatHistoryContainer.scrollHeight;
+    function removerLocutor(i) {
+      locutores.splice(i,1);
+      renderLocutores();
     }
 
-    // Função principal de envio de mensagem
-    async function handleSendChatMessage() {
-      if (!APIKEY) {
-        chatErrorMessageDiv.textContent = 'Chave da API Gemini ausente.';
-        chatErrorMessageDiv.style.display = "block";
-        return;
+    window.addEventListener('DOMContentLoaded', renderLocutores);
+    document.getElementById('addLocutor').onclick = ()=>{
+      if(locutores.length>=2) return;
+      locutores.push({nome:'Locutor '+(locutores.length+1),voz:VOZES[locutores.length%VOZES.length]});
+      renderLocutores();
+    };
+
+    // ---- Chave API ----
+    function askApiKey(){
+      let key = prompt("Insira sua chave da API Gemini:\n(Permissão local apenas, nunca sai do navegador)");
+      if(key){
+        key=key.trim();
+        API_KEY=key;
+        localStorage.setItem('gemini_apikey', key);
       }
-      const messageText = chatInput.value.trim();
-      if (!messageText) return;
-      appendChatMessage(messageText, 'user');
-      chatInput.value = '';
-      chatInput.disabled = true;
-      sendChatMessageBtn.disabled = true;
-      chatLoadingIndicator.style.display = "block";
-      chatErrorMessageDiv.style.display = "none";
+    }
+    if(!API_KEY) askApiKey();
+
+    // ---- Gerar TTS (corrigido) ----
+    document.getElementById('ttsBtn').onclick = async function(){
+      document.getElementById('audioResult').innerHTML = '';
+      const texto=document.getElementById('texto').value.trim();
+      const modelo=document.getElementById('modelo').value;
+      const msgbox=document.getElementById('msg');
+      msgbox.textContent='';
+
+      if(!API_KEY){askApiKey();if(!API_KEY)return;}
+      if(!texto){msgbox.textContent='Digite algum texto.';return;}
+      if(locutores.some(l=>!l.nome.trim())){msgbox.textContent='Preencha o nome de todos os locutores.';return;}
+
+      // --- Payload corrigido (sem languageCode, com "AUDIO" uppercase) ---
+      let speechConfig;
+      if(locutores.length===1){
+        speechConfig = {
+          voiceConfig:{
+            prebuiltVoiceConfig:{
+              voiceName:locutores[0].voz
+            }
+          }
+        };
+      } else {
+        speechConfig = {
+          multiSpeakerVoiceConfig:{
+            speakerVoiceConfigs: locutores.map(l=>({
+              speaker: l.nome,
+              voiceConfig:{
+                prebuiltVoiceConfig:{
+                  voiceName:l.voz
+                }
+              }
+            }))
+          }
+        };
+      }
+
+      const payload={
+        contents:[{
+          role:"user",
+          parts:[{text:texto}]
+        }],
+        generationConfig:{
+          responseModalities:["AUDIO"],
+          speechConfig:speechConfig
+        }
+      };
+
+      document.getElementById('ttsBtn').disabled=true;
+      msgbox.textContent = 'Gerando... Aguarde.';
       try {
-        const apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent";
-        const response = await fetch(apiUrl + "?key=" + APIKEY, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ role: "user", parts: [{ text: messageText }] }],
-            generationConfig: { temperature: 1 }
-          })
+        const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${API_KEY}`,{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify(payload)
         });
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error?.message || ("Erro " + response.status));
-        }
-        const result = await response.json();
-        let responseText = '';
-        for (const part of result?.candidates?.[0]?.content?.parts || []) {
-          if (part.text) responseText += part.text;
-        }
-        appendChatMessage(responseText || 'Resposta vazia.', 'model');
-      } catch (error) {
-        chatErrorMessageDiv.textContent = "Erro: " + error.message;
-        chatErrorMessageDiv.style.display = "block";
-      } finally {
-        chatLoadingIndicator.style.display = "none";
-        chatInput.disabled = false;
-        sendChatMessageBtn.disabled = false;
-        chatInput.focus();
-      }
-    }
+        const data=await resp.json();
+        if(!resp.ok) throw new Error((data.error && data.error.message)||'Falha desconhecida API Gemini');
 
-    sendChatMessageBtn.onclick = handleSendChatMessage;
-    chatInput.addEventListener("keydown", function(event){
-      if(event.key === "Enter" && !event.shiftKey){
-        event.preventDefault();
-        if(!sendChatMessageBtn.disabled) handleSendChatMessage();
+        let base64='',mimetype='';
+        if(data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts)
+          for(const p of data.candidates[0].content.parts)
+            if(p.inlineData&&p.inlineData.data){
+              base64=p.inlineData.data;
+              mimetype=p.inlineData.mimeType||'audio/wav';
+            }
+
+        if(!base64){msgbox.textContent='A API não retornou áudio.';return;}
+
+        function b64ToBytes(b){const bin=atob(b);return Uint8Array.from([...bin].map(c=>c.charCodeAt(0)));}
+        let blob = new Blob([b64ToBytes(base64)],{type:mimetype||'audio/wav'});
+        const url=URL.createObjectURL(blob);
+        
+        document.getElementById('audioResult').innerHTML = `<div class="audio-box">
+          <h3>Áudio:</h3>
+          <audio controls src="${url}"></audio>
+          <a download="voz-gemini-tts.wav" href="${url}" style="display:block;margin-top:0.7em">Baixar Áudio</a>
+          <div style="margin-top:.7em;font-size:.92em;color:#4caf50">✓ Pronto!</div>
+        </div>`;
+        msgbox.textContent = '';
+      } catch(e) {
+        msgbox.textContent = 'Falha ao gerar áudio:\n' + (e.message||e);
+        document.getElementById('audioResult').innerHTML='';
+      } finally {
+        document.getElementById('ttsBtn').disabled=false;
       }
-    });
+    };
   </script>
 </body>
 </html>
