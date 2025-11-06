@@ -5,17 +5,136 @@
   <title>Gemini TTS Diagnóstico WAV</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body {font-family:sans-serif;background:#f8fafc;color:#222;max-width:680px;margin:0 auto;padding:2em;}
-    h1 {color:#4285f4;}
-    label,input,select,textarea,button{font-size:1em;}
-    section{background:#fff;padding:2em;margin-bottom:2em;border-radius:1em;box-shadow:0 4px 24px #4285f412;}
-    .locutores{gap:1em;display:flex;flex-wrap:wrap;}
-    .loc-config{background:#f1f6fb;padding:.6em;border-radius:.6em;}
-    .msg{color:#d93025;margin-top:.5em;}
-    .audio-box{margin-top:1em;padding:1em;background:#f7fafd;border:1px solid #e5e7eb;border-radius:8px}
-    .success{color:#188038;}
-    #hex-debug{font-family:monospace;background:#eee;border-radius:5px;padding:.6em;margin:.7em 0;}
-    @media(max-width:600px){section{padding:1em}.locutores{flex-direction:column}}
+:root {
+  --primary: #4285f4;
+  --primary-dark: #3367d6;
+  --success: #34a853;
+  --danger: #ea4335;
+  --bg: #f8f9fa;
+  --panel: #fff;
+  --border: #dee2e6;
+  --radius: 12px;
+  --shadow: 0 4px 16px rgba(66,133,244,.09);
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  margin: 0;
+  color: #212529;
+}
+
+h1 {
+  color: var(--primary);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -1px;
+  margin-bottom: 1rem;
+}
+
+section {
+  background: var(--panel);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin: 2em auto 1.2em auto;
+  max-width: 550px;
+  padding: 2em 1.3em 1.5em 1.3em;
+  border: 1px solid var(--border);
+}
+
+label {
+  font-weight: 600;
+  margin-top: 1.3em;
+  display: block;
+  color: #555d;
+}
+
+textarea, input, select, button {
+  font-family: inherit;
+  font-size: 1em;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  margin-top: .4em;
+  padding: .7em 1em;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border .18s;
+}
+
+textarea { resize: vertical; min-height: 80px; }
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+button, .btn-main {
+  margin-top: 1.1em;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 3px 16px #4285f422;
+  transition: background .19s;
+}
+
+button:disabled { opacity: .6; cursor: not-allowed; }
+.btn-main:hover { background: var(--primary-dark); }
+#addLocutor { background: #e6ecf5; color: #222; border: 1px solid #c5dafd; }
+
+.locutores {
+  display: flex;
+  gap: 1.4em;
+  margin-bottom: 1em;
+  flex-wrap: wrap;
+}
+.loc-config {
+  background: #f2f6fb;
+  border: 1px solid #e3e9ff;
+  border-radius: 7px;
+  padding: .7em .8em .45em .8em;
+  min-width: 204px;
+}
+
+.audio-box {
+  margin-top: 1.5em;
+  background: #f8fcff;
+  border: 1px solid #cbe1ff;
+  border-radius: 7px;
+  padding: 1.1em .7em .7em .7em;
+}
+.audio-box audio {
+  width: 100%;
+  margin-top: .7em;
+}
+
+#audioResult a {
+  display: block;
+  margin-top: .8em;
+  color: var(--primary-dark);
+  font-weight: 500;
+  text-decoration: underline;
+}
+
+.msg { margin-top: .7em; color: var(--danger); font-weight: 500; }
+.success { color: var(--success); }
+
+#hex-debug {
+  font-family: monospace;
+  font-size: .95em;
+  background: #eef2fb;
+  color: #516185;
+  border-radius: 5px;
+  padding: .7em;
+  margin: 1em 0 .5em 0;
+  word-break: break-all;
+}
+
+@media (max-width:650px) {
+  section { padding:1em .3em .4em .3em; }
+  .locutores { flex-direction: column; gap: .6em; }
+}
   </style>
 </head>
 <body>
