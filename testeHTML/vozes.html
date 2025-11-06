@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Gemini TTS - Vozes PCM para WAV (Nov/2025)</title>
+  <title>Gemini TTS Diagnóstico WAV</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {font-family:sans-serif;background:#f8fafc;color:#222;max-width:680px;margin:0 auto;padding:2em;}
@@ -10,15 +10,16 @@
     label,input,select,textarea,button{font-size:1em;}
     section{background:#fff;padding:2em;margin-bottom:2em;border-radius:1em;box-shadow:0 4px 24px #4285f412;}
     .locutores{gap:1em;display:flex;flex-wrap:wrap;}
-    .loc-config {background:#f1f6fb;padding:.6em;border-radius:.6em;}
+    .loc-config{background:#f1f6fb;padding:.6em;border-radius:.6em;}
     .msg{color:#d93025;margin-top:.5em;}
     .audio-box{margin-top:1em;padding:1em;background:#f7fafd;border:1px solid #e5e7eb;border-radius:8px}
     .success{color:#188038;}
+    #hex-debug{font-family:monospace;background:#eee;border-radius:5px;padding:.6em;margin:.7em 0;}
     @media(max-width:600px){section{padding:1em}.locutores{flex-direction:column}}
   </style>
 </head>
 <body>
-  <h1>Gemini TTS PCM → WAV (Nov/2025)</h1>
+  <h1>Gemini TTS Diagnóstico PCM → WAV (Nov/2025)</h1>
   <section>
     <label for="texto">Texto</label>
     <textarea id="texto" rows="3" style="width:100%"></textarea>
@@ -32,6 +33,7 @@
     <div id="msg" class="msg"></div>
     <button class="btn-main" id="ttsBtn" style="margin-top:1em">Gerar Áudio</button>
     <div id="audioResult"></div>
+    <div id="hex-debug"></div>
   </section>
   <script>
     const VOZES = [
@@ -73,13 +75,11 @@
     }
     if(!API_KEY) askApiKey();
 
-    // Função robusta para montar header WAV de acordo com params do mimeType
     function parseMimeType(mimetype){
-      // Exemplo: audio/l16;rate=24000;channels=1
       let sampleRate=24000,bitsPerSample=16,numChannels=1;
       if(!mimetype) return {sampleRate,bitsPerSample,numChannels};
       const parts = mimetype.split(';');
-      if(parts[0].includes('l16')) bitsPerSample=16;
+      if(parts[0].toLowerCase().includes('l16')) bitsPerSample=16;
       parts.slice(1).forEach(x=>{
         const [k,v]=x.trim().split('=');
         if(['rate','ratec'].includes(k))sampleRate=+v;
@@ -107,9 +107,14 @@
       for(const b of bytes) if(b!==0){nonZero++;}
       return nonZero<24;
     }
-
+    function hexPreview(bytes){
+      let hex = '';
+      for(let i=0;i<64;i++) hex += (bytes[i]||0).toString(16).padStart(2,'0')+" ";
+      return hex;
+    }
     document.getElementById('ttsBtn').onclick = async function(){
       document.getElementById('audioResult').innerHTML = '';
+      document.getElementById('hex-debug').innerHTML = '';
       const texto=document.getElementById('texto').value.trim();
       const modelo=document.getElementById('modelo').value;
       const msgbox=document.getElementById('msg');
@@ -144,28 +149,29 @@
         if(!base64){msgbox.textContent='API não retornou áudio.';return;}
         function b64ToBytes(b){const bin=atob(b);return Uint8Array.from([...bin].map(c=>c.charCodeAt(0)));}
         let audioBytes = b64ToBytes(base64);
+        document.getElementById('hex-debug').innerText="HEX PCM (primeiros 64):\n"+hexPreview(audioBytes);
         if(isSilentAudio(audioBytes)){
-          msgbox.textContent = '⚠️ O áudio gerado está silencioso/mudo. Tente outro texto, voz ou modelo Gemini!';
+          msgbox.textContent = '⚠️ O áudio gerado está silencioso/mudo. Veja o HEX abaixo e tente outro texto, voz ou modelo Gemini!';
           document.getElementById('audioResult').innerHTML='';
           return;
         }
-        // Se for formato raw l16, converte para WAV antes de tocar
-        let wavBytes = (mimetype && mimetype.startsWith('audio/l')) ?
-          convertRawL16ToWav(audioBytes, ...Object.values(parseMimeType(mimetype))) :
-          audioBytes;
+        let params = parseMimeType(mimetype);
+        let wavBytes = (mimetype && mimetype.toLowerCase().startsWith('audio/l')) ?
+          convertRawL16ToWav(audioBytes, params.sampleRate, params.numChannels, params.bitsPerSample) : audioBytes;
         let blob = new Blob([wavBytes],{type:'audio/wav'});
         const url=URL.createObjectURL(blob);
         document.getElementById('audioResult').innerHTML = `<div class="audio-box">
           <b>Formato Gemini:</b> ${mimetype}<br>
           <b>Tamanho:</b> ${wavBytes.length} bytes<br>
           <audio controls src="${url}" style="display:block"></audio>
-          <a download="voz-gemini-tts.wav" href="${url}" style="display:block;margin-top:0.7em">Baixar Áudio</a>
-          <div style="margin-top:.7em;font-size:.95em;color:#4caf50">✓ Pronto!</div>
+          <a download="voz-gemini-tts.wav" href="${url}">Baixar Áudio</a>
+          <div style="margin-top:.8em;color:#4caf50">✓ Pronto!</div>
         </div>`;
         msgbox.textContent = '';
       } catch(e) {
         msgbox.textContent = 'Falha ao gerar áudio:\n' + (e.message||e);
         document.getElementById('audioResult').innerHTML='';
+        document.getElementById('hex-debug').innerHTML='';
       } finally {
         document.getElementById('ttsBtn').disabled=false;
       }
