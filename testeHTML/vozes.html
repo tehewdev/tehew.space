@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Áudio TTS com Gemini</title>
+    <style>
+        :root {
+            --primary: #4285f4;
+            --primary-dark: #3367d6;
+            --success: #34a853;
+            --danger: #ea4335;
+            --warning: #fbbc05;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+            --bg: var(--gray-100);
+            --text: var(--gray-900);
+            --text-secondary: var(--gray-600);
+            --border: var(--gray-300);
+            --panel: white;
+            --section-bg: white;
+            --input-bg: white;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --transition: all 0.2s ease;
+            --chat-user-bg: var(--primary);
+            --chat-user-text: white;
+            --chat-model-bg: var(--gray-200);
+            --chat-model-text: var(--gray-900);
+            --copy-btn-bg: var(--gray-200);
+            --copy-btn-text: var(--gray-800);
+            --copy-btn-hover-bg: var(--gray-300);
+            --copy-btn-copied-bg: var(--success);
+            --copy-btn-copied-text: white;
+        }
+
+        .dark-theme {
+            --primary: #8ab4f8;
+            --primary-dark: #7aa3e6;
+            --success: #81c995;
+            --danger: #f28b82;
+            --warning: #fde293;
+            --bg: #1a1d24;
+            --text: #e0e6f1;
+            --text-secondary: #98a6ad;
+            --border: #384152;
+            --panel: #242933;
+            --section-bg: #2a303c;
+            --input-bg: #20242c;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.3);
+            --chat-user-bg: #37474F;
+            --chat-user-text: #ECEFF1;
+            --chat-model-bg: #303540;
+            --chat-model-text: #e0e6f1;
+            --copy-btn-bg: var(--gray-700);
+            --copy-btn-text: var(--gray-200);
+            --copy-btn-hover-bg: var(--gray-600);
+            --copy-btn-copied-bg: var(--success);
+            --copy-btn-copied-text: white;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            background-color: var(--bg);
+            transition: background-color 0.2s ease;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            transition: var(--transition);
+        }
+
+        #app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: var(--panel);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        header {
+            padding: 2rem 2rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary), var(--success));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .app-description {
+            color: var(--text-secondary);
+            max-width: 800px;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        .app-description code {
+            background-color: rgba(66, 133, 244, 0.1);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: monospace;
+            color: var(--primary);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+
+        .theme-toggle:hover {
+            background-color: rgba(66, 133, 244, 0.1);
+            border-color: var(--primary);
+        }
+
+        .theme-icon {
+            width: 20px;
+            height: 20px;
+            transition: var(--transition);
+        }
+
+        #theme-icon-moon {
+            display: none;
+        }
+
+        .dark-theme #theme-icon-sun {
+            display: none;
+        }
+
+        .dark-theme #theme-icon-moon {
+            display: block;
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            grid-auto-flow: dense;
+            gap: 1.5rem;
+            padding: 2rem;
+        }
+
+        main > #tts-section {
+            grid-column: span 1;
+        }
+
+        main > #output-section {
+            grid-column: span 1;
+        }
+
+        main > #chat-section {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 860px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+
+            main > #tts-section,
+            main > #output-section,
+            main > #chat-section {
+                grid-column: 1 / -1;
+            }
+        }
+
+        section {
+            background-color: var(--section-bg);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        section:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            margin-bottom: 0;
+            color: var(--primary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background-color: var(--input-bg);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+            min-height: 100px;
+            transition: var(--transition);
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            gap: 0.5rem;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--gray-200);
+            color: var(--gray-800);
+            border: 1px solid var(--gray-300);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--gray-300);
+            border-color: var(--gray-400);
+        }
+
+        .dark-theme .btn-secondary {
+            background-color: var(--gray-700);
+            color: var(--gray-100);
+            border-color: var(--gray-600);
+        }
+
+        .dark-theme .btn-secondary:hover:not(:disabled) {
+            background-color: var(--gray-600);
+            border-color: var(--gray-500);
+        }
+
+        .btn-block {
+            display: flex;
+            width: 100%;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            padding: 0.5rem 0;
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--text-secondary);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .model-selection {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .model-selection label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .model-selection select {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background-color: var(--input-bg);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.95rem;
+            width: 100%;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236c757d'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1.25em;
+            padding-right: 2.5rem;
+        }
+
+        .dark-theme .model-selection select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2398a6ad'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+        }
+
+        .model-selection select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+        }
+
+        #speaker-config {
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        #speaker-config h3 {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .speaker-entry {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+            gap: 0.75rem;
+            align-items: center;
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            background-color: rgba(66, 133, 244, 0.03);
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .dark-theme .speaker-entry {
+            background-color: rgba(66, 133, 244, 0.08);
+        }
+
+        .speaker-entry:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .speaker-entry input,
+        .speaker-entry select {
+            width: 100%;
+            padding: 0.65rem 0.85rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background-color: var(--input-bg);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        .speaker-entry input:focus,
+        .speaker-entry select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .speaker-entry select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236c757d'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1.1em;
+            padding-right: 2rem;
+        }
+
+        .dark-theme .speaker-entry select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2398a6ad'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+        }
+
+        .btn-danger {
+            background-color: transparent;
+            color: var(--danger);
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--danger);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-danger svg {
+            width: 1em;
+            height: 1em;
+        }
+
+        .btn-danger:hover {
+            background-color: rgba(234, 67, 53, 0.1);
+        }
+
+        #audio-output-container {
+            flex-grow: 1;
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background-color: var(--input-bg);
+        }
+
+        .audio-playback-entry {
+            border: 1px solid var(--border);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: var(--radius-sm);
+            background-color: var(--section-bg);
+        }
+
+        #audio-output-container .audio-playback-entry:last-child {
+            margin-bottom: 0;
+        }
+
+        .audio-playback-entry h3 {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .audio-entry-details {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            background-color: var(--input-bg);
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            margin-bottom: 0.75rem;
+        }
+
+        .audio-entry-details p {
+            margin-bottom: 0.25rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 0.5rem;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow);
+        }
+
+        .dark-theme audio {
+            filter: invert(0.9) hue-rotate(180deg) contrast(0.9);
+        }
+
+        .btn-download {
+            margin-top: 0.75rem !important;
+            display: block !important;
+            width: 100%;
+        }
+
+        #chat-section {
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+            max-height: 70vh;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            gap: 1rem;
+        }
+
+        #chat-history-container {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background-color: var(--input-bg);
+        }
+
+        .chat-message {
+            max-width: 80%;
+            padding: 0.65rem 1rem;
+            border-radius: var(--radius);
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .chat-message p:last-child {
+            margin-bottom: 0;
+        }
+
+        .user-message {
+            background-color: var(--chat-user-bg);
+            color: var(--chat-user-text);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .model-message {
+            background-color: var(--chat-model-bg);
+            color: var(--chat-model-text);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            position: relative;
+        }
+
+        .model-message code {
+            background-color: rgba(0, 0, 0, 0.1);
+            padding: 0.15em 0.4em;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .dark-theme .model-message code {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .model-message pre {
+            background-color: rgba(0, 0, 0, 0.08);
+            padding: 0.75em 1em;
+            padding-top: 2.5em;
+            border-radius: var(--radius-sm);
+            overflow-x: auto;
+            margin: 0.5em 0;
+            position: relative;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+        }
+
+        .dark-theme .model-message pre {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .model-message pre code {
+            background-color: transparent;
+            padding: 0;
+            white-space: inherit;
+            overflow-wrap: inherit;
+        }
+
+        .model-message ul,
+        .model-message ol {
+            margin-left: 1.25rem;
+            padding-left: 0.5rem;
+        }
+
+        .model-message li {
+            margin-bottom: 0.25rem;
+        }
+
+        .copy-code-button {
+            position: absolute;
+            top: 0.5em;
+            right: 0.5em;
+            font-size: 0.8em !important;
+            padding: 0.25em 0.5em !important;
+            z-index: 1;
+            margin: 0;
+            background-color: var(--copy-btn-bg);
+            color: var(--copy-btn-text);
+            border: 1px solid var(--border);
+        }
+
+        .copy-code-button:hover {
+            background-color: var(--copy-btn-hover-bg);
+        }
+
+        .copy-code-button.copied {
+            background-color: var(--copy-btn-copied-bg) !important;
+            color: var(--copy-btn-copied-text) !important;
+            border-color: var(--copy-btn-copied-bg) !important;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-end;
+        }
+
+        #chat-input {
+            flex: 1;
+            min-height: 48px;
+            max-height: 150px;
+            margin-bottom: 0;
+            padding: 0.8rem 1rem;
+        }
+
+        #send-chat-message-btn {
+            height: 48px;
+            flex-shrink: 0;
+            padding: 0.75rem;
+        }
+
+        #send-chat-message-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        footer {
+            padding: 1.5rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .error-message {
+            background-color: rgba(234, 67, 53, 0.1);
+            color: var(--danger);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(234, 67, 53, 0.2);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem 0.5rem;
+            }
+
+            main {
+                padding: 1rem;
+            }
+
+            header {
+                padding: 1.5rem 1rem 1rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .theme-toggle {
+                align-self: flex-end;
+                position: absolute;
+                top: 1rem;
+                right: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            section {
+                padding: 1rem;
+            }
+
+            h2 {
+                font-size: 1.15rem;
+            }
+
+            .speaker-entry {
+                grid-template-columns: 1fr;
+            }
+
+            .speaker-entry .btn-danger {
+                justify-self: start;
+            }
+
+            #chat-section {
+                height: auto;
+                max-height: 60vh;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .btn {
+                padding: 0.65rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            textarea {
+                font-size: 0.9rem;
+            }
+
+            #chat-input {
+                padding: 0.7rem 0.9rem;
+            }
+
+            #send-chat-message-btn {
+                height: 44px;
+            }
+
+            .model-selection select,
+            .speaker-entry input,
+            .speaker-entry select {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <header>
+            <div class="header-content">
+                <div>
+                    <h1>🎙️ Gerador de Áudio TTS</h1>
+                    <p class="app-description">
+                        Transforme texto em fala expressiva usando a IA do <code>Gemini 2.5</code>. Configure locutores, customize vozes e gere áudio de alta qualidade diretamente no seu navegador.
+                    </p>
+                </div>
+                <button id="theme-toggle-btn" class="theme-toggle" aria-label="Ativar modo escuro" title="Ativar modo escuro">
+                    <svg id="theme-icon-sun" class="theme-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg id="theme-icon-moon" class="theme-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main>
+            <!-- TTS Section -->
+            <section id="tts-section">
+                <h2>📝 Texto para Fala</h2>
+
+                <div class="model-selection">
+                    <label for="model-selector">Modelo TTS:</label>
+                    <select id="model-selector">
+                        <option value="gemini-2.5-flash-preview-tts">Gemini 2.5 Flash</option>
+                        <option value="gemini-2.5-pro-preview-tts">Gemini 2.5 Pro</option>
+                    </select>
+                </div>
+
+                <textarea id="script-input" placeholder="Cole seu roteiro aqui. Você pode usar marcadores como (SUSPIRO), (RISADA), etc. para adicionar efeitos."></textarea>
+
+                <div id="speaker-config">
+                    <h3>Locutor(es)</h3>
+                    <div id="speaker-list"></div>
+                    <button id="add-speaker-btn" class="btn btn-secondary btn-block">+ Adicionar Locutor</button>
+                </div>
+
+                <div id="error-message" class="error-message" style="display: none;"></div>
+
+                <button id="generate-speech-btn" class="btn btn-primary btn-block">Gerar Fala</button>
+
+                <div id="loading-indicator" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <span>Gerando fala...</span>
+                </div>
+            </section>
+
+            <!-- Output Section -->
+            <section id="output-section">
+                <h2>🎵 Áudio Gerado</h2>
+                <div id="audio-output-container"></div>
+            </section>
+
+            <!-- Chat Section -->
+            <section id="chat-section">
+                <h2>💬 Chat com Gemini</h2>
+                <div class="chat-container">
+                    <div id="chat-history-container"></div>
+                    <div id="chat-error-message" class="error-message" style="display: none;"></div>
+                    <div class="chat-input-container">
+                        <textarea id="chat-input" placeholder="Faça uma pergunta sobre TTS ou peça ajuda com prompts..."></textarea>
+                        <button id="send-chat-message-btn" class="btn btn-primary" aria-label="Enviar mensagem">
+                            <svg fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M16.6915026,12.4744748 L3.50612381,13.2599618 C3.19218622,13.2599618 3.03521743,13.4170592 3.03521743,13.5741566 L1.15159189,20.0151496 C0.8376543,20.8006365 0.99,21.89 1.77946707,22.52 C2.41,22.99 3.50612381,23.1 4.13399899,22.99 L21.714504,14.0454487 C22.6563168,13.5741566 23.1272231,12.6315722 22.9702544,11.6889879 L4.13399899,1.01149873 C3.34915502,0.9 2.40734225,0.9 1.77946707,1.38157893 C0.994623095,2.0444536 0.837654326,3.1 1.15159189,3.90272806 L3.03521743,10.3437213 C3.03521743,10.5008187 3.19218622,10.6579161 3.50612381,10.6579161 L16.6915026,11.4434031 C16.6915026,11.4434031 17.1624089,11.4434031 17.1624089,12.0062777 C17.1624089,12.5691524 16.6915026,12.4744748 16.6915026,12.4744748 Z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="chat-loading-indicator" class="loading" style="display: none;">
+                        <div class="spinner"></div>
+                        <span>Gemini está digitando...</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Alimentado por <strong>Gemini 2.5</strong> e implantado em seu navegador. Sua chave de API é usada apenas localmente.</p>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURAÇÃO INICIAL
+        // ============================================
+
+        // Solicitar chave de API ao usuário
+        let API_KEY = localStorage.getItem('gemini-api-key') || '';
+
+        if (!API_KEY) {
+            const userKey = prompt('Por favor, insira sua chave de API Gemini:\n\n(A chave será salva no localStorage do seu navegador)\n\nObtenha em: https://aistudio.google.com/app/apikey');
+            if (userKey) {
+                API_KEY = userKey.trim();
+                localStorage.setItem('gemini-api-key', API_KEY);
+            }
+        }
+
+        if (API_KEY) {
+            localStorage.setItem('gemini-api-key', API_KEY);
+        }
+
+        // ============================================
+        // IMPORTAÇÕES E SETUP
+        // ============================================
+
+        // Declarações de elementos do DOM
+        const scriptInput = document.getElementById('script-input');
+        const speakerListDiv = document.getElementById('speaker-list');
+        const addSpeakerBtn = document.getElementById('add-speaker-btn');
+        const generateSpeechBtn = document.getElementById('generate-speech-btn');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const audioOutputContainer = document.getElementById('audio-output-container');
+        const ttsErrorMessageDiv = document.getElementById('error-message');
+        const modelSelector = document.getElementById('model-selector');
+        const chatSection = document.getElementById('chat-section');
+        const chatHistoryContainer = document.getElementById('chat-history-container');
+        const chatInput = document.getElementById('chat-input');
+        const sendChatMessageBtn = document.getElementById('send-chat-message-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading-indicator');
+        const chatErrorMessageDiv = document.getElementById('chat-error-message');
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+
+        // ============================================
+        // INTERFACES E CONSTANTES
+        // ============================================
+
+        const availableVoices = [
+            { name: "Achernar", gender: "Feminino" },
+            { name: "Aoede", gender: "Feminino" },
+            { name: "Autonoe", gender: "Feminino" },
+            { name: "Callirrhoe", gender: "Feminino" },
+            { name: "Despina", gender: "Feminino" },
+            { name: "Erinome", gender: "Feminino" },
+            { name: "Gacrux", gender: "Feminino" },
+            { name: "Kore", gender: "Feminino" },
+            { name: "Laomedeia", gender: "Feminino" },
+            { name: "Leda", gender: "Feminino" },
+            { name: "Pulcherrima", gender: "Feminino" },
+            { name: "Sulafat", gender: "Feminino" },
+            { name: "Vindemiatrix", gender: "Feminino" },
+            { name: "Zephyr", gender: "Feminino" },
+            { name: "Achird", gender: "Masculino" },
+            { name: "Algenib", gender: "Masculino" },
+            { name: "Algieba", gender: "Masculino" },
+            { name: "Alnilam", gender: "Masculino" },
+            { name: "Charon", gender: "Masculino" },
+            { name: "Enceladus", gender: "Masculino" },
+            { name: "Fenrir", gender: "Masculino" },
+            { name: "Iapetus", gender: "Masculino" },
+            { name: "Orus", gender: "Masculino" },
+            { name: "Puck", gender: "Masculino" },
+            { name: "Rasalgethi", gender: "Masculino" },
+            { name: "Sadachbia", gender: "Masculino" },
+            { name: "Sadaltager", gender: "Masculino" },
+            { name: "Schedar", gender: "Masculino" },
+            { name: "Umbriel", gender: "Masculino" },
+            { name: "Zubenelgenubi", gender: "Masculino" }
+        ];
+
+        let speakers = [
+            { id: `speaker-${Date.now()}-1`, name: "Locutor 1", voice: "Zephyr" }
+        ];
+
+        let audioHistory = [];
+        let audioEntryCounter = 0;
+        let geminiChat = null;
+
+        // ============================================
+        // GERENCIAMENTO DE TEMA
+        // ============================================
+
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.body.classList.add('dark-theme');
+                if (themeToggleBtn) {
+                    themeToggleBtn.setAttribute('aria-label', 'Ativar modo claro');
+                    themeToggleBtn.title = 'Ativar modo claro';
+                }
+            } else {
+                document.body.classList.remove('dark-theme');
+                if (themeToggleBtn) {
+                    themeToggleBtn.setAttribute('aria-label', 'Ativar modo escuro');
+                    themeToggleBtn.title = 'Ativar modo escuro';
+                }
+            }
+        }
+
+        function toggleTheme() {
+            const currentThemeIsDark = document.body.classList.contains('dark-theme');
+            const newTheme = currentThemeIsDark ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        }
+
+        if (themeToggleBtn) {
+            themeToggleBtn.onclick = toggleTheme;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            if (savedTheme) {
+                applyTheme(savedTheme);
+            } else if (systemPrefersDark) {
+                applyTheme('dark');
+            } else {
+                applyTheme('light');
+            }
+        });
+
+        // ============================================
+        // FUNÇÕES DE UTILIDADE
+        // ============================================
+
+        function base64ToUint8Array(base64) {
+            try {
+                const binaryString = atob(base64);
+                const len = binaryString.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                return bytes;
+            } catch (e) {
+                console.error("Falha ao decodificar base64:", e);
+                if (ttsErrorMessageDiv) {
+                    ttsErrorMessageDiv.textContent = "Erro ao decodificar dados de áudio (base64 inválido).";
+                    ttsErrorMessageDiv.style.display = 'block';
+                }
+                throw new Error("String base64 inválida para dados de áudio.");
+            }
+        }
+
+        function uint8ArrayToBase64(buffer) {
+            let binary = '';
+            const len = buffer.byteLength;
+            for (let i = 0; i < len; i++) {
+                binary += String.fromCharCode(buffer[i]);
+            }
+            return btoa(binary);
+        }
+
+        function concatArrayBuffers(buffer1, buffer2) {
+            const view1 = new Uint8Array(buffer1);
+            const view2 = new Uint8Array(buffer2);
+            const result = new Uint8Array(view1.length + view2.length);
+            result.set(view1, 0);
+            result.set(view2, view1.length);
+            return result.buffer;
+        }
+
+        // ============================================
+        // CONVERSÃO PARA WAV
+        // ============================================
+
+        function parseAudioMimeTypeParams(mimeType) {
+            let sampleRate = 24000;
+            let bitsPerSample = 16;
+            let numChannels = 1;
+
+            const parts = mimeType.toLowerCase().split(';');
+            const mainType = parts[0].trim();
+            const lMatch = mainType.match(/audio\/l(\d+)/);
+
+            if (lMatch && lMatch[1]) {
+                bitsPerSample = parseInt(lMatch[1], 10);
+            }
+
+            for (let i = 1; i < parts.length; i++) {
+                const param = parts[i].trim();
+                const [key, value] = param.split('=').map(s => s.trim());
+
+                if (value) {
+                    switch (key) {
+                        case 'rate':
+                        case 'ratec':
+                            sampleRate = parseInt(value, 10);
+                            break;
+                        case 'channels':
+                            numChannels = parseInt(value, 10);
+                            break;
+                        case 'bits':
+                        case 'bitspersample':
+                            bitsPerSample = parseInt(value, 10);
+                            break;
+                    }
+                }
+            }
+
+            if (isNaN(sampleRate) || sampleRate <= 0) sampleRate = 24000;
+            if (isNaN(bitsPerSample) || ![8, 16, 24, 32].includes(bitsPerSample)) bitsPerSample = 16;
+            if (isNaN(numChannels) || numChannels < 1) numChannels = 1;
+
+            return { sampleRate, bitsPerSample, numChannels };
+        }
+
+        function convertToWavBlob(base64AudioData, mimeType) {
+            const { sampleRate, bitsPerSample, numChannels } = parseAudioMimeTypeParams(mimeType);
+            const audioDataBytes = base64ToUint8Array(base64AudioData);
+            const dataSize = audioDataBytes.length;
+            const bytesPerSample = bitsPerSample / 8;
+            const blockAlign = numChannels * bytesPerSample;
+            const byteRate = sampleRate * blockAlign;
+            const chunkSize = 36 + dataSize;
+
+            const header = new ArrayBuffer(44);
+            const view = new DataView(header);
+
+            // RIFF header
+            view.setUint8(0, 'R'.charCodeAt(0));
+            view.setUint8(1, 'I'.charCodeAt(0));
+            view.setUint8(2, 'F'.charCodeAt(0));
+            view.setUint8(3, 'F'.charCodeAt(0));
+            view.setUint32(4, chunkSize, true);
+
+            view.setUint8(8, 'W'.charCodeAt(0));
+            view.setUint8(9, 'A'.charCodeAt(0));
+            view.setUint8(10, 'V'.charCodeAt(0));
+            view.setUint8(11, 'E'.charCodeAt(0));
+
+            // fmt subchunk
+            view.setUint8(12, 'f'.charCodeAt(0));
+            view.setUint8(13, 'm'.charCodeAt(0));
+            view.setUint8(14, 't'.charCodeAt(0));
+            view.setUint8(15, ' '.charCodeAt(0));
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, byteRate, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, bitsPerSample, true);
+
+            // data subchunk
+            view.setUint8(36, 'd'.charCodeAt(0));
+            view.setUint8(37, 'a'.charCodeAt(0));
+            view.setUint8(38, 't'.charCodeAt(0));
+            view.setUint8(39, 'a'.charCodeAt(0));
+            view.setUint32(40, dataSize, true);
+
+            const wavBuffer = concatArrayBuffers(header, audioDataBytes.buffer);
+            return new Blob([new Uint8Array(wavBuffer)], { type: 'audio/wav' });
+        }
+
+        // ============================================
+        // RENDERIZAÇÃO DA UI
+        // ============================================
+
+        function getSpeakerSummary(currentSpeakers) {
+            if (currentSpeakers.length === 0) return "Nenhum locutor configurado.";
+
+            return currentSpeakers.map(s => {
+                const voiceDetails = availableVoices.find(v => v.name === s.voice);
+                const voiceDisplayName = voiceDetails ? `${s.voice} (${voiceDetails.gender})` : s.voice;
+                return `${s.name || 'Nome não definido'} (Voz: ${voiceDisplayName})`;
+            }).join(', ');
+        }
+
+        function renderAudioHistory() {
+            if (!audioOutputContainer) return;
+
+            audioOutputContainer.innerHTML = '';
+            audioHistory.forEach(entry => {
+                const newAudioEntryDiv = document.createElement('div');
+                newAudioEntryDiv.className = 'audio-playback-entry';
+                newAudioEntryDiv.setAttribute('aria-labelledby', `audio-title-${entry.id}`);
+
+                const entryTitleElement = document.createElement('h3');
+                entryTitleElement.id = `audio-title-${entry.id}`;
+                entryTitleElement.textContent = entry.title;
+                newAudioEntryDiv.appendChild(entryTitleElement);
+
+                const scriptDetailsDiv = document.createElement('div');
+                scriptDetailsDiv.className = 'audio-entry-details';
+                scriptDetailsDiv.innerHTML = `<strong>Roteiro:</strong>\n${entry.scriptText.replace(/</g, "&lt;").replace(/>/g, "&gt;")}\n\n<strong>Locutores:</strong>\n${entry.speakersSummary}`;
+                newAudioEntryDiv.appendChild(scriptDetailsDiv);
+
+                const audioPlayer = document.createElement('audio');
+                audioPlayer.controls = true;
+                audioPlayer.src = entry.audioPlayerSrc;
+                audioPlayer.setAttribute('aria-label', `Reprodutor de áudio para ${entry.title}`);
+                newAudioEntryDiv.appendChild(audioPlayer);
+
+                const downloadLink = document.createElement('a');
+                downloadLink.href = entry.downloadHref;
+                downloadLink.download = entry.downloadFilename;
+                downloadLink.textContent = `Baixar ${entry.title} (.${entry.fileExtension})`;
+                downloadLink.className = 'btn btn-secondary btn-download';
+                newAudioEntryDiv.appendChild(downloadLink);
+
+                audioOutputContainer.appendChild(newAudioEntryDiv);
+            });
+        }
+
+        function renderSpeakers() {
+            if (!speakerListDiv) return;
+
+            speakerListDiv.innerHTML = '';
+
+            speakers.forEach((speaker, index) => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'speaker-entry';
+                entryDiv.setAttribute('aria-label', `Configuração para ${speaker.name || `Locutor ${index + 1}`}`);
+
+                const nameInput = document.createElement('input');
+                nameInput.type = 'text';
+                nameInput.id = `speaker-name-${speaker.id}`;
+                nameInput.value = speaker.name;
+                nameInput.placeholder = 'Nome do Locutor (ex: Alice)';
+                nameInput.setAttribute('aria-label', 'Nome do Locutor');
+                nameInput.onchange = (e) => {
+                    speaker.name = e.target.value;
+                };
+
+                const voiceSelect = document.createElement('select');
+                voiceSelect.id = `speaker-voice-${speaker.id}`;
+                voiceSelect.setAttribute('aria-label', 'Selecionar Voz');
+
+                availableVoices.forEach(v => {
+                    const option = document.createElement('option');
+                    option.value = v.name;
+                    option.textContent = `${v.name} (${v.gender})`;
+                    if (v.name === speaker.voice) {
+                        option.selected = true;
+                    }
+                    voiceSelect.appendChild(option);
+                });
+
+                voiceSelect.onchange = (e) => {
+                    speaker.voice = e.target.value;
+                };
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.innerHTML = '❌';
+                removeBtn.className = 'btn btn-danger';
+                removeBtn.setAttribute('aria-label', `Remover ${speaker.name || `Locutor ${index + 1}`}`);
+                removeBtn.onclick = () => {
+                    if (speakers.length > 1) {
+                        speakers = speakers.filter(s => s.id !== speaker.id);
+                        renderSpeakers();
+                    }
+                };
+
+                entryDiv.appendChild(nameInput);
+                entryDiv.appendChild(voiceSelect);
+
+                if (speakers.length > 1) {
+                    entryDiv.appendChild(removeBtn);
+                }
+
+                speakerListDiv.appendChild(entryDiv);
+            });
+        }
+
+        function addSpeaker() {
+            if (speakers.length >= 2) {
+                if (ttsErrorMessageDiv) {
+                    ttsErrorMessageDiv.textContent = "Para esta demonstração, a funcionalidade de múltiplos locutores é limitada a 2. Para usar um único locutor, remova um dos existentes.";
+                    ttsErrorMessageDiv.style.display = 'block';
+                }
+                return;
+            }
+
+            speakers.push({
+                id: `speaker-${Date.now()}-${speakers.length + 1}`,
+                name: `Locutor ${speakers.length + 1}`,
+                voice: availableVoices[(speakers.length % availableVoices.length)].name
+            });
+
+            renderSpeakers();
+        }
+
+        // ============================================
+        // GERAR FALA (TTS)
+        // ============================================
+
+        async function handleGenerateSpeech() {
+            if (!API_KEY) {
+                if (ttsErrorMessageDiv) {
+                    ttsErrorMessageDiv.textContent = "Chave da API Gemini ausente. Não é possível gerar fala.";
+                    ttsErrorMessageDiv.style.display = 'block';
+                }
+                return;
+            }
+
+            if (!scriptInput || !scriptInput.value.trim()) {
+                if (ttsErrorMessageDiv) {
+                    ttsErrorMessageDiv.textContent = "Por favor, insira algum texto no roteiro.";
+                    ttsErrorMessageDiv.style.display = 'block';
+                }
+                return;
+            }
+
+            if (speakers.some(s => !s.name.trim())) {
+                if (ttsErrorMessageDiv) {
+                    ttsErrorMessageDiv.textContent = "Por favor, certifique-se de que todos os locutores tenham um nome.";
+                    ttsErrorMessageDiv.style.display = 'block';
+                }
+                return;
+            }
+
+            if (speakers.length === 0) {
+                if (ttsErrorMessageDiv) {
+                    ttsErrorMessageDiv.textContent = "Por favor, adicione pelo menos um locutor.";
+                    ttsErrorMessageDiv.style.display = 'block';
+                }
+                return;
+            }
+
+            if (speakers.length > 2) {
+                if (ttsErrorMessageDiv) {
+                    ttsErrorMessageDiv.textContent = "Esta demonstração suporta 1 locutor ou, para múltiplos locutores, exatamente 2. Por favor, ajuste o número de locutores.";
+                    ttsErrorMessageDiv.style.display = 'block';
+                }
+                return;
+            }
+
+            if (loadingIndicator) loadingIndicator.style.display = 'flex';
+            if (generateSpeechBtn) generateSpeechBtn.disabled = true;
+            if (ttsErrorMessageDiv) {
+                ttsErrorMessageDiv.textContent = '';
+                ttsErrorMessageDiv.style.display = 'none';
+            }
+
+            const currentScriptText = scriptInput.value;
+            const currentSpeakersSummary = getSpeakerSummary(speakers);
+            const selectedModel = modelSelector ? modelSelector.value : 'gemini-2.5-flash-preview-tts';
+
+            try {
+                // Usar a API do Gemini via REST
+                const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/' + selectedModel + ':generateContent';
+
+                let requestPayload;
+
+                if (speakers.length === 1) {
+                    requestPayload = {
+                        contents: [{
+                            role: "user",
+                            parts: [{ text: currentScriptText }]
+                        }],
+                        generationConfig: {
+                            responseModalities: ["audio"],
+                            speechConfig: {
+                                voiceConfig: {
+                                    prebuiltVoiceConfig: {
+                                        voiceName: speakers[0].voice,
+                                        languageCode: "pt-BR"
+                                    }
+                                }
+                            }
+                        }
+                    };
+                } else {
+                    const speakerConfigsForMulti = speakers.map(s => ({
+                        speaker: s.name,
+                        voiceConfig: {
+                            prebuiltVoiceConfig: {
+                                voiceName: s.voice,
+                                languageCode: "pt-BR"
+                            }
+                        }
+                    }));
+
+                    requestPayload = {
+                        contents: [{
+                            role: "user",
+                            parts: [{ text: currentScriptText }]
+                        }],
+                        generationConfig: {
+                            responseModalities: ["audio"],
+                            speechConfig: {
+                                multiSpeakerVoiceConfig: {
+                                    speakerVoiceConfigs: speakerConfigsForMulti
+                                }
+                            }
+                        }
+                    };
+                }
+
+                const response = await fetch(`${apiUrl}?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestPayload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || `Erro na API: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates[0] && result.candidates[0].content && result.candidates[0].content.parts) {
+                    let audioFound = false;
+                    let accumulatedAudioB64 = '';
+                    let audioMimeType = 'audio/wav';
+
+                    for (const part of result.candidates[0].content.parts) {
+                        if (part.inlineData && part.inlineData.data) {
+                            audioFound = true;
+                            accumulatedAudioB64 = part.inlineData.data;
+                            if (part.inlineData.mimeType) {
+                                audioMimeType = part.inlineData.mimeType;
+                            }
+                        }
+                    }
+
+                    if (audioFound && accumulatedAudioB64) {
+                        audioEntryCounter++;
+
+                        let audioBlob;
+                        let finalFileExtension = 'wav';
+
+                        if (audioMimeType.toLowerCase().startsWith('audio/l')) {
+                            try {
+                                audioBlob = convertToWavBlob(accumulatedAudioB64, audioMimeType);
+                                finalFileExtension = 'wav';
+                            } catch (conversionError) {
+                                console.error("Falha ao converter L-PCM para WAV:", conversionError);
+                                const rawBytes = base64ToUint8Array(accumulatedAudioB64);
+                                audioBlob = new Blob([rawBytes], { type: audioMimeType });
+                                finalFileExtension = audioMimeType.split('/')[1]?.split(';')[0] || 'raw';
+                            }
+                        } else {
+                            const rawBytes = base64ToUint8Array(accumulatedAudioB64);
+                            audioBlob = new Blob([rawBytes], { type: audioMimeType });
+                            finalFileExtension = audioMimeType.split('/')[1]?.split(';')[0] || 'raw';
+                        }
+
+                        const audioPlayerSrc = URL.createObjectURL(audioBlob);
+                        const now = new Date();
+                        const timestampIso = now.toISOString().replace(/[:.]/g, '-');
+                        const entryTitle = `Áudio Gerado ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+                        const downloadFilename = `audio_gerado_${timestampIso}.${finalFileExtension}`;
+
+                        const newHistoryEntry = {
+                            id: audioEntryCounter,
+                            title: entryTitle,
+                            scriptText: currentScriptText,
+                            speakersSummary: currentSpeakersSummary,
+                            audioPlayerSrc: audioPlayerSrc,
+                            downloadHref: audioPlayerSrc,
+                            downloadFilename: downloadFilename,
+                            fileExtension: finalFileExtension,
+                            audioBlob: audioBlob
+                        };
+
+                        audioHistory.unshift(newHistoryEntry);
+                        renderAudioHistory();
+                    } else {
+                        if (ttsErrorMessageDiv) {
+                            ttsErrorMessageDiv.textContent = "Nenhum áudio foi gerado. Verifique seu roteiro e tente novamente.";
+                            ttsErrorMessageDiv.style.display = 'block';
+                        }
+                    }
+                } else {
+                    if (ttsErrorMessageDiv) {
+                        ttsErrorMessageDiv.textContent = "Resposta inválida da API. Tente novamente.";
+                        ttsErrorMessageDiv.style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                console.error("Erro ao gerar fala:", error);
+
+                let displayError = "Falha ao gerar fala.";
+
+                if (error.message.includes("API key not valid")) {
+                    displayError = "A Chave da API Gemini não é válida. Por favor, verifique sua chave.";
+                } else if (error.message.toLowerCase().includes("quota") || error.message.toLowerCase().includes("rate limit")) {
+                    displayError = "Você excedeu sua cota da API Gemini. Tente novamente mais tarde.";
+                } else {
+                    displayError = `Erro: ${error.message}`;
+                }
+
+                if (ttsErrorMessageDiv) {
+                    ttsErrorMessageDiv.textContent = displayError;
+                    ttsErrorMessageDiv.style.display = 'block';
+                }
+            } finally {
+                if (loadingIndicator) loadingIndicator.style.display = 'none';
+                if (generateSpeechBtn) generateSpeechBtn.disabled = false;
+            }
+        }
+
+        // ============================================
+        // CHAT COM GEMINI
+        // ============================================
+
+        const ttsManual = `Você é um modelo de texto-para-fala expressiva...`;
+
+        function initializeChat() {
+            // Chat inicializado mas não será usado sem dependência de streaming
+            console.log("Chat disponível");
+        }
+
+        async function handleSendChatMessage() {
+            if (!API_KEY) {
+                if (chatErrorMessageDiv) {
+                    chatErrorMessageDiv.textContent = "Chave da API Gemini ausente.";
+                    chatErrorMessageDiv.style.display = 'block';
+                }
+                return;
+            }
+
+            if (!chatInput) return;
+
+            const messageText = chatInput.value.trim();
+            if (!messageText) return;
+
+            appendChatMessage(messageText, 'user');
+            chatInput.value = '';
+            chatInput.disabled = true;
+            if (sendChatMessageBtn) sendChatMessageBtn.disabled = true;
+            if (chatLoadingIndicator) chatLoadingIndicator.style.display = 'flex';
+
+            if (chatErrorMessageDiv) {
+                chatErrorMessageDiv.textContent = '';
+                chatErrorMessageDiv.style.display = 'none';
+            }
+
+            try {
+                const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent';
+
+                const response = await fetch(`${apiUrl}?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            role: "user",
+                            parts: [{ text: messageText }]
+                        }],
+                        generationConfig: {
+                            temperature: 1
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || `Erro: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates[0] && result.candidates[0].content) {
+                    let responseText = '';
+                    for (const part of result.candidates[0].content.parts) {
+                        if (part.text) {
+                            responseText += part.text;
+                        }
+                    }
+                    if (responseText) {
+                        appendChatMessage(responseText, 'model', false);
+                    }
+                }
+            } catch (error) {
+                console.error("Erro no chat:", error);
+                if (chatErrorMessageDiv) {
+                    chatErrorMessageDiv.textContent = `Erro: ${error.message}`;
+                    chatErrorMessageDiv.style.display = 'block';
+                }
+            } finally {
+                if (chatLoadingIndicator) chatLoadingIndicator.style.display = 'none';
+                if (chatInput) {
+                    chatInput.disabled = false;
+                    chatInput.focus();
+                }
+                if (sendChatMessageBtn) sendChatMessageBtn.disabled = false;
+            }
+        }
+
+        function appendChatMessage(message, sender, isStreaming = false) {
+            if (!chatHistoryContainer) return null;
+
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('chat-message', `${sender}-message`);
+
+            // Simple HTML escaping for basic rendering
+            if (sender === 'model') {
+                // Simple markdown-like rendering
+                let html = message
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/\n/g, '<br>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/`(.*?)`/g, '<code>$1</code>');
+                messageDiv.innerHTML = html;
+            } else {
+                messageDiv.textContent = message;
+            }
+
+            chatHistoryContainer.appendChild(messageDiv);
+            chatHistoryContainer.scrollTop = chatHistoryContainer.scrollHeight;
+
+            return messageDiv;
+        }
+
+        // ============================================
+        // INICIALIZAÇÃO
+        // ============================================
+
+        if (addSpeakerBtn) addSpeakerBtn.onclick = addSpeaker;
+        if (generateSpeechBtn) generateSpeechBtn.onclick = handleGenerateSpeech;
+        if (sendChatMessageBtn) sendChatMessageBtn.onclick = handleSendChatMessage;
+
+        if (scriptInput) {
+            scriptInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' && event.shiftKey) {
+                    event.preventDefault();
+                    if (generateSpeechBtn && !generateSpeechBtn.disabled) {
+                        handleGenerateSpeech();
+                    }
+                }
+            });
+        }
+
+        if (chatInput) {
+            chatInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    if (sendChatMessageBtn && !sendChatMessageBtn.disabled) {
+                        handleSendChatMessage();
+                    }
+                }
+            });
+        }
+
+        renderSpeakers();
+        renderAudioHistory();
+        initializeChat();
+
+        console.log('✅ App inicializado com sucesso!');
+    </script>
+</body>
+</html>
