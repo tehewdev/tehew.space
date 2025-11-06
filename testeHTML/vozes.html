@@ -98,6 +98,7 @@
       <li>Insira sua chave da API Gemini ao abrir o site. Consiga em <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a>.</li>
       <li>Você pode configurar até 2 locutores, personalizar nome e voz.</li>
       <li>Áudio é gerado e tocado localmente, com link para download (.wav ou raw).</li>
+      <li>Detecta automaticamente se o áudio Gemini está mudo e alerta!</li>
       <li>Tudo roda em HTML + JS, zero backend.</li>
     </ul>
   </section>
@@ -115,7 +116,6 @@
 
     let API_KEY = localStorage.getItem('gemini_apikey') || '';
 
-    // ---- Renderizar Locutores ----
     function renderLocutores() {
       const lista = document.getElementById('locutores');
       lista.innerHTML='';
@@ -147,7 +147,6 @@
       renderLocutores();
     };
 
-    // ---- Chave API ----
     function askApiKey(){
       let key = prompt("Insira sua chave da API Gemini:\n(Permissão local apenas, nunca sai do navegador)");
       if(key){
@@ -158,7 +157,14 @@
     }
     if(!API_KEY) askApiKey();
 
-    // ---- Gerar TTS (corrigido) ----
+    // Aqui a melhoria da detecção de áudio mudo!
+    function isSilentAudio(bytes){
+      let nonZero = 0;
+      for(const b of bytes) if(b!==0){nonZero++;}
+      // Comportamento Gemini: áudio mudo tem menos que 24 bytes não zero (header WAV etc)
+      return nonZero<24;
+    }
+
     document.getElementById('ttsBtn').onclick = async function(){
       document.getElementById('audioResult').innerHTML = '';
       const texto=document.getElementById('texto').value.trim();
@@ -170,7 +176,6 @@
       if(!texto){msgbox.textContent='Digite algum texto.';return;}
       if(locutores.some(l=>!l.nome.trim())){msgbox.textContent='Preencha o nome de todos os locutores.';return;}
 
-      // --- Payload corrigido (sem languageCode, com "AUDIO" uppercase) ---
       let speechConfig;
       if(locutores.length===1){
         speechConfig = {
@@ -228,9 +233,18 @@
         if(!base64){msgbox.textContent='A API não retornou áudio.';return;}
 
         function b64ToBytes(b){const bin=atob(b);return Uint8Array.from([...bin].map(c=>c.charCodeAt(0)));}
-        let blob = new Blob([b64ToBytes(base64)],{type:mimetype||'audio/wav'});
+        let audioBytes = b64ToBytes(base64);
+
+        // Detecção automática de áudio mudo!
+        if(isSilentAudio(audioBytes)){
+          msgbox.textContent = '⚠️ O áudio gerado está silencioso/mudo. Tente outro texto, voz ou modelo Gemini!';
+          document.getElementById('audioResult').innerHTML='';
+          return;
+        }
+
+        let blob = new Blob([audioBytes],{type:mimetype||'audio/wav'});
         const url=URL.createObjectURL(blob);
-        
+
         document.getElementById('audioResult').innerHTML = `<div class="audio-box">
           <h3>Áudio:</h3>
           <audio controls src="${url}"></audio>
