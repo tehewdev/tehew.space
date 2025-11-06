@@ -2,120 +2,46 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Gemini TTS - Vozes (Atualizado 2025)</title>
+  <title>Gemini TTS - Vozes PCM para WAV (Nov/2025)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #f8fafc;
-      color: #202124;
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 2rem 1rem;
-    }
-    h1 { font-size: 1.6rem; color: #4285f4; }
-    section {
-      background: #fff;
-      box-shadow: 0 4px 24px rgba(66,133,244,0.07);
-      border-radius: 1rem;
-      padding: 2rem;
-      margin-bottom: 2rem;
-    }
-    label { font-weight: 600; display: block; margin-top: 1.2rem; }
-    input, select, textarea, button {
-      font-family: inherit;
-      font-size: 1rem;
-      border-radius: .5rem;
-      padding: .6rem 1rem;
-      border: 1px solid #d5e0ea;
-      margin-top: .3rem;
-      width: 100%;
-      box-sizing: border-box;
-      outline: none;
-    }
-    textarea { min-height: 80px; resize: vertical; }
-    .btn-main {
-      background: #4285f4;
-      color: #fff;
-      border: none;
-      margin-top: 1.5rem;
-      transition: background 0.17s;
-      cursor: pointer;
-    }
-    .btn-main:disabled { background: #b3c8e6; }
-    .locutores {
-      margin-bottom: 1rem;
-      gap: 1rem;
-      display: flex;
-      flex-wrap: wrap;
-    }
-    .loc-config {
-      flex:1;
-      min-width: 230px;
-      background: #f1f6fb;
-      padding: .8rem;
-      border-radius: .6rem;
-      margin-bottom: .5rem;
-    }
-    .loc-config label {
-      margin-top:0;
-      font-size:.95em;
-      color:#666;
-      font-weight:500;
-    }
-    .audio-box { margin-top:1.6rem;padding:.8rem;background:#f7fafd;border:1px solid #e5e7eb;border-radius:8px }
-    .audio-box h3 { margin-bottom:.5rem;font-size:1.1em }
-    .msg {color:#d93025;margin-top:.6em;white-space:pre-wrap;}
-    .success {color:#188038;}
-    @media (max-width:700px){
-      section{padding:1rem;}
-      .locutores{flex-direction: column;}
-    }
+    body {font-family:sans-serif;background:#f8fafc;color:#222;max-width:680px;margin:0 auto;padding:2em;}
+    h1 {color:#4285f4;}
+    label,input,select,textarea,button{font-size:1em;}
+    section{background:#fff;padding:2em;margin-bottom:2em;border-radius:1em;box-shadow:0 4px 24px #4285f412;}
+    .locutores{gap:1em;display:flex;flex-wrap:wrap;}
+    .loc-config {background:#f1f6fb;padding:.6em;border-radius:.6em;}
+    .msg{color:#d93025;margin-top:.5em;}
+    .audio-box{margin-top:1em;padding:1em;background:#f7fafd;border:1px solid #e5e7eb;border-radius:8px}
+    .success{color:#188038;}
+    @media(max-width:600px){section{padding:1em}.locutores{flex-direction:column}}
   </style>
 </head>
 <body>
-  <h1>🗣️ Gemini TTS Atualizado (nov/2025)</h1>
+  <h1>Gemini TTS PCM → WAV (Nov/2025)</h1>
   <section>
     <label for="texto">Texto</label>
-    <textarea id="texto" placeholder="Digite ou cole seu roteiro."></textarea>
-
+    <textarea id="texto" rows="3" style="width:100%"></textarea>
     <label for="modelo">Modelo</label>
     <select id="modelo">
       <option value="gemini-2.5-flash-preview-tts">Gemini 2.5 Flash</option>
       <option value="gemini-2.5-pro-preview-tts">Gemini 2.5 Pro</option>
     </select>
-
     <div class="locutores" id="locutores"></div>
-    <button type="button" id="addLocutor" style="margin-top:-10px;">+ Adicionar Locutor</button>
-
+    <button type="button" id="addLocutor" style="margin-top:.6em">+ Adicionar Locutor</button>
     <div id="msg" class="msg"></div>
-    <button class="btn-main" id="ttsBtn">Gerar Áudio</button>
+    <button class="btn-main" id="ttsBtn" style="margin-top:1em">Gerar Áudio</button>
     <div id="audioResult"></div>
   </section>
-  <section>
-    <h2 style="font-size:1.2rem;">Instruções</h2>
-    <ul style="padding-left:1.2em;">
-      <li>Insira sua chave da API Gemini ao abrir o site. Consiga em <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a>.</li>
-      <li>Você pode configurar até 2 locutores, personalizar nome e voz.</li>
-      <li>Áudio é gerado e tocado localmente, com link para download (.wav ou raw).</li>
-      <li>Detecta automaticamente se o áudio Gemini está mudo e alerta!</li>
-      <li>Tudo roda em HTML + JS, zero backend.</li>
-    </ul>
-  </section>
   <script>
-    // ---- Configs e variáveis iniciais ----
     const VOZES = [
       "Zephyr","Orus","Kore","Achernar","Aoede","Autonoe","Callirrhoe","Despina",
       "Erinome","Gacrux","Laomedeia","Leda","Pulcherrima","Sulafat","Vindemiatrix",
       "Achird","Algenib","Algieba","Alnilam","Charon","Enceladus","Fenrir","Iapetus",
       "Puck","Rasalgethi","Sadachbia","Sadaltager","Schedar","Umbriel","Zubenelgenubi"
     ];
-    let locutores = [
-      { nome:'Locutor 1', voz: VOZES[0] }
-    ];
-
+    let locutores = [{ nome:'Locutor 1', voz: VOZES[0] }];
     let API_KEY = localStorage.getItem('gemini_apikey') || '';
-
     function renderLocutores() {
       const lista = document.getElementById('locutores');
       lista.innerHTML='';
@@ -123,45 +49,62 @@
         const div = document.createElement('div');
         div.className="loc-config";
         const voiceOptions = VOZES.map(v=>`<option${l.voz==v?' selected':''}>${v}</option>`).join('');
-        const removeBtn = locutores.length>1?`<button type="button" style="margin-top:.7em" onclick="removerLocutor(${i})">Remover</button>`:'';
+        const removeBtn = locutores.length>1?`<button type="button" onclick="removerLocutor(${i})">Remover</button>`:'';
         div.innerHTML = `
           <label>Nome</label>
-          <input id="nome-${i}" value="${l.nome}" onchange="locutores[${i}].nome=this.value">
+          <input value="${l.nome}" onchange="locutores[${i}].nome=this.value">
           <label>Voz</label>
-          <select id="voz-${i}" onchange="locutores[${i}].voz=this.value">${voiceOptions}</select>
+          <select onchange="locutores[${i}].voz=this.value">${voiceOptions}</select>
           ${removeBtn}
         `;
         lista.append(div);
       });
     }
-
-    function removerLocutor(i) {
-      locutores.splice(i,1);
-      renderLocutores();
-    }
-
+    window.removerLocutor=function(i){ locutores.splice(i,1);renderLocutores(); }
     window.addEventListener('DOMContentLoaded', renderLocutores);
     document.getElementById('addLocutor').onclick = ()=>{
       if(locutores.length>=2) return;
       locutores.push({nome:'Locutor '+(locutores.length+1),voz:VOZES[locutores.length%VOZES.length]});
       renderLocutores();
     };
-
     function askApiKey(){
-      let key = prompt("Insira sua chave da API Gemini:\n(Permissão local apenas, nunca sai do navegador)");
-      if(key){
-        key=key.trim();
-        API_KEY=key;
-        localStorage.setItem('gemini_apikey', key);
-      }
+      let key = prompt("Insira sua chave da API Gemini:");
+      if(key){key=key.trim();API_KEY=key;localStorage.setItem('gemini_apikey', key);}
     }
     if(!API_KEY) askApiKey();
 
-    // Aqui a melhoria da detecção de áudio mudo!
+    // Função robusta para montar header WAV de acordo com params do mimeType
+    function parseMimeType(mimetype){
+      // Exemplo: audio/l16;rate=24000;channels=1
+      let sampleRate=24000,bitsPerSample=16,numChannels=1;
+      if(!mimetype) return {sampleRate,bitsPerSample,numChannels};
+      const parts = mimetype.split(';');
+      if(parts[0].includes('l16')) bitsPerSample=16;
+      parts.slice(1).forEach(x=>{
+        const [k,v]=x.trim().split('=');
+        if(['rate','ratec'].includes(k))sampleRate=+v;
+        if(['channels'].includes(k))numChannels=+v;
+        if(['bits','bitspersample'].includes(k))bitsPerSample=+v;
+      });
+      return {sampleRate,bitsPerSample,numChannels};
+    }
+    function convertRawL16ToWav(rawL16, sampleRate=24000, numChannels=1, bitsPerSample=16){
+      const header = new ArrayBuffer(44); const view = new DataView(header);
+      let blockAlign = numChannels * (bitsPerSample/8), byteRate = sampleRate*blockAlign;
+      let dlen = rawL16.length;
+      function setStr(s,i){for(let x=0;x<s.length;x++)view.setUint8(i+x,s.charCodeAt(x));}
+      setStr('RIFF',0);
+      view.setUint32(4,36+dlen,true);
+      setStr('WAVE',8); setStr('fmt ',12);
+      view.setUint32(16,16,true); view.setUint16(20,1,true); view.setUint16(22,numChannels,true);
+      view.setUint32(24,sampleRate,true); view.setUint32(28,byteRate,true); view.setUint16(32,blockAlign,true); view.setUint16(34,bitsPerSample,true);
+      setStr('data',36); view.setUint32(40,dlen,true);
+      const wav = new Uint8Array(44+dlen); wav.set(new Uint8Array(header),0); wav.set(rawL16,44);
+      return wav;
+    }
     function isSilentAudio(bytes){
       let nonZero = 0;
       for(const b of bytes) if(b!==0){nonZero++;}
-      // Comportamento Gemini: áudio mudo tem menos que 24 bytes não zero (header WAV etc)
       return nonZero<24;
     }
 
@@ -171,85 +114,53 @@
       const modelo=document.getElementById('modelo').value;
       const msgbox=document.getElementById('msg');
       msgbox.textContent='';
-
       if(!API_KEY){askApiKey();if(!API_KEY)return;}
       if(!texto){msgbox.textContent='Digite algum texto.';return;}
       if(locutores.some(l=>!l.nome.trim())){msgbox.textContent='Preencha o nome de todos os locutores.';return;}
-
       let speechConfig;
       if(locutores.length===1){
-        speechConfig = {
-          voiceConfig:{
-            prebuiltVoiceConfig:{
-              voiceName:locutores[0].voz
-            }
-          }
-        };
+        speechConfig = {voiceConfig:{prebuiltVoiceConfig:{voiceName:locutores[0].voz}}};
       } else {
-        speechConfig = {
-          multiSpeakerVoiceConfig:{
-            speakerVoiceConfigs: locutores.map(l=>({
-              speaker: l.nome,
-              voiceConfig:{
-                prebuiltVoiceConfig:{
-                  voiceName:l.voz
-                }
-              }
-            }))
-          }
-        };
+        speechConfig = {multiSpeakerVoiceConfig:{speakerVoiceConfigs:locutores.map(l=>({speaker:l.nome,voiceConfig:{prebuiltVoiceConfig:{voiceName:l.voz}}}))}};
       }
-
       const payload={
-        contents:[{
-          role:"user",
-          parts:[{text:texto}]
-        }],
-        generationConfig:{
-          responseModalities:["AUDIO"],
-          speechConfig:speechConfig
-        }
+        contents:[{role:"user",parts:[{text:texto}]}],
+        generationConfig:{responseModalities:["AUDIO"],speechConfig}
       };
-
       document.getElementById('ttsBtn').disabled=true;
       msgbox.textContent = 'Gerando... Aguarde.';
       try {
         const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${API_KEY}`,{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify(payload)
+          method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)
         });
         const data=await resp.json();
         if(!resp.ok) throw new Error((data.error && data.error.message)||'Falha desconhecida API Gemini');
-
         let base64='',mimetype='';
         if(data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts)
           for(const p of data.candidates[0].content.parts)
             if(p.inlineData&&p.inlineData.data){
-              base64=p.inlineData.data;
-              mimetype=p.inlineData.mimeType||'audio/wav';
+              base64=p.inlineData.data; mimetype=p.inlineData.mimeType||'audio/wav';
             }
-
-        if(!base64){msgbox.textContent='A API não retornou áudio.';return;}
-
+        if(!base64){msgbox.textContent='API não retornou áudio.';return;}
         function b64ToBytes(b){const bin=atob(b);return Uint8Array.from([...bin].map(c=>c.charCodeAt(0)));}
         let audioBytes = b64ToBytes(base64);
-
-        // Detecção automática de áudio mudo!
         if(isSilentAudio(audioBytes)){
           msgbox.textContent = '⚠️ O áudio gerado está silencioso/mudo. Tente outro texto, voz ou modelo Gemini!';
           document.getElementById('audioResult').innerHTML='';
           return;
         }
-
-        let blob = new Blob([audioBytes],{type:mimetype||'audio/wav'});
+        // Se for formato raw l16, converte para WAV antes de tocar
+        let wavBytes = (mimetype && mimetype.startsWith('audio/l')) ?
+          convertRawL16ToWav(audioBytes, ...Object.values(parseMimeType(mimetype))) :
+          audioBytes;
+        let blob = new Blob([wavBytes],{type:'audio/wav'});
         const url=URL.createObjectURL(blob);
-
         document.getElementById('audioResult').innerHTML = `<div class="audio-box">
-          <h3>Áudio:</h3>
-          <audio controls src="${url}"></audio>
+          <b>Formato Gemini:</b> ${mimetype}<br>
+          <b>Tamanho:</b> ${wavBytes.length} bytes<br>
+          <audio controls src="${url}" style="display:block"></audio>
           <a download="voz-gemini-tts.wav" href="${url}" style="display:block;margin-top:0.7em">Baixar Áudio</a>
-          <div style="margin-top:.7em;font-size:.92em;color:#4caf50">✓ Pronto!</div>
+          <div style="margin-top:.7em;font-size:.95em;color:#4caf50">✓ Pronto!</div>
         </div>`;
         msgbox.textContent = '';
       } catch(e) {
