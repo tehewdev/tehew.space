@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Controle Financeiro - Metas e Dívidas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+
+    header {
+      background: #111827;
+      padding: 16px 24px;
+      border-bottom: 1px solid #1f2937;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.4rem;
+    }
+
+    header p {
+      margin: 4px 0 0 0;
+      font-size: 0.9rem;
+      color: #9ca3af;
+    }
+
+    main {
+      max-width: 960px;
+      margin: 24px auto;
+      padding: 0 16px 32px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1.4fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 800px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 16px 18px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+    }
+
+    .card h2 {
+      margin: 0 0 8px 0;
+      font-size: 1.1rem;
+    }
+
+    .card p {
+      margin: 4px 0 12px 0;
+      font-size: 0.88rem;
+      color: #9ca3af;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.85rem;
+      color: #e5e7eb;
+    }
+
+    input,
+    select,
+    button,
+    textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 0.95rem;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: 1px solid #4f46e5;
+      border-color: #4f46e5;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .row > div {
+      flex: 1;
+    }
+
+    button {
+      margin-top: 10px;
+      background: #4f46e5;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+
+    button:hover {
+      background: #4338ca;
+    }
+
+    button.secondary {
+      background: #1f2937;
+    }
+
+    button.secondary:hover {
+      background: #111827;
+    }
+
+    .lista-metas {
+      margin-top: 12px;
+      max-height: 360px;
+      overflow-y: auto;
+      border-radius: 6px;
+      border: 1px solid #111827;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+
+    thead {
+      position: sticky;
+      top: 0;
+      background: #020617;
+      z-index: 1;
+    }
+
+    th,
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #111827;
+      text-align: left;
+    }
+
+    th {
+      font-weight: 500;
+      color: #9ca3af;
+    }
+
+    tr:nth-child(even) td {
+      background: #020617;
+    }
+
+    .tipo-economia {
+      color: #22c55e;
+      font-weight: 600;
+    }
+
+    .tipo-divida {
+      color: #f97316;
+      font-weight: 600;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      border: 1px solid #1f2937;
+      color: #9ca3af;
+    }
+
+    .status-ok {
+      color: #22c55e;
+    }
+
+    .status-alerta {
+      color: #facc15;
+    }
+
+    .status-atraso {
+      color: #ef4444;
+    }
+
+    .numero {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 10px;
+      color: #6b7280;
+      font-size: 0.85rem;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Controle Financeiro: Metas & Dívidas</h1>
+    <p>
+      Ajude-se a sair do endividamento e organizar metas de economia ao longo do tempo.
+    </p>
+  </header>
+
+  <main>
+    <div class="grid">
+      <!-- FORMULÁRIO -->
+      <section class="card">
+        <h2>Nova meta ou dívida</h2>
+        <p>Cadastre metas de poupança ou dívidas para acompanhar sua evolução.</p>
+
+        <form id="form-meta">
+          <label for="tipo">Tipo</label>
+          <select id="tipo" required>
+            <option value="economia">Meta de economia</option>
+            <option value="divida">Dívida</option>
+          </select>
+
+          <label for="nome">Nome</label>
+          <input
+            type="text"
+            id="nome"
+            placeholder="Ex.: Reserva de emergência, Cartão de crédito, Empréstimo..."
+            required
+          />
+
+          <div class="row">
+            <div>
+              <label for="valor-total">Valor total (R$)</label>
+              <input
+                type="number"
+                id="valor-total"
+                min="0"
+                step="0.01"
+                placeholder="Ex.: 1500.00"
+                required
+              />
+            </div>
+            <div>
+              <label for="valor-atual">Valor atual (R$)</label>
+              <input
+                type="number"
+                id="valor-atual"
+                min="0"
+                step="0.01"
+                placeholder="Quanto já poupou ou já pagou"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="data-limite">Data limite</label>
+              <input type="date" id="data-limite" required />
+            </div>
+            <div>
+              <label for="prioridade">Prioridade</label>
+              <select id="prioridade">
+                <option value="alta">Alta</option>
+                <option value="media" selected>Média</option>
+                <option value="baixa">Baixa</option>
+              </select>
+            </div>
+          </div>
+
+          <label for="observacoes">Observações (opcional)</label>
+          <textarea
+            id="observacoes"
+            rows="2"
+            placeholder="Ex.: Renegociar juros, evitar novos gastos nesse cartão, etc."
+          ></textarea>
+
+          <button type="submit">Salvar meta/dívida</button>
+          <button type="button" id="limpar" class="secondary">
+            Limpar tudo (localStorage)
+          </button>
+        </form>
+      </section>
+
+      <!-- LISTA -->
+      <section class="card">
+        <h2>Resumo das metas</h2>
+        <p>
+          Veja o progresso, prioridade e se há risco de atraso nas suas metas e dívidas.
+        </p>
+
+        <div class="lista-metas">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Tipo</th>
+                <th>Progresso</th>
+                <th>Prazo</th>
+                <th>Prioridade</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-metas">
+              <!-- linhas geradas via JS -->
+            </tbody>
+          </table>
+          <div class="empty" id="vazio">Nenhuma meta cadastrada ainda.</div>
+        </div>
+      </section>
+    </div>
+
+    <footer>
+      Dados salvos apenas no seu navegador via localStorage. Atualize a página sem perder as metas.
+    </footer>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "finance_metas_v1";
+
+    const form = document.getElementById("form-meta");
+    const tabelaMetas = document.getElementById("tabela-metas");
+    const vazio = document.getElementById("vazio");
+    const limparBtn = document.getElementById("limpar");
+
+    function carregarMetas() {
+      const bruto = localStorage.getItem(STORAGE_KEY);
+      if (!bruto) return [];
+      try {
+        const parsed = JSON.parse(bruto);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        console.error("Erro ao ler localStorage", e);
+        return [];
+      }
+    }
+
+    function salvarMetas(metas) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(metas));
+    }
+
+    function formatarValor(v) {
+      const num = Number(v) || 0;
+      return num.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      });
+    }
+
+    function calcularStatus(meta) {
+      const hoje = new Date();
+      const prazo = new Date(meta.dataLimite);
+      const progresso = meta.valorTotal > 0
+        ? meta.valorAtual / meta.valorTotal
+        : 0;
+
+      const diffMs = prazo - hoje;
+      const diasRestantes = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+      if (progresso >= 1) {
+        return {
+          texto: "Concluída",
+          classe: "status-ok",
+        };
+      }
+
+      if (diasRestantes < 0) {
+        return {
+          texto: "Atrasada",
+          classe: "status-atraso",
+        };
+      }
+
+      if (progresso < 0.4 && diasRestantes <= 15) {
+        return {
+          texto: "Risco de atraso",
+          classe: "status-alerta",
+        };
+      }
+
+      return {
+        texto: `Faltam ${diasRestantes} dia(s)`,
+        classe: "status-ok",
+      };
+    }
+
+    function renderizarMetas() {
+      const metas = carregarMetas();
+      tabelaMetas.innerHTML = "";
+
+      if (!metas.length) {
+        vazio.style.display = "block";
+        return;
+      }
+
+      vazio.style.display = "none";
+
+      metas.forEach((meta, index) => {
+        const tr = document.createElement("tr");
+
+        const progressoPercent = meta.valorTotal > 0
+          ? Math.min(meta.valorAtual / meta.valorTotal, 1) * 100
+          : 0;
+
+        const status = calcularStatus(meta);
+
+        tr.innerHTML = `
+          <td>
+            <div>${meta.nome}</div>
+            <div class="badge">
+              ${formatarValor(meta.valorAtual)} / ${formatarValor(meta.valorTotal)}
+            </div>
+          </td>
+          <td>
+            <span class="${meta.tipo === "economia" ? "tipo-economia" : "tipo-divida"}">
+              ${meta.tipo === "economia" ? "Economia" : "Dívida"}
+            </span>
+          </td>
+          <td class="numero">
+            ${progressoPercent.toFixed(0)}%
+          </td>
+          <td>
+            <div>${new Date(meta.dataLimite).toLocaleDateString("pt-BR")}</div>
+            <div class="${status.classe}" style="font-size:0.75rem;">${status.texto}</div>
+          </td>
+          <td>
+            <span class="badge">${meta.prioridade}</span>
+          </td>
+          <td>
+            <button type="button" data-index="${index}" class="secondary btn-remover">
+              Remover
+            </button>
+          </td>
+        `;
+
+        tabelaMetas.appendChild(tr);
+      });
+
+      document.querySelectorAll(".btn-remover").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const index = Number(e.target.getAttribute("data-index"));
+          const metas = carregarMetas();
+          metas.splice(index, 1);
+          salvarMetas(metas);
+          renderizarMetas();
+        });
+      });
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const tipo = document.getElementById("tipo").value;
+      const nome = document.getElementById("nome").value.trim();
+      const valorTotal = parseFloat(
+        document.getElementById("valor-total").value || "0"
+      );
+      const valorAtual = parseFloat(
+        document.getElementById("valor-atual").value || "0"
+      );
+      const dataLimite = document.getElementById("data-limite").value;
+      const prioridade = document.getElementById("prioridade").value;
+      const observacoes = document.getElementById("observacoes").value.trim();
+
+      if (!nome || !dataLimite) {
+        alert("Preencha pelo menos o nome e a data limite.");
+        return;
+      }
+
+      const metas = carregarMetas();
+
+      metas.push({
+        id: Date.now(),
+        tipo,
+        nome,
+        valorTotal,
+        valorAtual,
+        dataLimite,
+        prioridade,
+        observacoes,
+      });
+
+      salvarMetas(metas);
+      form.reset();
+      renderizarMetas();
+    });
+
+    limparBtn.addEventListener("click", () => {
+      const ok = confirm(
+        "Tem certeza que deseja apagar TODAS as metas e dívidas salvas?"
+      );
+      if (!ok) return;
+      localStorage.removeItem(STORAGE_KEY);
+      renderizarMetas();
+    });
+
+    renderizarMetas();
+  </script>
+</body>
+</html>
