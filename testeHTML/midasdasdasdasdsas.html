@@ -2,9 +2,12 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <!-- TAG DE VIEWPORT: Essencial para design responsivo -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guia Prático para Sair das Dívidas</title>
+    <!-- Carregando Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carregando Font Awesome (Ícones) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,24 +20,33 @@
         h1, h2, h3 {
             font-family: 'Poppins', sans-serif;
         }
+        /* Garantir que as imagens cubram a área designada sem distorcer */
+        img.object-cover {
+            object-fit: cover;
+        }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-700">
 
+    <!-- Container Principal -->
     <div class="max-w-2xl mx-auto p-4">
 
+        <!-- Slide 1: Título -->
         <section class="bg-white p-6 rounded-lg shadow-lg text-center my-6">
             <h1 class="text-4xl font-bold text-slate-800">Guia Prático</h1>
             <p class="text-xl text-slate-600 mt-2">Como Economizar Dinheiro e Sair do Endividamento</p>
         </section>
 
+        <!-- Slide 2: Introdução -->
         <section class="bg-white p-6 rounded-lg shadow-lg my-6 space-y-4">
             <h2 class="text-2xl font-bold text-slate-800">Por que tanta gente está endividada?</h2>
             <p>Viver endividado é uma fonte constante de ansiedade. O endividamento em massa não é só individual, mas social, ligado ao crédito fácil, cultura de consumo e falta de educação financeira.</p>
             <p>Este guia é um caminho prático para reorganizar sua vida financeira, com foco em clareza, disciplina e pequenas melhorias consistentes.</p>
-            <img src="http://googleusercontent.com/image_collection/image_retrieval/9697782057090490243_0" alt="Estresse financeiro" class="w-full h-auto rounded-lg shadow-md">
+            <!-- IMAGEM ORIGINAL DO PDF -->
+            <img src="https://img.freepik.com/vetores-gratis/ilustracao-em-vetor-conceito-abstrato-gastos-excessivos-planejamento-de-orcamento-gerenciamento-de-dinheiro-gastos-excessivos-vicio-e-m-dinheiro-estresse-financeiro-causar-gastos-alem-da-metafora-abstrata-do-problema-de-renda_335657-6196.jpg" alt="Estresse financeiro" class="w-full h-auto rounded-lg shadow-md aspect-video object-cover" onerror="this.src='https://placehold.co/600x400/FFF0F0/FF6B6B?text=Erro+ao+carregar+imagem'; this.onerror=null;">
         </section>
 
+        <!-- Slide 3: Diagnóstico -->
         <section class="bg-white p-6 rounded-lg shadow-lg my-6 space-y-4">
             <h2 class="text-2xl font-bold text-slate-800">O Diagnóstico Financeiro</h2>
             <p>Educação financeira é usar o dinheiro de forma consciente. O primeiro passo é o diagnóstico:</p>
@@ -44,15 +56,15 @@
                 <li>Rastreie seus gastos fixos e variáveis.</li>
             </ul>
             <p>Sem este mapa, qualquer tentativa de mudança vira improviso e aumenta a chance de frustração.</p>
-             <img src="
-
-http://googleusercontent.com/image_collection/image_retrieval/16266592543379530330_0
-" alt="Planejamento financeiro" class="w-full h-auto rounded-lg shadow-md">
+             <!-- IMAGEM ORIGINAL DO PDF -->
+             <img src="https://institutodelongevidade.org/storage/app/media/2025/02.FEV/dificuldade-no-planejamento-financeiro-instituto-de-longevidade-meio-min.jpg" alt="Planejamento financeiro" class="w-full h-auto rounded-lg shadow-md aspect-video object-cover" onerror="this.src='https://placehold.co/600x400/E6F7FF/1890FF?text=Erro+ao+carregar+imagem'; this.onerror=null;">
         </section>
 
+        <!-- Slide 4: Orçamento -->
         <section class="bg-white p-6 rounded-lg shadow-lg my-6 space-y-4">
             <h2 class="text-2xl font-bold text-slate-800">Montando um Orçamento Realista</h2>
             <p>Um orçamento não é uma prisão, é um plano. Separe sua renda em blocos (sugestão):</p>
+            <!-- Lista simples substituindo o gráfico de donut -->
             <ul class="space-y-3 font-medium">
                 <li class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
                     <span><i class="fa-solid fa-house-chimney w-6 text-blue-600"></i> Necessidades Essenciais</span>
@@ -74,8 +86,10 @@ http://googleusercontent.com/image_collection/image_retrieval/162665925433795303
             <p class="text-sm italic text-center text-slate-500 pt-2">Elimine desperdícios, não apenas sacrifícios.</p>
         </section>
 
+        <!-- Slide 5: Estratégia 1 -->
         <section class="bg-white p-6 rounded-lg shadow-lg my-6 space-y-4">
             <h2 class="text-2xl font-bold text-slate-800">Estratégia (Parte 1)</h2>
+            <!-- Tiles empilhados verticalmente -->
             <div class="space-y-4">
                 <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
                     <h3 class="text-lg font-bold text-blue-700 mb-2"><i class="fa-solid fa-stop-circle mr-2"></i>Pare de Criar Dívidas</h3>
@@ -92,6 +106,7 @@ http://googleusercontent.com/image_collection/image_retrieval/162665925433795303
             </div>
         </section>
 
+        <!-- Slide 6: Estratégia 2 -->
         <section class="bg-white p-6 rounded-lg shadow-lg my-6 space-y-4">
             <h2 class="text-2xl font-bold text-slate-800">Estratégia (Parte 2) - Priorize e Negocie</h2>
             <p>Concentre esforços nas dívidas com <strong>juros mais altos</strong> (cartão de crédito e cheque especial), pois são mais perigosas.</p>
@@ -101,9 +116,11 @@ http://googleusercontent.com/image_collection/image_retrieval/162665925433795303
                 <li>Solicite desconto para quitação.</li>
                 <li>Não aceite acordos que você não pode cumprir.</li>
             </ul>
-            <img src="http://googleusercontent.com/image_collection/image_retrieval/3425913844043467303_0" alt="Negociação" class="w-full h-auto rounded-lg shadow-md">
+            <!-- IMAGEM ORIGINAL DO PDF -->
+            <img src="https://thumbs.dreamstime.com/b/duas-mulheres-empres%C3%A1rias-apertando-as-m%C3%A3os-retrato-lateral-m%C3%ADnimo-de-agitando-em-cima-da-mesa-reuni%C3%B5es-no-escrit%C3%B3rio-257622400.jpg" alt="Negociação" class="w-full h-auto rounded-lg shadow-md aspect-video object-cover" onerror="this.src='https://placehold.co/600x400/F6FFED/52C41A?text=Erro+ao+carregar+imagem'; this.onerror=null;">
         </section>
 
+        <!-- Slide 7: Economia Diária -->
         <section class="bg-white p-6 rounded-lg shadow-lg my-6 space-y-4">
             <h2 class="text-2xl font-bold text-slate-800">Como Economizar no Dia a Dia</h2>
             <p>Economizar não precisa ser sinônimo de sofrimento. A ideia é <strong>gastar melhor</strong>, com clareza de prioridades.</p>
@@ -112,18 +129,22 @@ http://googleusercontent.com/image_collection/image_retrieval/162665925433795303
                 <li>Planeje as compras do mercado com uma lista.</li>
                 <li>Reorganize o lazer: troque saídas caras por programas gratuitos ou mais baratos, como parques e encontros em casa.</li>
             </ul>
-            <img src="http://googleusercontent.com/image_collection/image_retrieval/10992535058515922096_0" alt="Piquenique no parque" class="w-full h-auto rounded-lg shadow-md">
+            <!-- IMAGEM ORIGINAL DO PDF -->
+            <img src="https://static.vecteezy.com/ti/fotos-gratis/p2/17705733-familia-feliz-fazendo-piquenique-no-parque-e-divirta-se-foto.jpg" alt="Piquenique no parque" class="w-full h-auto rounded-lg shadow-md aspect-video object-cover" onerror="this.src='https://placehold.co/600x400/E6FFFB/13C2C2?text=Erro+ao+carregar+imagem'; this.onerror=null;">
         </section>
 
+        <!-- Slide 8: Reserva de Emergência -->
         <section class="bg-white p-6 rounded-lg shadow-lg my-6 space-y-4">
             <h2 class="text-2xl font-bold text-slate-800">Reserva de Emergência</h2>
             <h3 class="text-xl font-semibold text-slate-700">O que é?</h3>
             <p>É um valor guardado para situações inesperadas, como perda de renda, problemas de saúde ou despesas urgentes.</p>
             <p>Ela evita que você precise recorrer novamente a crédito caro (e voltar ao endividamento) sempre que algo foge do plano.</p>
             <p>Comece com metas pequenas e crie o hábito de separar uma parte da renda todo mês, por menor que seja.</p>
-            <img src="http://googleusercontent.com/image_collection/image_retrieval/10820839850007635747_0" alt="Cofrinho" class="w-full h-auto rounded-lg shadow-md">
+            <!-- IMAGEM ORIGINAL DO PDF -->
+            <img src="https://png.pngtree.com/png-clipart/20241209/original/pngtree-piggy-bank-with-coin-pig-accounts-piggy-bank-photo-png-image_17768500.png" alt="Cofrinho" class="w-full h-auto rounded-lg shadow-md aspect-video object-cover" onerror="this.src='https://placehold.co/600x400/FFFBE6/FAAD14?text=Erro+ao+carregar+imagem'; this.onerror=null;">
         </section>
 
+        <!-- Slide 9: Investimentos -->
         <section class="bg-white p-6 rounded-lg shadow-lg my-6 space-y-4">
             <h2 class="text-2xl font-bold text-slate-800">Primeiros Passos para Investir</h2>
             <p>Depois de formada a reserva de emergência, você pode começar a estudar investimentos simples e adequados ao seu perfil.</p>
@@ -133,9 +154,11 @@ http://googleusercontent.com/image_collection/image_retrieval/162665925433795303
                 <li>Busque fontes confiáveis e desconfie de "dicas".</li>
             </ul>
             <p>Investir com consciência faz parte de uma educação financeira madura.</p>
-            <img src="http://googleusercontent.com/image_collection/image_retrieval/2095721538419485193_0" alt="Gráfico de investimento" class="w-full h-auto rounded-lg shadow-md">
+            <!-- IMAGEM ORIGINAL DO PDF -->
+            <img src="https://png.pngtree.com/png-vector/20250512/ourlarge/pngtree-hand-drawn-bar-graph-with-arrow-going-up-isolated-on-transparent-png-image_16220738.png" alt="Gráfico de investimento" class="w-full h-auto rounded-lg shadow-md aspect-video object-cover" onerror="this.src='https://placehold.co/600x400/F9F0FF/722ED1?text=Erro+ao+carregar+imagem'; this.onerror=null;">
         </section>
 
+        <!-- Slide 10: Evitando Recaída -->
         <section class="bg-white p-6 rounded-lg shadow-lg my-6 space-y-4">
             <h2 class="text-2xl font-bold text-slate-800">Como Não Voltar ao Endividamento</h2>
             <ul class="space-y-4">
@@ -158,6 +181,7 @@ http://googleusercontent.com/image_collection/image_retrieval/162665925433795303
             </ul>
         </section>
 
+        <!-- Slide 11: Conclusão -->
         <section class="bg-white p-6 rounded-lg shadow-lg my-6">
             <h2 class="text-2xl font-bold text-slate-800 mb-4">Conclusão</h2>
             <blockquote class="border-l-4 border-slate-300 pl-4 py-2 text-xl italic text-slate-800">
@@ -166,10 +190,13 @@ http://googleusercontent.com/image_collection/image_retrieval/162665925433795303
             <cite class="block text-right mt-2 text-slate-600">— Seu Novo Relacionamento com o Dinheiro</cite>
         </section>
 
-        <section class="bg-white p-6 rounded-lg shadow-lg text-center my-6">
+        <!-- Slide 12: Dúvidas -->
+         <section class="bg-white p-6 rounded-lg shadow-lg text-center my-6">
             <h2 class="text-3xl font-bold text-slate-800">Dúvidas?</h2>
             <p class="text-lg text-slate-600 mt-2">Obrigado pela sua atenção. O próximo passo depende de você.</p>
         </section>
 
-    </div> </body>
+    </div> <!-- Fim do Container Principal -->
+
+</body>
 </html>
