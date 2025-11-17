@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Gemini TTS Diagnóstico WAV + Chat Aprimorador</title>
+  <title>Gemini TTS Diagnóstico WAV + Aprimorador de Prompt</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
 :root {
@@ -16,6 +16,7 @@
   --radius: 12px;
   --shadow: 0 4px 16px rgba(66,133,244,.09);
 }
+
 body {
   font-family: 'Inter', system-ui, sans-serif;
   background: var(--bg);
@@ -23,17 +24,15 @@ body {
   margin: 0;
   color: #212529;
 }
-h1, h2 {
+
+h1 {
   color: var(--primary);
   font-size: 2rem;
   font-weight: 700;
   letter-spacing: -1px;
   margin-bottom: 1rem;
 }
-h2 {
-  font-size: 1.5rem;
-  margin-top: 0;
-}
+
 section {
   background: var(--panel);
   border-radius: var(--radius);
@@ -43,12 +42,14 @@ section {
   padding: 2em 1.3em 1.5em 1.3em;
   border: 1px solid var(--border);
 }
+
 label {
   font-weight: 600;
   margin-top: 1.3em;
   display: block;
   color: #555d;
 }
+
 textarea, input, select, button {
   font-family: inherit;
   font-size: 1em;
@@ -60,11 +61,13 @@ textarea, input, select, button {
   box-sizing: border-box;
   transition: border .18s;
 }
+
 textarea { resize: vertical; min-height: 80px; }
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--primary);
 }
+
 button, .btn-main {
   margin-top: 1.1em;
   background: var(--primary);
@@ -75,9 +78,11 @@ button, .btn-main {
   box-shadow: 0 3px 16px #4285f422;
   transition: background .19s;
 }
+
 button:disabled { opacity: .6; cursor: not-allowed; }
 .btn-main:hover { background: var(--primary-dark); }
 #addLocutor { background: #e6ecf5; color: #222; border: 1px solid #c5dafd; }
+
 .locutores {
   display: flex;
   gap: 1.4em;
@@ -91,6 +96,7 @@ button:disabled { opacity: .6; cursor: not-allowed; }
   padding: .7em .8em .45em .8em;
   min-width: 204px;
 }
+
 .audio-box {
   margin-top: 1.5em;
   background: #f8fcff;
@@ -102,6 +108,7 @@ button:disabled { opacity: .6; cursor: not-allowed; }
   width: 100%;
   margin-top: .7em;
 }
+
 #audioResult a {
   display: block;
   margin-top: .8em;
@@ -109,8 +116,10 @@ button:disabled { opacity: .6; cursor: not-allowed; }
   font-weight: 500;
   text-decoration: underline;
 }
+
 .msg { margin-top: .7em; color: var(--danger); font-weight: 500; }
 .success { color: var(--success); }
+
 #hex-debug {
   font-family: monospace;
   font-size: .95em;
@@ -121,53 +130,45 @@ button:disabled { opacity: .6; cursor: not-allowed; }
   margin: 1em 0 .5em 0;
   word-break: break-all;
 }
-#chat-txt-tts {
-  margin-top: 2.2em;
+
+#chat-section h2 {
+  color: #4285f4;
+  margin-bottom:.6em;
+  font-size:1.25em;
+  font-weight:600;
 }
-#chatHistory {
-  background:#f9fbff;
-  border: 1px solid #dbeaff;
-  border-radius:9px;
-  max-height: 210px;
-  overflow:auto;
-  padding:.6em .9em;
-  min-height:86px;
-  margin-bottom:.7em;
-  font-size:.98em
+
+/* Chat extra */
+#chat-history {
+  background:#f2f6fb;
+  border-radius:7px;
+  padding:1em 1em 0.8em 1em;
+  min-height:70px;
+  max-height:210px;
+  overflow-y:auto;
+  margin-bottom:1em;
+  font-size:1em;
 }
-#chatInput {
-  width:100%;
-  margin-bottom:.5em;
-}
-#sendChat, #copyChat {
-  margin-bottom: .6em;
-  width: auto;
-  display:inline-block;
-}
-#chatErrorMessage {
-  color:#e53e3e;
-  font-weight:500;
-  display:none;
-}
-#copyChat {
-  background:var(--success);
-  margin-left:10px;
-}
-.copiado {
-  background:#34a853 !important;
-  color:#fff !important;
+#chat-section {
+  margin:2em auto 1.2em auto;
+  max-width:550px;
+  background: var(--panel);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding:2em 1.3em 1.6em 1.3em;
+  border: 1px solid var(--border);
 }
 @media (max-width:650px) {
-  section { padding:1em .3em .4em .3em; }
+  section,#chat-section { padding:1em .3em .5em .3em; }
   .locutores { flex-direction: column; gap: .6em; }
 }
   </style>
 </head>
 <body>
-  <h1>Gemini TTS Diagnóstico PCM → WAV (Nov/2025)</h1>
+  <h1>Gemini TTS Diagnóstico PCM ↔ WAV (Nov/2025) + Prompt Chat</h1>
   <section>
     <label for="texto">Texto</label>
-    <textarea id="texto" rows="3" style="width:100%"></textarea>
+    <textarea id="texto" rows="3" style="width:100%" placeholder="Digite o texto para o TTS..."></textarea>
     <label for="modelo">Modelo</label>
     <select id="modelo">
       <option value="gemini-2.5-flash-preview-tts">Gemini 2.5 Flash</option>
@@ -180,19 +181,16 @@ button:disabled { opacity: .6; cursor: not-allowed; }
     <div id="audioResult"></div>
     <div id="hex-debug"></div>
   </section>
-
-  <!-- Chat aprimorador de frases TTS expressivas -->
-  <section id="chat-txt-tts">
-    <h2>Chat Aprimorador de Frases para TTS Expressivo</h2>
-    <div id="chatHistory"></div>
-    <textarea id="chatInput" placeholder="Digite uma frase para aprimorar..."></textarea>
-    <button type="button" id="sendChat" class="btn-main">Enviar</button>
-    <button type="button" id="copyChat" title="Copiar última resposta">📋 Copiar</button>
-    <div id="chatErrorMessage"></div>
+  <section id="chat-section">
+    <h2>💬 Aprimorador de Prompt TTS Expressivo</h2>
+    <div id="chatErrorMessage" class="msg" style="display:none"></div>
+    <div id="chat-history"></div>
+    <textarea id="chatInput" rows="2" style="width:100%;margin-bottom:.6em" placeholder="Digite uma frase para aprimorar para TTS..."></textarea>
+    <button class="btn-main" id="chatSendBtn">Aprimorar frase</button>
+    <div id="chat-loading" style="color:#4285f4;margin-top:0.7em;display:none;">⏳ Processando...</div>
   </section>
-
   <script>
-    /* --- TTS Diagnóstico Lógica Original --- */
+    // ----------- Gemini Diagnóstico PCM ↔ WAV (parte principal) -----------
     const VOZES = [
       "Zephyr","Orus","Kore","Achernar","Aoede","Autonoe","Callirrhoe","Despina",
       "Erinome","Gacrux","Laomedeia","Leda","Pulcherrima","Sulafat","Vindemiatrix",
@@ -334,89 +332,144 @@ button:disabled { opacity: .6; cursor: not-allowed; }
       }
     };
 
-    /* --- Manual Gemini TTS Expressivo (Prompt System) --- */
-    const ttsManual = `
-🎙️ **1. Tom de Voz** …
+    // ----------- Chat Aprimorador de Prompt TTS -----------
+    const ttsManual = 
+`🎙️ **1. Tom de Voz**
+Interprete expressões como: “voz calma e reconfortante”, “tom autoritário e direto”, etc.
 
-🕓 **2. Ritmo e Velocidade** …
+🕓 **2. Ritmo e Velocidade**
+Exemplo: “fale lentamente, com pausas longas”, “em ritmo acelerado, nervoso”, etc.
 
-😮‍💨 **3. Emoções** …
+😮‍💨 **3. Emoções**
+Exemplo: “alegria contagiante”, “voz embargada de tristeza”, etc.
 
-🎭 **4. Estilo de Performance** …
+🎭 **4. Estilo de Performance**
+Exemplo: “falando com um bebê”, “imitando apresentador culinário”, etc.
 
-🔉 **5. Sons e Efeitos Não-Verbais** …
+🔉 **5. Sons e Efeitos Não-Verbais**
+Exemplo: \`(SUSPIRO)\`, \`(RISADA_LEVE)\`, \`(PAUSA)\`, \`(BEIJO_NO_AR)\`, etc.
 
-🧠 **Exemplo de Execução:** …
+🧠 **Exemplo de Execução:**
+> Com voz doce, lenta e carinhosa, como mãe com cachorro:
+> *(SUSPIRO)* Oi, meu amorzinho... já acordou?
+> (RISADA_LEVE) Quer passear, né?
+> Vamos pegar petisquinho? (SACO_MEXENDO)
+> Só um, hein? (BEIJO_NO_AR) Mamãe te ama!
 
---- (TODO: coloque todo conteúdo do manual aqui, copiar do prompt anterior) ---
-    `;
+💡 **Importante:**
+- Ignore parâmetros técnicos (pitch, temperature).
+- Sua voz deve ter naturalidade e emoção baseadas exclusivamente no texto.
 
-    const systemPromptTTSManual = `Você é um assistente especializado em criar prompts para um sistema de Texto-para-Fala (TTS) expressivo. Sua principal tarefa é ajudar o usuário a formatar texto para gerar áudio com emoção, ritmo e estilo específicos, seguindo o manual abaixo. Quando o usuário pedir ajuda para criar um prompt TTS, ou perguntar como expressar uma certa emoção ou som, use este manual para guiar sua resposta e fornecer exemplos de texto formatado. Responda em Português do Brasil.
+### Marcadores Comuns de Efeitos
 
---- MANUAL DE PADRÃO PARA TTS EXPRESSIVO ---
-${ttsManual}
---- FIM DO MANUAL ---`;
+| Marcador              | Efeito                       |
+| --------------------- | ---------------------------- |
+| \`(SUSPIRO_AFETIVO)\`   | Suspiro carinhoso            |
+| \`(PAUSA_RONRONO)\`     | Pausa com ronronar imaginado |
+| \`(BEIJO_NO_AR)\`       | Som de beijo                 |
+| \`(RISADA_SUAVE)\`      | Riso leve                    |
+| \`(SACOLA_BALANÇANDO)\` | Ruído imaginado de sacola    |
+| \`(GRUNHIDO_GATO)\`     | Resmungo felino opcional     |
 
-    /* --- Chat aprimorador --- */
-    const chatHistoryDiv = document.getElementById('chatHistory');
-    const chatInput = document.getElementById('chatInput');
-    const sendChatBtn = document.getElementById('sendChat');
-    const copyBtn = document.getElementById('copyChat');
-    const chatErrorMessageDiv = document.getElementById('chatErrorMessage');
-    let lastGeminiAnswer = '';
+### Instruções de Tom e Emoção
 
-    function appendChatMessage(role, text) {
-      const color = role === 'user' ? '#3861e4' : '#1b9330';
-      const who = role === 'user' ? 'Você' : 'Gemini';
-      chatHistoryDiv.innerHTML += `<div style="margin:.5em 0;"><b style="color:${color}">${who}:</b> ${text}</div>`;
-      chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
-      if(role==='assistant') lastGeminiAnswer = text;
-    }
+* \`(VOZ_AGUDINHA)\` → Infantil, pets/bebês
+* \`(TOM_CONSPIRATÓRIO)\` → Sussurro confidencial
+* \`(ENTONAÇÃO_EPICA)\` → Grandioso, narrativo
+* \`(FALA_CANSADA)\` → Lento, rouco
 
-    sendChatBtn.onclick = async function() {
-      const userMsg = chatInput.value.trim();
-      chatErrorMessageDiv.style.display = 'none';
-      if (!API_KEY) { chatErrorMessageDiv.textContent = "Chave da API Gemini ausente."; chatErrorMessageDiv.style.display = 'block'; return; }
-      if (!userMsg) { chatErrorMessageDiv.textContent = "Digite uma frase para aprimorar."; chatErrorMessageDiv.style.display = 'block'; return; }
-      appendChatMessage('user', userMsg);
-      chatInput.value = '';
-      sendChatBtn.disabled = true;
+### Exemplo Completo para Diálogo Multi-Falantes
+
+MÃE: (VOZ_DOCE) Vem cá, meu bem... (PAUSA_RONRONO)
+GATO: (MIAU_LONGO) Meeeoow! (GRUNHIDO_GATO)
+MÃE: (RISADA_LEVE) Tá com ciúmes? (BEIJO_NO_AR)
+
+### Sons Ambientes (ASMR)
+
+"(PASSOS_SUAVES) Shh... gatinho dormindo... (RONRONO_ALTO) (COBERTOR_MOVENDO)"
+
+### Exemplo Pronto Final
+
+"(TOM_CONFIDENCIAL) Psst... (SUSSURRO) Olha o que escondi do papai... (SACOLA_BALANÇANDO) (VOZ_AGUDINHA) Seu snack favorito! (RISINHO_MALANDRO)"
+
+Formato .srt para Gemini TTS:
+[2.24s] Texto correspondente.
+[6.57s] (pausa pensativo)
+`;
+
+    async function aprimorarFraseTTS(userPhrase) {
+      const API_KEY = localStorage.getItem('gemini_apikey');
+      if (!API_KEY) return { error: "Chave da API Gemini ausente." };
+      const systemPrompt = `Você é um assistente especializado em criar prompts para Texto-para-Fala (TTS) expressivo. Sua principal tarefa é formatar frases e diálogos conforme este manual de referência, tornando-as realistas, emocionais e ricas em marcações, prontas para serem usadas no Gemini TTS.\n--- MANUAL ---\n${ttsManual}\n---\nQuando receber uma frase, reescreva de forma detalhada e expressiva. Sempre responda só com o texto pronto para Gemini TTS, sem explicações.`;
+
+      const payload = {
+        contents: [
+          { role: "system", parts: [{ text: systemPrompt }] },
+          { role: "user", parts: [{ text: userPhrase }] }
+        ],
+        generationConfig: { responseModalities: ["TEXT"] }
+      };
+
       try {
-        const payload = {
-          contents: [
-            { role: "user", parts: [{ text: userMsg }] },
-            { role: "system", parts: [{ text: systemPromptTTSManual }] }
-          ],
-          generationConfig: { responseModalities: ["TEXT"] }
-        };
-        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${API_KEY}`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=" + API_KEY, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
         });
         const data = await resp.json();
-        let answer = '';
-        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts)
-          for (const p of data.candidates[0].content.parts)
-            if (p.text) answer += p.text;
-        if (answer) appendChatMessage('assistant', answer);
-        else throw new Error('Resposta vazia ou erro no Gemini');
+        if (!resp.ok) return { error: (data.error && data.error.message) || "Erro desconhecido" };
+        let respostaGemini = "";
+        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+          for (const p of data.candidates[0].content.parts) {
+            if (p.text) respostaGemini += p.text + "\n";
+          }
+        }
+        if (!respostaGemini.trim()) return { error: "Nenhum texto gerado pela API." };
+        return { text: respostaGemini.trim() };
       } catch (e) {
-        chatErrorMessageDiv.textContent = "Falha no Gemini: " + (e.message || e);
-        chatErrorMessageDiv.style.display = 'block';
-      } finally {
-        sendChatBtn.disabled = false;
+        return { error: e.message || "Erro inesperado." };
+      }
+    }
+
+    // Chat DOM
+    const chatHistoryDiv = document.getElementById('chat-history');
+    const chatInput = document.getElementById('chatInput');
+    const chatSendBtn = document.getElementById('chatSendBtn');
+    const chatErrorMessageDiv = document.getElementById('chatErrorMessage');
+    const chatLoadingDiv = document.getElementById('chat-loading');
+
+    function addChatHistory(userText, botText) {
+      const userMsg = `<div style="margin-bottom:0.5em;"><b>Você:</b> ${userText}</div>`;
+      const botMsg = `<div style="margin-bottom:0.8em;background:#e8f5e9;padding:.5em;border-radius:5px;"><b>Gemini TTS:</b><br><pre style="white-space:pre-wrap;margin:0;font-size:1em;font-family:inherit;">${botText}</pre></div>`;
+      chatHistoryDiv.innerHTML += userMsg + botMsg;
+      chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
+    }
+
+    chatSendBtn.onclick = async () => {
+      const texto = chatInput.value.trim();
+      if (!texto) return;
+      chatLoadingDiv.style.display = "block";
+      chatSendBtn.disabled = true;
+      chatInput.disabled = true;
+      chatErrorMessageDiv.style.display = "none";
+      const resposta = await aprimorarFraseTTS(texto);
+      chatLoadingDiv.style.display = "none";
+      chatSendBtn.disabled = false;
+      chatInput.disabled = false;
+      if (resposta.error) {
+        chatErrorMessageDiv.textContent = resposta.error;
+        chatErrorMessageDiv.style.display = "block";
+      } else {
+        addChatHistory(texto, resposta.text);
+        chatInput.value = "";
       }
     };
-
-    copyBtn.onclick = function() {
-      if (!lastGeminiAnswer) return;
-      navigator.clipboard.writeText(lastGeminiAnswer);
-      copyBtn.classList.add("copiado");
-      copyBtn.textContent = "Copiado!";
-      setTimeout(()=>{
-        copyBtn.textContent = "📋 Copiar";
-        copyBtn.classList.remove("copiado");
-      },1300);
-    };
+    chatInput.addEventListener('keydown', function(e){
+      if(e.key==='Enter' && !e.shiftKey){
+        e.preventDefault();
+        chatSendBtn.onclick();
+      }
+    });
   </script>
 </body>
 </html>
