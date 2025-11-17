@@ -206,6 +206,135 @@
       <div id="ttsOutput"></div>
     </section>
   </div>
-<!-- scripts mantidos IGUAIS, já otimizados -->
+<script>
+let API_KEY = localStorage.getItem('gemini_apikey') || '';
+function ensureApiKey() {
+  API_KEY = localStorage.getItem('gemini_apikey') || '';
+  if(!API_KEY || API_KEY.length<20) {
+    alert('Informe/salve uma chave Gemini!'); document.getElementById('apiInput').focus();
+    throw "Chave não definida";
+  }
+}
+document.getElementById('setApiKey').onclick = ()=>{
+  const key = document.getElementById('apiInput').value.trim();
+  if (key.length>20) {
+    localStorage.setItem('gemini_apikey', key);
+    API_KEY = key; alert('Chave salva!');
+  } else {
+    alert('Chave inválida!'); document.getElementById('apiInput').focus();
+  }
+};
+
+const ttsManual = `
+MODELO EXPRESSIVO TTS — SIGA:
+- Interprete/emule tom de voz: voz calma, autoritária, emocionada, sussurrada, etc.
+- Use pausas e ritmo conforme instruções (“fale lentamente”, “hesitação”, “rápido...”).
+- Expresse emoções: alegria, tristeza, raiva, teatralidade, entusiasmo, etc.
+- Adote estilos: falar com bebê, narrador épico, apresentador de TV, teatral, ASMR, etc.
+- Não ignore sons não-verbais: (SUSPIRO), (BEIJO_NO_AR), (RISADA_LEVE), (RONRONO), etc.
+- Use SEMPRE marcação para efeitos/emoções/estilos, sem explicação nem texto extra.
+EXEMPLOS:
+(SUSPIRO) Oi, meu amorzinho...
+(VOZ_AGUDINHA) Quem é? (BEIJO_NO_AR)
+(TOM_CONSPIRATÓRIO) Psst... te conto um segredo... (SACOLA_BALANÇANDO)
+`; // Compacto 
+
+async function aprimorarFraseTTS(frase) {
+  ensureApiKey();
+  const prompt = ttsManual + "\n\n" + frase;
+  const payload = {
+    contents: [
+      { role: "user", parts: [ { text: prompt } ] }
+    ]
+  };
+  try {
+    const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=" + API_KEY, {
+      method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)
+    });
+    const d = await r.json();
+    if (!r.ok) return {error: d.error?.message || 'Erro Gemini'};
+    let out = "";
+    if (d.candidates?.[0]?.content?.parts)
+      for(const p of d.candidates[0].content.parts) if(p.text) out += p.text+"\n";
+    return { text: out.trim() };
+  } catch(e){ return { error: e.message||"Erro inesperado"};}
+}
+document.getElementById("chatSendBtn").onclick = async () => {
+  let inp = document.getElementById("chatInput").value.trim();
+  let chatError = document.getElementById("chatErrorMessage");
+  chatError.style.display = "none";
+  if(!inp) return;
+  document.getElementById("chatSendBtn").disabled = true;
+  try {
+    let r = await aprimorarFraseTTS(inp);
+    if(r.error){
+      chatError.textContent = r.error; chatError.style.display="block";
+      document.getElementById("chatOutput").value = "";
+    } else {
+      document.getElementById("chatOutput").value = r.text;
+      document.getElementById("ttsInput").value = r.text;
+    }
+  } finally { document.getElementById("chatSendBtn").disabled = false;}
+};
+
+function convertRawL16ToWav(rawL16,s=24000,c=1,b=16){
+  const h = new ArrayBuffer(44), v=new DataView(h);
+  let ba=c*(b/8), br=s*ba, dl=rawL16.length;
+  function st(x,i){for(let j=0;j<x.length;j++)v.setUint8(i+j,x.charCodeAt(j));}
+  st('RIFF',0); v.setUint32(4,36+dl,true); st('WAVE',8); st('fmt ',12);
+  v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,c,true);
+  v.setUint32(24,s,true); v.setUint32(28,br,true); v.setUint16(32,ba,true); v.setUint16(34,b,true); st('data',36); v.setUint32(40,dl,true);
+  const w=new Uint8Array(44+dl); w.set(new Uint8Array(h),0); w.set(rawL16,44); return w;
+}
+async function gerarAudioTTS(txt, voz) {
+  ensureApiKey();
+  const payload = {
+    contents: [{role:"user",parts:[{text:txt}]}],
+    generationConfig:{
+      responseModalities:["AUDIO"],
+      speechConfig: {voiceConfig:{prebuiltVoiceConfig:{voiceName:voz}}}
+    }
+  };
+  try {
+    const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=" + API_KEY, {
+      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)
+    });
+    const d=await r.json();
+    if(!r.ok) return { error: d.error?.message||"Erro Gemini"};
+    let base64 = "", mimetype="audio/wav";
+    if(d.candidates?.[0]?.content?.parts)
+      for(const p of d.candidates[0].content.parts){
+        if(p.inlineData?.data) base64 = p.inlineData.data;
+        if(p.inlineData?.mimeType) mimetype = p.inlineData.mimeType;
+      }
+    if(!base64)return { error: 'API não retornou áudio.' };
+    const bin=atob(base64), bytes=new Uint8Array([...bin].map(c=>c.charCodeAt(0)));
+    let wavBytes = mimetype && mimetype.toLowerCase().startsWith('audio/l')
+      ? convertRawL16ToWav(bytes) : bytes;
+    let blob = new Blob([wavBytes],{type:'audio/wav'}), url=URL.createObjectURL(blob);
+    return { url };
+  } catch(e){ return { error: e.message||"Erro inesperado"};}
+}
+document.getElementById("ttsSendBtn").onclick = async () => {
+  let txt = document.getElementById("ttsInput").value.trim();
+  let voz = document.getElementById("voz").value;
+  let ttsError = document.getElementById("ttsErrorMessage");
+  ttsError.style.display = "none";
+  if(!txt) return;
+  document.getElementById("ttsSendBtn").disabled = true;
+  try {
+    let r = await gerarAudioTTS(txt, voz);
+    if(r.error){
+      ttsError.textContent=r.error; ttsError.style.display="block";
+      document.getElementById("ttsOutput").innerHTML = "";
+    } else {
+      document.getElementById("ttsOutput").innerHTML =
+        `<div class="audio-box"><audio controls src="${r.url}"></audio>
+         <a href="${r.url}" download="voz-gemini.wav">Baixar Áudio</a></div>`;
+    }
+  } finally { document.getElementById("ttsSendBtn").disabled = false;}
+};
+</script>
+
 </body>
 </html>
