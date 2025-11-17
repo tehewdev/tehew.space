@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Gemini 2.5 — Diagnóstico TTS Expressivo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+:root {
+  --primary: #4285f4;
+  --primary-dark: #2561d3;
+  --accent: #34a853;
+  --bg: #181a20;
+  --card: #23262b;
+  --input-bg: #2c2f36;
+  --border: #20222a;
+  --radius: 16px;
+  --text-main: #f9fafe;
+  --text-label: #a8b3cf;
+  --shadow: 0 6px 32px rgba(66,133,244,.16);
+}
+body {
+  font-family: 'Inter',Arial,sans-serif;
+  background: var(--bg);
+  color: var(--text-main);
+  margin: 0; min-height: 100vh;
+}
+h1 {
+  text-align: center;
+  font-size: 2em;
+  margin-top: 2.3em;
+  color: var(--primary);
+  letter-spacing: -1px;
+  font-weight: 800;
+}
+#apik {
+  max-width:540px; margin:2em auto 0 auto; display:flex; gap:1em;
+  background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow);
+  padding:1.5em 1.4em 1em 1.4em; align-items:center;
+}
+#apik input {
+  width:75%; font-size:1em; background:var(--input-bg); color:var(--text-main);
+  border: 1px solid var(--primary); border-radius:10px; padding:.7em .9em;
+  letter-spacing: .02em;
+}
+#apik input:focus { outline:2px solid var(--primary);}
+#apik button {
+  width:23%; background: var(--accent); color:#fff; font-weight:600;
+  border:none; border-radius:9px; padding:.7em 0; cursor:pointer;
+  transition:background .18s;
+}
+#apik button:hover { background: #2aae40; }
+section {
+  background:var(--card);max-width:540px;margin:2em auto;padding:2em;
+  border-radius:var(--radius);box-shadow:var(--shadow); border: 1px solid var(--border);
+}
+label {
+  font-size:1em; font-weight:500; margin-top:0.25em; display:block;
+  color: var(--text-label); letter-spacing:.01em;
+}
+textarea, select, button {
+  font-size:1em; width:100%; margin-top:.9em; border-radius: 10px;
+  background: var(--input-bg); color:var(--text-main);
+  border: 1px solid var(--primary); padding: .7em 1em;
+  box-sizing: border-box; transition: border .18s;
+}
+textarea { resize: vertical; min-height: 60px;}
+textarea:read-only { background: #23262b; }
+select:focus, textarea:focus { outline:1.5px solid var(--primary);}
+button {
+  background: var(--primary); color:#fff; border:none;
+  font-weight:700; cursor:pointer; margin-top:1.1em;
+  box-shadow:0 2px 10px #34a85322; border-radius:10px;
+  transition:background .2s;
+}
+button:disabled {opacity: .7;}
+button:hover:not(:disabled) { background:var(--primary-dark);}
+.audio-box {
+  margin-top:1.2em; background:#20222a; padding:1em 1em .7em 1em;
+  border-radius:11px; border:1.5px solid #2561d369;
+  box-shadow:0 3px 16px #4285f414;
+}
+.audio-box audio { width:100%; margin-top:.6em; background:#23262b;}
+.audio-box a {
+  display:inline-block; margin-top:.7em; color:var(--primary);
+  font-weight:600; text-decoration:underline; font-size:1.02em;
+}
+.er {color:#e95a5a;font-size:1em;font-weight:600;margin-top:1.2em;
+     background:#23262b; border-radius:8px; padding:.5em 1em .5em 1em;}
+@media (max-width:700px) {
+  section, #apik { max-width:97vw; padding:1.05em .7em;}
+  h1 {font-size:1.29em;}
+}
+  </style>
+</head>
+<body>
+  <h1>Gemini 2.5 — Diagnóstico TTS Expressivo</h1>
+  <div id="apik">
+    <input id="apiInput" type="text" placeholder="Cole sua chave Gemini API">
+    <button id="setApiKey">Salvar chave</button>
+  </div>
+
+  <section>
+    <label for="chatInput">Texto comum (Digite para aprimorar em TTS expressivo):</label>
+    <textarea id="chatInput" placeholder="Ex: Oi, bom dia!"></textarea>
+    <button id="chatSendBtn">Aprimorar p/ TTS</button>
+    <label for="chatOutput">Texto pronto para Gemini TTS:</label>
+    <textarea id="chatOutput" readonly placeholder="Pronto para voz" style="margin-top:.7em;"></textarea>
+    <div id="chatErrorMessage" class="er" style="display:none"></div>
+  </section>
+
+  <section>
+    <label for="ttsInput">Texto para áudio Gemini TTS:</label>
+    <textarea id="ttsInput" placeholder="Cole ou digite aqui..."></textarea>
+    <label for="voz">Voz:</label>
+    <select id="voz">
+      <option value="Zephyr">Zephyr</option>
+      <option value="Orus">Orus</option>
+      <option value="Kore">Kore</option>
+      <option value="Achernar">Achernar</option>
+      <option value="Aoede">Aoede</option>
+      <option value="Autonoe">Autonoe</option>
+      <option value="Callirrhoe">Callirrhoe</option>
+      <option value="Despina">Despina</option>
+      <option value="Erinome">Erinome</option>
+      <option value="Gacrux">Gacrux</option>
+      <option value="Laomedeia">Laomedeia</option>
+      <option value="Leda">Leda</option>
+      <option value="Pulcherrima">Pulcherrima</option>
+      <option value="Sulafat">Sulafat</option>
+      <option value="Vindemiatrix">Vindemiatrix</option>
+      <option value="Achird">Achird</option>
+      <option value="Algenib">Algenib</option>
+      <option value="Algieba">Algieba</option>
+      <option value="Alnilam">Alnilam</option>
+      <option value="Charon">Charon</option>
+      <option value="Enceladus">Enceladus</option>
+      <option value="Fenrir">Fenrir</option>
+      <option value="Iapetus">Iapetus</option>
+      <option value="Puck">Puck</option>
+      <option value="Rasalgethi">Rasalgethi</option>
+      <option value="Sadachbia">Sadachbia</option>
+      <option value="Sadaltager">Sadaltager</option>
+      <option value="Schedar">Schedar</option>
+      <option value="Umbriel">Umbriel</option>
+      <option value="Zubenelgenubi">Zubenelgenubi</option>
+    </select>
+    <button id="ttsSendBtn" style="margin-top:1em">Gerar áudio TTS</button>
+    <div id="ttsErrorMessage" class="er" style="display:none"></div>
+    <div id="ttsOutput"></div>
+  </section>
+
+<script>
+let API_KEY = localStorage.getItem('gemini_apikey') || '';
+function ensureApiKey() {
+  API_KEY = localStorage.getItem('gemini_apikey') || '';
+  if(!API_KEY || API_KEY.length<20) {
+    alert('Informe/salve uma chave Gemini!'); document.getElementById('apiInput').focus();
+    throw "Chave não definida";
+  }
+}
+document.getElementById('setApiKey').onclick = ()=>{
+  const key = document.getElementById('apiInput').value.trim();
+  if (key.length>20) {
+    localStorage.setItem('gemini_apikey', key);
+    API_KEY = key; alert('Chave salva!');
+  } else {
+    alert('Chave inválida!'); document.getElementById('apiInput').focus();
+  }
+};
+
+const ttsManual = `
+MODELO EXPRESSIVO TTS — SIGA:
+- Interprete/emule tom de voz: voz calma, autoritária, emocionada, sussurrada, etc.
+- Use pausas e ritmo conforme instruções (“fale lentamente”, “hesitação”, “rápido...”).
+- Expresse emoções: alegria, tristeza, raiva, teatralidade, entusiasmo, etc.
+- Adote estilos: falar com bebê, narrador épico, apresentador TV, teatral, ASMR, etc.
+- Não ignore sons não-verbais: (SUSPIRO), (BEIJO_NO_AR), (RISADA_LEVE), (RONRONO), etc.
+- Use SEMPRE marcação para efeitos/emoções/estilos, sem explicação nem texto extra.
+EXEMPLOS:
+(SUSPIRO) Oi, meu amorzinho...
+(VOZ_AGUDINHA) Quem é? (BEIJO_NO_AR)
+(TOM_CONSPIRATÓRIO) Psst... te conto um segredo... (SACOLA_BALANÇANDO)
+`;
+
+async function aprimorarFraseTTS(frase) {
+  ensureApiKey();
+  const prompt = ttsManual + "\n\n" + frase;
+  const payload = {
+    contents: [
+      { role: "user", parts: [ { text: prompt } ] }
+    ]
+  };
+  try {
+    const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=" + API_KEY, {
+      method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)
+    });
+    const d = await r.json();
+    if (!r.ok) return {error: d.error?.message || 'Erro Gemini'};
+    let out = "";
+    if (d.candidates?.[0]?.content?.parts)
+      for(const p of d.candidates[0].content.parts) if(p.text) out += p.text+"\n";
+    return { text: out.trim() };
+  } catch(e){ return { error: e.message||"Erro inesperado"};}
+}
+document.getElementById("chatSendBtn").onclick = async () => {
+  let inp = document.getElementById("chatInput").value.trim();
+  let chatError = document.getElementById("chatErrorMessage");
+  chatError.style.display = "none";
+  if(!inp) return;
+  document.getElementById("chatSendBtn").disabled = true;
+  try {
+    let r = await aprimorarFraseTTS(inp);
+    if(r.error){
+      chatError.textContent = r.error; chatError.style.display="block";
+      document.getElementById("chatOutput").value = "";
+    } else {
+      document.getElementById("chatOutput").value = r.text;
+      document.getElementById("ttsInput").value = r.text;
+    }
+  } finally { document.getElementById("chatSendBtn").disabled = false;}
+};
+
+function convertRawL16ToWav(rawL16,s=24000,c=1,b=16){
+  const h = new ArrayBuffer(44), v=new DataView(h);
+  let ba=c*(b/8), br=s*ba, dl=rawL16.length;
+  function st(x,i){for(let j=0;j<x.length;j++)v.setUint8(i+j,x.charCodeAt(j));}
+  st('RIFF',0); v.setUint32(4,36+dl,true); st('WAVE',8); st('fmt ',12);
+  v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,c,true);
+  v.setUint32(24,s,true); v.setUint32(28,br,true); v.setUint16(32,ba,true); v.setUint16(34,b,true); st('data',36); v.setUint32(40,dl,true);
+  const w=new Uint8Array(44+dl); w.set(new Uint8Array(h),0); w.set(rawL16,44); return w;
+}
+async function gerarAudioTTS(txt, voz) {
+  ensureApiKey();
+  const payload = {
+    contents: [{role:"user",parts:[{text:txt}]}],
+    generationConfig:{
+      responseModalities:["AUDIO"],
+      speechConfig: {voiceConfig:{prebuiltVoiceConfig:{voiceName:voz}}}
+    }
+  };
+  try {
+    const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=" + API_KEY, {
+      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)
+    });
+    const d=await r.json();
+    if(!r.ok) return { error: d.error?.message||"Erro Gemini"};
+    let base64 = "", mimetype="audio/wav";
+    if(d.candidates?.[0]?.content?.parts)
+      for(const p of d.candidates[0].content.parts){
+        if(p.inlineData?.data) base64 = p.inlineData.data;
+        if(p.inlineData?.mimeType) mimetype = p.inlineData.mimeType;
+      }
+    if(!base64)return { error: 'API não retornou áudio.' };
+    const bin=atob(base64), bytes=new Uint8Array([...bin].map(c=>c.charCodeAt(0)));
+    let wavBytes = mimetype && mimetype.toLowerCase().startsWith('audio/l')
+      ? convertRawL16ToWav(bytes) : bytes;
+    let blob = new Blob([wavBytes],{type:'audio/wav'}), url=URL.createObjectURL(blob);
+    return { url };
+  } catch(e){ return { error: e.message||"Erro inesperado"};}
+}
+document.getElementById("ttsSendBtn").onclick = async () => {
+  let txt = document.getElementById("ttsInput").value.trim();
+  let voz = document.getElementById("voz").value;
+  let ttsError = document.getElementById("ttsErrorMessage");
+  ttsError.style.display = "none";
+  if(!txt) return;
+  document.getElementById("ttsSendBtn").disabled = true;
+  try {
+    let r = await gerarAudioTTS(txt, voz);
+    if(r.error){
+      ttsError.textContent=r.error; ttsError.style.display="block";
+      document.getElementById("ttsOutput").innerHTML = "";
+    } else {
+      document.getElementById("ttsOutput").innerHTML =
+        `<div class="audio-box"><audio controls src="${r.url}"></audio>
+         <a href="${r.url}" download="voz-gemini.wav">Baixar Áudio</a></div>`;
+    }
+  } finally { document.getElementById("ttsSendBtn").disabled = false;}
+};
+</script>
+</body>
+</html>
