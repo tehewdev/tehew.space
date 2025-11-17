@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guia Prático para Sair das Dívidas</title>
+
+  <!-- Fontes Google (opcional, mas deixa mais bonito) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* --------- ESTILO BASE (TELA + IMPRESSÃO) --------- */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Lato', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #334155;            /* Slate 700 */
+      background-color: #f1f5f9; /* Slate 100 */
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    h1, h2, h3 {
+      font-family: 'Poppins', system-ui, sans-serif;
+      color: #0f172a; /* Slate 900 */
+      margin-top: 0;
+    }
+
+    h1 {
+      font-size: 2.1rem;
+      text-align: center;
+      margin-bottom: 0.25rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      margin-bottom: 0.25rem;
+    }
+
+    p {
+      line-height: 1.5;
+      margin: 0.4rem 0;
+      font-size: 0.96rem;
+    }
+
+    ul {
+      margin: 0.4rem 0 0.4rem 1.2rem;
+      padding-left: 0;
+      font-size: 0.96rem;
+    }
+
+    li {
+      margin-bottom: 0.25rem;
+    }
+
+    strong {
+      font-weight: 700;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      display: block;
+      margin: 10px auto 0;
+      object-fit: cover;
+    }
+
+    blockquote {
+      margin: 0.75rem 0;
+      padding-left: 12px;
+      border-left: 4px solid #cbd5f5;
+      font-style: italic;
+      font-size: 1.05rem;
+      color: #0f172a;
+    }
+
+    cite {
+      display: block;
+      margin-top: 0.25rem;
+      text-align: right;
+      font-size: 0.9rem;
+      color: #475569;
+    }
+
+    /* "Cartões" / seções */
+    .card {
+      background-color: #ffffff;
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin: 12px 0;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08); /* leve sombra na tela */
+      page-break-inside: avoid; /* tenta não quebrar uma seção ao meio */
+    }
+
+    .card-title-center {
+      text-align: center;
+    }
+
+    .subtitle {
+      font-size: 1.05rem;
+      color: #64748b;
+      text-align: center;
+      margin: 0.35rem 0 0;
+    }
+
+    .small-note {
+      font-size: 0.8rem;
+      text-align: center;
+      color: #64748b;
+      margin-top: 0.5rem;
+      font-style: italic;
+    }
+
+    .tiles {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .tile {
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      background-color: #f8fafc;
+      padding: 8px 10px;
+    }
+
+    .tile-title {
+      font-weight: 700;
+      color: #1d4ed8;
+      margin-bottom: 4px;
+      font-size: 0.98rem;
+    }
+
+    .flex-list {
+      list-style: none;
+      padding: 0;
+      margin: 0.4rem 0;
+    }
+
+    .flex-list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 0.96rem;
+    }
+
+    .flex-list-label {
+      display: inline-block;
+    }
+
+    .flex-list-value {
+      font-weight: 700;
+    }
+
+    .icon-label {
+      font-weight: 700;
+    }
+
+    /* Cores suaves que não pesam na impressão */
+    .bg-essencial {
+      background-color: #eff6ff; /* azul claro */
+      border: 1px solid #bfdbfe;
+    }
+
+    .bg-dividas {
+      background-color: #fef2f2; /* vermelho claro */
+      border: 1px solid #fecaca;
+    }
+
+    .bg-poupanca {
+      background-color: #ecfdf3; /* verde claro */
+      border: 1px solid #bbf7d0;
+    }
+
+    .bg-lazer {
+      background-color: #fefce8; /* amarelo claro */
+      border: 1px solid #fef08a;
+    }
+
+    .section-title {
+      margin-bottom: 0.35rem;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    /* ----- LAYOUT EM TELA (opcional) ----- */
+    @media screen {
+      body {
+        background-color: #e5e7eb;
+      }
+    }
+
+    /* --------- ESTILO PARA IMPRESSÃO --------- */
+    @media print {
+      body {
+        background-color: #ffffff !important;
+      }
+
+      .card {
+        box-shadow: none; /* remove sombra no papel */
+        border: 1px solid #e5e7eb;
+        margin: 8px 0;
+        padding: 12px 14px;
+      }
+
+      .container {
+        max-width: 100%;
+        margin: 0;
+        padding: 10mm;
+      }
+
+      /* Aumenta um pouco a legibilidade no papel */
+      p, li {
+        font-size: 11pt;
+      }
+
+      h1 {
+        font-size: 18pt;
+      }
+
+      h2 {
+        font-size: 14pt;
+      }
+
+      h3 {
+        font-size: 12pt;
+      }
+
+      /* Evita quebras ruins entre seções */
+      h2, h3 {
+        page-break-after: avoid;
+      }
+
+      img {
+        page-break-inside: avoid;
+      }
+
+      /* Links impressos como texto normal (sem sublinhado azul) */
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Slide 1: Título -->
+    <section class="card">
+      <h1>Guia Prático</h1>
+      <p class="subtitle">Como Economizar Dinheiro e Sair do Endividamento</p>
+    </section>
+
+    <!-- Slide 2: Introdução -->
+    <section class="card">
+      <h2 class="section-title">Por que tanta gente está endividada?</h2>
+      <p>Viver endividado é uma fonte constante de ansiedade. O endividamento em massa não é só individual, mas social, ligado ao crédito fácil, cultura de consumo e falta de educação financeira.</p>
+      <p>Este guia é um caminho prático para reorganizar sua vida financeira, com foco em clareza, disciplina e pequenas melhorias consistentes.</p>
+      <img src="https://img.freepik.com/vetores-gratis/ilustracao-em-vetor-conceito-abstrato-gastos-excessivos-planejamento-de-orcamento-gerenciamento-de-dinheiro-gastos-excessivos-vicio-e-m-dinheiro-estresse-financeiro-causar-gastos-alem-da-metafora-abstrata-do-problema-de-renda_335657-6196.jpg" alt="Estresse financeiro" onerror="this.style.display='none'">
+    </section>
+
+    <!-- Slide 3: Diagnóstico -->
+    <section class="card">
+      <h2 class="section-title">O Diagnóstico Financeiro</h2>
+      <p>Educação financeira é usar o dinheiro de forma consciente. O primeiro passo é o diagnóstico:</p>
+      <ul>
+        <li>Liste <strong>todas</strong> as suas dívidas (valor, juros, vencimento).</li>
+        <li>Entenda sua renda líquida total.</li>
+        <li>Rastreie seus gastos fixos e variáveis.</li>
+      </ul>
+      <p>Sem este mapa, qualquer tentativa de mudança vira improviso e aumenta a chance de frustração.</p>
+      <img src="https://institutodelongevidade.org/storage/app/media/2025/02.FEV/dificuldade-no-planejamento-financeiro-instituto-de-longevidade-meio-min.jpg" alt="Planejamento financeiro" onerror="this.style.display='none'">
+    </section>
+
+    <!-- Slide 4: Orçamento -->
+    <section class="card">
+      <h2 class="section-title">Montando um Orçamento Realista</h2>
+      <p>Um orçamento não é uma prisão, é um plano. Uma sugestão de divisão da renda:</p>
+
+      <ul class="flex-list">
+        <li class="flex-list-item bg-essencial">
+          <span class="flex-list-label">Necessidades essenciais</span>
+          <span class="flex-list-value">50%</span>
+        </li>
+        <li class="flex-list-item bg-dividas">
+          <span class="flex-list-label">Pagamento de dívidas</span>
+          <span class="flex-list-value">20%</span>
+        </li>
+        <li class="flex-list-item bg-poupanca">
+          <span class="flex-list-label">Objetivos / Poupança</span>
+          <span class="flex-list-value">10%</span>
+        </li>
+        <li class="flex-list-item bg-lazer">
+          <span class="flex-list-label">Lazer e qualidade de vida</span>
+          <span class="flex-list-value">20%</span>
+        </li>
+      </ul>
+
+      <p class="small-note">O objetivo é eliminar desperdícios, não apenas impor sacrifícios.</p>
+    </section>
+
+    <!-- Slide 5: Estratégia 1 -->
+    <section class="card">
+      <h2 class="section-title">Estratégia (Parte 1)</h2>
+      <div class="tiles">
+        <div class="tile">
+          <div class="tile-title">Pare de criar dívidas</div>
+          <p>É o passo decisivo. Interrompa o uso de cartão de crédito e cheque especial para “tapar buracos”.</p>
+        </div>
+        <div class="tile">
+          <div class="tile-title">Priorize o pagamento à vista</div>
+          <p>Sempre que possível, pague à vista. Só compre aquilo que cabe no seu orçamento já planejado.</p>
+        </div>
+        <div class="tile">
+          <div class="tile-title">Cortes inteligentes</div>
+          <p>Revise planos de telefone, streaming e hábitos de delivery. Foque em eliminar desperdícios.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 6: Estratégia 2 -->
+    <section class="card">
+      <h2 class="section-title">Estratégia (Parte 2) – Priorize e Negocie</h2>
+      <p>Concentre esforços nas dívidas com <strong>juros mais altos</strong> (cartão de crédito e cheque especial), pois são mais perigosas.</p>
+      <p>Procure os credores com uma proposta baseada no quanto você realmente pode pagar.</p>
+      <ul>
+        <li>Peça redução de juros.</li>
+        <li>Solicite desconto para quitação.</li>
+        <li>Não aceite acordos que você não pode cumprir.</li>
+      </ul>
+      <img src="https://thumbs.dreamstime.com/b/duas-mulheres-empres%C3%A1rias-apertando-as-m%C3%A3os-retrato-lateral-m%C3%ADnimo-de-agitando-em-cima-da-mesa-reuni%C3%B5es-no-escrit%C3%B3rio-257622400.jpg" alt="Negociação" onerror="this.style.display='none'">
+    </section>
+
+    <!-- Slide 7: Economia Diária -->
+    <section class="card">
+      <h2 class="section-title">Como Economizar no Dia a Dia</h2>
+      <p>Economizar não precisa ser sinônimo de sofrimento. A ideia é gastar melhor, com clareza de prioridades.</p>
+      <ul>
+        <li>Reduza desperdícios em contas de água, energia e comida.</li>
+        <li>Planeje as compras do mercado com uma lista.</li>
+        <li>Reorganize o lazer: troque saídas caras por programas gratuitos ou mais baratos, como parques e encontros em casa.</li>
+      </ul>
+      <img src="https://static.vecteezy.com/ti/fotos-gratis/p2/17705733-familia-feliz-fazendo-piquenique-no-parque-e-divirta-se-foto.jpg" alt="Piquenique no parque" onerror="this.style.display='none'">
+    </section>
+
+    <!-- Slide 8: Reserva de Emergência -->
+    <section class="card">
+      <h2 class="section-title">Reserva de Emergência</h2>
+      <h3>O que é?</h3>
+      <p>É um valor guardado para situações inesperadas, como perda de renda, problemas de saúde ou despesas urgentes.</p>
+      <p>Ela evita que você precise recorrer novamente a crédito caro sempre que algo foge do plano.</p>
+      <p>Comece com metas pequenas e crie o hábito de separar uma parte da renda todo mês, por menor que seja.</p>
+      <img src="https://png.pngtree.com/png-clipart/20241209/original/pngtree-piggy-bank-with-coin-pig-accounts-piggy-bank-photo-png-image_17768500.png" alt="Cofrinho" onerror="this.style.display='none'">
+    </section>
+
+    <!-- Slide 9: Investimentos -->
+    <section class="card">
+      <h2 class="section-title">Primeiros Passos para Investir</h2>
+      <p>Depois de formada a reserva de emergência, você pode começar a estudar investimentos simples e adequados ao seu perfil.</p>
+      <ul>
+        <li>O foco inicial deve ser segurança e liquidez.</li>
+        <li>Não busque ganhos rápidos ou promessas de enriquecimento instantâneo.</li>
+        <li>Busque fontes confiáveis e desconfie de “dicas”.</li>
+      </ul>
+      <p>Investir com consciência faz parte de uma educação financeira madura.</p>
+      <img src="https://png.pngtree.com/png-vector/20250512/ourlarge/pngtree-hand-drawn-bar-graph-with-arrow-going-up-isolated-on-transparent-png-image_16220738.png" alt="Gráfico de investimento" onerror="this.style.display='none'">
+    </section>
+
+    <!-- Slide 10: Evitando Recaída -->
+    <section class="card">
+      <h2 class="section-title">Como Não Voltar ao Endividamento</h2>
+      <ul>
+        <li><span class="icon-label">Mantenha o controle contínuo:</span> continue registrando gastos e revisando o orçamento regularmente.</li>
+        <li><span class="icon-label">Cuidado com o crédito “liberado”:</span> lembre-se que limite disponível não é dinheiro extra.</li>
+        <li><span class="icon-label">Evite gatilhos:</span> se o cartão de crédito é um gatilho, reduza o limite ou use apenas o débito.</li>
+        <li><span class="icon-label">Foque nas metas:</span> mantenha o foco no longo prazo para reduzir a tentação do consumo impulsivo.</li>
+      </ul>
+    </section>
+
+    <!-- Slide 11: Conclusão -->
+    <section class="card">
+      <h2 class="section-title">Conclusão</h2>
+      <blockquote>
+        Sair do endividamento é um processo de mudança de comportamento e mentalidade. Exige esforço, mas abre espaço para tranquilidade, liberdade e realização.
+      </blockquote>
+      <cite>— Seu Novo Relacionamento com o Dinheiro</cite>
+    </section>
+
+    <!-- Slide 12: Dúvidas -->
+    <section class="card">
+      <h2 class="section-title center">Dúvidas?</h2>
+      <p class="center">Obrigado pela sua atenção. O próximo passo depende de você.</p>
+    </section>
+
+  </div>
+</body>
+</html>
