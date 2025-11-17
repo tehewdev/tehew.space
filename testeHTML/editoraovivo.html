@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor HTML ao Vivo</title>
+    <!-- Ícone (favicon) usando SVG emoji -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'><text y='1.2em' font-size='90'>🚀</text></svg>">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', 'Segoe UI', 'Courier New', monospace;
+            background: #101014;
+            color: #e9e9ed;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: #111117;
+            padding: 20px 0 14px 0;
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            border-bottom: 2.5px solid #32323c;
+            box-shadow: 0 2px 8px #000c 0.06;
+        }
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            min-height: 0;
+            overflow: hidden;
+            background: #17171c;
+        }
+        .editor-section {
+            width: 50%;
+            min-width: 260px;
+            max-width: 700px;
+            display: flex;
+            flex-direction: column;
+            border-right: 2px solid #23232e;
+            background: #17171c;
+        }
+        .tabs {
+            display: flex;
+            background: #13131a;
+            border-bottom: 2px solid #23232e;
+            font-size: 1rem;
+        }
+        .tab {
+            flex: 1;
+            padding: 14px 0;
+            text-align: center;
+            cursor: pointer;
+            background: none;
+            border: none;
+            outline: none;
+            color: #b8b8d4;
+            transition: background .18s, color .18s;
+            font-weight: 600;
+            border-right: 1.5px solid #23232e;
+            letter-spacing: .5px;
+            border-radius: 9px 9px 0 0;
+            margin-right: 2px;
+        }
+        .tab:last-child { border-right: none; }
+        .tab:hover,
+        .tab.active {
+            background: #24243d;
+            color: #09f38c;
+        }
+        textarea {
+            flex: 1;
+            background: #17171c;
+            color: #e9e9ed;
+            border: none;
+            padding: 18px 16px 16px 16px;
+            font-family: 'Fira Mono', 'Consolas', 'Courier New', monospace;
+            font-size: 1.07rem;
+            line-height: 1.6;
+            outline: none;
+            resize: none;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 2px 12px #000c 0.06;
+        }
+        .editor-panel { display: none; flex: 1; }
+        .editor-panel.active { display: flex; flex-direction: column; }
+
+        .preview-section {
+            width: 50%;
+            min-width: 260px;
+            background: #fafafb;
+            border-left: 2px solid #23232e;
+            box-shadow: -6px 0 22px -10px #0007;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            position: relative;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #fff;
+            border-radius: 0 0 15px 15px;
+        }
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+            }
+            .editor-section, .preview-section {
+                width: 100%;
+                min-width: unset;
+                max-width: unset;
+                border: none;
+            }
+            .editor-section { border-bottom: 2px solid #23232e; }
+            .preview-section { border-left: none; }
+        }
+        ::-webkit-scrollbar {
+            width: 7px; background: #111117;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #32323c; border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Editor HTML ao Vivo - thewee</h1>
+    </div>
+    <div class="container">
+        <div class="editor-section">
+            <div class="tabs">
+                <div class="tab active" data-tab="html">HTML</div>
+                <div class="tab" data-tab="css">CSS</div>
+                <div class="tab" data-tab="js">JavaScript</div>
+            </div>
+            <div class="editor-panel active" id="html-panel">
+                <textarea id="html-code" placeholder="Digite seu HTML aqui...">
+<h1>Olá, Mundo!</h1>
+<p>Edite este código e veja o resultado ao vivo!</p>
+<button onclick="alert('Funcionou!')">Clique aqui</button>
+                </textarea>
+            </div>
+            <div class="editor-panel" id="css-panel">
+                <textarea id="css-code" placeholder="Digite seu CSS aqui...">
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+h1 {
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+button {
+    padding: 10px 20px;
+    background: #fff;
+    color: #667eea;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+button:hover {
+    transform: scale(1.05);
+}
+                </textarea>
+            </div>
+            <div class="editor-panel" id="js-panel">
+                <textarea id="js-code" placeholder="Digite seu JavaScript aqui...">
+console.log('Editor ao vivo carregado!');
+// Adicione seu código JavaScript aqui
+                </textarea>
+            </div>
+        </div>
+        <div class="preview-section">
+            <iframe id="preview"></iframe>
+        </div>
+    </div>
+    <script>
+        const htmlCode = document.getElementById('html-code');
+        const cssCode = document.getElementById('css-code');
+        const jsCode = document.getElementById('js-code');
+        const preview = document.getElementById('preview');
+        const tabs = document.querySelectorAll('.tab');
+        const panels = document.querySelectorAll('.editor-panel');
+
+        // Sistema de abas
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.dataset.tab;
+                tabs.forEach(t => t.classList.remove('active'));
+                panels.forEach(p => p.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(`${targetTab}-panel`).classList.add('active');
+            });
+        });
+
+        // Atualização em tempo real
+        function updatePreview() {
+            const html = htmlCode.value;
+            const css = `<style>${cssCode.value}</style>`;
+            const js = `<script>${jsCode.value}<\/script>`;
+            const fullCode = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    ${css}
+                </head>
+                <body>
+                    ${html}
+                    ${js}
+                </body>
+                </html>
+            `;
+            preview.srcdoc = fullCode;
+        }
+
+        // Event listeners para atualização em tempo real
+        htmlCode.addEventListener('input', updatePreview);
+        cssCode.addEventListener('input', updatePreview);
+        jsCode.addEventListener('input', updatePreview);
+
+        // Carrega preview inicial
+        updatePreview();
+    </script>
+</body>
+</html>
