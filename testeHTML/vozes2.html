@@ -2,474 +2,195 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Gemini TTS Diagnóstico WAV + Aprimorador de Prompt</title>
+  <title>Gemini TTS Diagnóstico WAV - Completo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-:root {
-  --primary: #4285f4;
-  --primary-dark: #3367d6;
-  --success: #34a853;
-  --danger: #ea4335;
-  --bg: #f8f9fa;
-  --panel: #fff;
-  --border: #dee2e6;
-  --radius: 12px;
-  --shadow: 0 4px 16px rgba(66,133,244,.09);
-}
-
-body {
-  font-family: 'Inter', system-ui, sans-serif;
-  background: var(--bg);
-  min-height: 100vh;
-  margin: 0;
-  color: #212529;
-}
-
-h1 {
-  color: var(--primary);
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: -1px;
-  margin-bottom: 1rem;
-}
-
-section {
-  background: var(--panel);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  margin: 2em auto 1.2em auto;
-  max-width: 550px;
-  padding: 2em 1.3em 1.5em 1.3em;
-  border: 1px solid var(--border);
-}
-
-label {
-  font-weight: 600;
-  margin-top: 1.3em;
-  display: block;
-  color: #555d;
-}
-
-textarea, input, select, button {
-  font-family: inherit;
-  font-size: 1em;
-  border-radius: 7px;
-  border: 1px solid var(--border);
-  margin-top: .4em;
-  padding: .7em 1em;
-  width: 100%;
-  box-sizing: border-box;
-  transition: border .18s;
-}
-
-textarea { resize: vertical; min-height: 80px; }
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  border-color: var(--primary);
-}
-
-button, .btn-main {
-  margin-top: 1.1em;
-  background: var(--primary);
-  color: #fff;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 3px 16px #4285f422;
-  transition: background .19s;
-}
-
-button:disabled { opacity: .6; cursor: not-allowed; }
-.btn-main:hover { background: var(--primary-dark); }
-#addLocutor { background: #e6ecf5; color: #222; border: 1px solid #c5dafd; }
-
-.locutores {
-  display: flex;
-  gap: 1.4em;
-  margin-bottom: 1em;
-  flex-wrap: wrap;
-}
-.loc-config {
-  background: #f2f6fb;
-  border: 1px solid #e3e9ff;
-  border-radius: 7px;
-  padding: .7em .8em .45em .8em;
-  min-width: 204px;
-}
-
-.audio-box {
-  margin-top: 1.5em;
-  background: #f8fcff;
-  border: 1px solid #cbe1ff;
-  border-radius: 7px;
-  padding: 1.1em .7em .7em .7em;
-}
-.audio-box audio {
-  width: 100%;
-  margin-top: .7em;
-}
-
-#audioResult a {
-  display: block;
-  margin-top: .8em;
-  color: var(--primary-dark);
-  font-weight: 500;
-  text-decoration: underline;
-}
-
-.msg { margin-top: .7em; color: var(--danger); font-weight: 500; }
-.success { color: var(--success); }
-
-#hex-debug {
-  font-family: monospace;
-  font-size: .95em;
-  background: #eef2fb;
-  color: #516185;
-  border-radius: 5px;
-  padding: .7em;
-  margin: 1em 0 .5em 0;
-  word-break: break-all;
-}
-
-#chat-section h2 {
-  color: #4285f4;
-  margin-bottom:.6em;
-  font-size:1.25em;
-  font-weight:600;
-}
-
-/* Chat extra */
-#chat-history {
-  background:#f2f6fb;
-  border-radius:7px;
-  padding:1em 1em 0.8em 1em;
-  min-height:70px;
-  max-height:210px;
-  overflow-y:auto;
-  margin-bottom:1em;
-  font-size:1em;
-}
-#chat-section {
-  margin:2em auto 1.2em auto;
-  max-width:550px;
-  background: var(--panel);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding:2em 1.3em 1.6em 1.3em;
-  border: 1px solid var(--border);
-}
-@media (max-width:650px) {
-  section,#chat-section { padding:1em .3em .5em .3em; }
-  .locutores { flex-direction: column; gap: .6em; }
-}
-  </style>
 </head>
 <body>
-  <h1>Gemini TTS Diagnóstico PCM ↔ WAV (Nov/2025) + Prompt Chat</h1>
-  <section>
-    <label for="texto">Texto</label>
-    <textarea id="texto" rows="3" style="width:100%" placeholder="Digite o texto para o TTS..."></textarea>
-    <label for="modelo">Modelo</label>
-    <select id="modelo">
-      <option value="gemini-2.5-flash-preview-tts">Gemini 2.5 Flash</option>
-      <option value="gemini-2.5-pro-preview-tts">Gemini 2.5 Pro</option>
-    </select>
-    <div class="locutores" id="locutores"></div>
-    <button type="button" id="addLocutor" style="margin-top:.6em">+ Adicionar Locutor</button>
-    <div id="msg" class="msg"></div>
-    <button class="btn-main" id="ttsBtn" style="margin-top:1em">Gerar Áudio</button>
-    <div id="audioResult"></div>
-    <div id="hex-debug"></div>
-  </section>
-  <section id="chat-section">
-    <h2>💬 Aprimorador de Prompt TTS Expressivo</h2>
-    <div id="chatErrorMessage" class="msg" style="display:none"></div>
-    <div id="chat-history"></div>
-    <textarea id="chatInput" rows="2" style="width:100%;margin-bottom:.6em" placeholder="Digite uma frase para aprimorar para TTS..."></textarea>
-    <button class="btn-main" id="chatSendBtn">Aprimorar frase</button>
-    <div id="chat-loading" style="color:#4285f4;margin-top:0.7em;display:none;">⏳ Processando...</div>
-  </section>
-  <script>
-    // ----------- Gemini Diagnóstico PCM ↔ WAV (parte principal) -----------
-    const VOZES = [
-      "Zephyr","Orus","Kore","Achernar","Aoede","Autonoe","Callirrhoe","Despina",
-      "Erinome","Gacrux","Laomedeia","Leda","Pulcherrima","Sulafat","Vindemiatrix",
-      "Achird","Algenib","Algieba","Alnilam","Charon","Enceladus","Fenrir","Iapetus",
-      "Puck","Rasalgethi","Sadachbia","Sadaltager","Schedar","Umbriel","Zubenelgenubi"
-    ];
-    let locutores = [{ nome:'Locutor 1', voz: VOZES[0] }];
-    let API_KEY = localStorage.getItem('gemini_apikey') || '';
-    function renderLocutores() {
-      const lista = document.getElementById('locutores');
-      lista.innerHTML='';
-      locutores.forEach((l,i) => {
-        const div = document.createElement('div');
-        div.className="loc-config";
-        const voiceOptions = VOZES.map(v=>`<option${l.voz==v?' selected':''}>${v}</option>`).join('');
-        const removeBtn = locutores.length>1?`<button type="button" onclick="removerLocutor(${i})">Remover</button>`:'';
-        div.innerHTML = `
-          <label>Nome</label>
-          <input value="${l.nome}" onchange="locutores[${i}].nome=this.value">
-          <label>Voz</label>
-          <select onchange="locutores[${i}].voz=this.value">${voiceOptions}</select>
-          ${removeBtn}
-        `;
-        lista.append(div);
-      });
-    }
-    window.removerLocutor=function(i){ locutores.splice(i,1);renderLocutores(); }
-    window.addEventListener('DOMContentLoaded', renderLocutores);
-    document.getElementById('addLocutor').onclick = ()=>{
-      if(locutores.length>=2) return;
-      locutores.push({nome:'Locutor '+(locutores.length+1),voz:VOZES[locutores.length%VOZES.length]});
-      renderLocutores();
-    };
-    function askApiKey(){
-      let key = prompt("Insira sua chave da API Gemini:");
-      if(key){key=key.trim();API_KEY=key;localStorage.setItem('gemini_apikey', key);}
-    }
-    if(!API_KEY) askApiKey();
+  <h1>Gemini TTS Diagnóstico WAV (Nov/2025)</h1>
+  
+  <h2>Chat para Aprimorar Frases TTS</h2>
+  <div id="chatHistory" style="border:1px solid #bbb;min-height:60px;padding:6px 8px;margin-bottom:5px;"></div>
+  <textarea id="chatInput" placeholder="Digite uma frase para aprimorar e gerar áudio..." rows="3" cols="60"></textarea><br>
+  <button type="button" id="sendChat">Aprimorar Frase (texto)</button>
+  <button type="button" id="insertTTS">Usar Frase Aprimorada no TTS</button>
+  <div id="chatErrorMessage" style="color:red;font-weight:bold;"></div>
+  <hr>
 
-    function parseMimeType(mimetype){
-      let sampleRate=24000,bitsPerSample=16,numChannels=1;
-      if(!mimetype) return {sampleRate,bitsPerSample,numChannels};
-      const parts = mimetype.split(';');
-      if(parts[0].toLowerCase().includes('l16')) bitsPerSample=16;
-      parts.slice(1).forEach(x=>{
-        const [k,v]=x.trim().split('=');
-        if(['rate','ratec'].includes(k))sampleRate=+v;
-        if(['channels'].includes(k))numChannels=+v;
-        if(['bits','bitspersample'].includes(k))bitsPerSample=+v;
-      });
-      return {sampleRate,bitsPerSample,numChannels};
-    }
-    function convertRawL16ToWav(rawL16, sampleRate=24000, numChannels=1, bitsPerSample=16){
-      const header = new ArrayBuffer(44); const view = new DataView(header);
-      let blockAlign = numChannels * (bitsPerSample/8), byteRate = sampleRate*blockAlign;
-      let dlen = rawL16.length;
-      function setStr(s,i){for(let x=0;x<s.length;x++)view.setUint8(i+x,s.charCodeAt(x));}
-      setStr('RIFF',0);
-      view.setUint32(4,36+dlen,true);
-      setStr('WAVE',8); setStr('fmt ',12);
-      view.setUint32(16,16,true); view.setUint16(20,1,true); view.setUint16(22,numChannels,true);
-      view.setUint32(24,sampleRate,true); view.setUint32(28,byteRate,true); view.setUint16(32,blockAlign,true); view.setUint16(34,bitsPerSample,true);
-      setStr('data',36); view.setUint32(40,dlen,true);
-      const wav = new Uint8Array(44+dlen); wav.set(new Uint8Array(header),0); wav.set(rawL16,44);
-      return wav;
-    }
-    function isSilentAudio(bytes){
-      let nonZero = 0;
-      for(const b of bytes) if(b!==0){nonZero++;}
-      return nonZero<24;
-    }
-    function hexPreview(bytes){
-      let hex = '';
-      for(let i=0;i<64;i++) hex += (bytes[i]||0).toString(16).padStart(2,'0')+" ";
-      return hex;
-    }
-    document.getElementById('ttsBtn').onclick = async function(){
-      document.getElementById('audioResult').innerHTML = '';
-      document.getElementById('hex-debug').innerHTML = '';
-      const texto=document.getElementById('texto').value.trim();
-      const modelo=document.getElementById('modelo').value;
-      const msgbox=document.getElementById('msg');
-      msgbox.textContent='';
-      if(!API_KEY){askApiKey();if(!API_KEY)return;}
-      if(!texto){msgbox.textContent='Digite algum texto.';return;}
-      if(locutores.some(l=>!l.nome.trim())){msgbox.textContent='Preencha o nome de todos os locutores.';return;}
-      let speechConfig;
-      if(locutores.length===1){
-        speechConfig = {voiceConfig:{prebuiltVoiceConfig:{voiceName:locutores[0].voz}}};
-      } else {
-        speechConfig = {multiSpeakerVoiceConfig:{speakerVoiceConfigs:locutores.map(l=>({speaker:l.nome,voiceConfig:{prebuiltVoiceConfig:{voiceName:l.voz}}}))}};
-      }
-      const payload={
-        contents:[{role:"user",parts:[{text:texto}]}],
-        generationConfig:{responseModalities:["AUDIO"],speechConfig}
-      };
-      document.getElementById('ttsBtn').disabled=true;
-      msgbox.textContent = 'Gerando... Aguarde.';
-      try {
-        const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${API_KEY}`,{
-          method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)
-        });
-        const data=await resp.json();
-        if(!resp.ok) throw new Error((data.error && data.error.message)||'Falha desconhecida API Gemini');
-        let base64='',mimetype='';
-        if(data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts)
-          for(const p of data.candidates[0].content.parts)
-            if(p.inlineData&&p.inlineData.data){
-              base64=p.inlineData.data; mimetype=p.inlineData.mimeType||'audio/wav';
-            }
-        if(!base64){msgbox.textContent='API não retornou áudio.';return;}
-        function b64ToBytes(b){const bin=atob(b);return Uint8Array.from([...bin].map(c=>c.charCodeAt(0)));}
-        let audioBytes = b64ToBytes(base64);
-        document.getElementById('hex-debug').innerText="HEX PCM (primeiros 64):\n"+hexPreview(audioBytes);
-        if(isSilentAudio(audioBytes)){
-          msgbox.textContent = '⚠️ O áudio gerado está silencioso/mudo. Veja o HEX abaixo e tente outro texto, voz ou modelo Gemini!';
-          document.getElementById('audioResult').innerHTML='';
-          return;
-        }
-        let params = parseMimeType(mimetype);
-        let wavBytes = (mimetype && mimetype.toLowerCase().startsWith('audio/l')) ?
-          convertRawL16ToWav(audioBytes, params.sampleRate, params.numChannels, params.bitsPerSample) : audioBytes;
-        let blob = new Blob([wavBytes],{type:'audio/wav'});
-        const url=URL.createObjectURL(blob);
-        document.getElementById('audioResult').innerHTML = `<div class="audio-box">
-          <b>Formato Gemini:</b> ${mimetype}<br>
-          <b>Tamanho:</b> ${wavBytes.length} bytes<br>
-          <audio controls src="${url}" style="display:block"></audio>
-          <a download="voz-gemini-tts.wav" href="${url}">Baixar Áudio</a>
-          <div style="margin-top:.8em;color:#4caf50">✓ Pronto!</div>
-        </div>`;
-        msgbox.textContent = '';
-      } catch(e) {
-        msgbox.textContent = 'Falha ao gerar áudio:\n' + (e.message||e);
-        document.getElementById('audioResult').innerHTML='';
-        document.getElementById('hex-debug').innerHTML='';
-      } finally {
-        document.getElementById('ttsBtn').disabled=false;
-      }
-    };
+  <h2>Diagnóstico Gemini TTS</h2>
+  <label for="texto">Texto para Áudio:</label><br>
+  <textarea id="texto" rows="3" cols="60"></textarea><br>
+  <label for="modelo">Modelo TTS:</label>
+  <select id="modelo">
+    <option value="gemini-2.5-flash-tts">Gemini 2.5 Flash TTS (stable)</option>
+    <option value="gemini-2.5-flash-preview-tts">Gemini 2.5 Flash TTS (preview)</option>
+  </select>
+  <br>
+  <label for="voz">Voz:</label>
+  <select id="voz">
+    <option>Zephyr</option>
+    <option>Orus</option>
+    <option>Kore</option>
+    <option>Achernar</option>
+    <option>Aoede</option>
+    <option>Autonoe</option>
+    <option>Callirrhoe</option>
+    <option>Despina</option>
+    <option>Erinome</option>
+    <option>Gacrux</option>
+    <option>Laomedeia</option>
+    <option>Leda</option>
+    <option>Pulcherrima</option>
+    <option>Sulafat</option>
+    <option>Vindemiatrix</option>
+    <option>Achird</option>
+    <option>Algenib</option>
+    <option>Algieba</option>
+    <option>Alnilam</option>
+    <option>Charon</option>
+    <option>Enceladus</option>
+    <option>Fenrir</option>
+    <option>Iapetus</option>
+    <option>Puck</option>
+    <option>Rasalgethi</option>
+    <option>Sadachbia</option>
+    <option>Sadaltager</option>
+    <option>Schedar</option>
+    <option>Umbriel</option>
+    <option>Zubenelgenubi</option>
+  </select>
+  <br>
+  <button id="ttsBtn">Gerar Áudio</button>
+  <div id="msg" style="color:red;font-weight:bold;"></div>
+  <div id="audioResult"></div>
+  <div id="hex-debug"></div>
 
-    // ----------- Chat Aprimorador de Prompt TTS -----------
-    const ttsManual = 
-`🎙️ **1. Tom de Voz**
-Interprete expressões como: “voz calma e reconfortante”, “tom autoritário e direto”, etc.
+<script>
+// VARIÁVEIS BÁSICAS
+let API_KEY = localStorage.getItem('gemini_apikey') || '';
+function askApiKey(){
+  let key = prompt("Insira sua chave da API Gemini:");
+  if(key){key=key.trim();API_KEY=key;localStorage.setItem('gemini_apikey', key);}
+}
+if(!API_KEY) askApiKey();
 
-🕓 **2. Ritmo e Velocidade**
-Exemplo: “fale lentamente, com pausas longas”, “em ritmo acelerado, nervoso”, etc.
-
-😮‍💨 **3. Emoções**
-Exemplo: “alegria contagiante”, “voz embargada de tristeza”, etc.
-
-🎭 **4. Estilo de Performance**
-Exemplo: “falando com um bebê”, “imitando apresentador culinário”, etc.
-
-🔉 **5. Sons e Efeitos Não-Verbais**
-Exemplo: \`(SUSPIRO)\`, \`(RISADA_LEVE)\`, \`(PAUSA)\`, \`(BEIJO_NO_AR)\`, etc.
-
-🧠 **Exemplo de Execução:**
-> Com voz doce, lenta e carinhosa, como mãe com cachorro:
-> *(SUSPIRO)* Oi, meu amorzinho... já acordou?
-> (RISADA_LEVE) Quer passear, né?
-> Vamos pegar petisquinho? (SACO_MEXENDO)
-> Só um, hein? (BEIJO_NO_AR) Mamãe te ama!
-
-💡 **Importante:**
-- Ignore parâmetros técnicos (pitch, temperature).
-- Sua voz deve ter naturalidade e emoção baseadas exclusivamente no texto.
-
-### Marcadores Comuns de Efeitos
-
-| Marcador              | Efeito                       |
-| --------------------- | ---------------------------- |
-| \`(SUSPIRO_AFETIVO)\`   | Suspiro carinhoso            |
-| \`(PAUSA_RONRONO)\`     | Pausa com ronronar imaginado |
-| \`(BEIJO_NO_AR)\`       | Som de beijo                 |
-| \`(RISADA_SUAVE)\`      | Riso leve                    |
-| \`(SACOLA_BALANÇANDO)\` | Ruído imaginado de sacola    |
-| \`(GRUNHIDO_GATO)\`     | Resmungo felino opcional     |
-
-### Instruções de Tom e Emoção
-
-* \`(VOZ_AGUDINHA)\` → Infantil, pets/bebês
-* \`(TOM_CONSPIRATÓRIO)\` → Sussurro confidencial
-* \`(ENTONAÇÃO_EPICA)\` → Grandioso, narrativo
-* \`(FALA_CANSADA)\` → Lento, rouco
-
-### Exemplo Completo para Diálogo Multi-Falantes
-
-MÃE: (VOZ_DOCE) Vem cá, meu bem... (PAUSA_RONRONO)
-GATO: (MIAU_LONGO) Meeeoow! (GRUNHIDO_GATO)
-MÃE: (RISADA_LEVE) Tá com ciúmes? (BEIJO_NO_AR)
-
-### Sons Ambientes (ASMR)
-
-"(PASSOS_SUAVES) Shh... gatinho dormindo... (RONRONO_ALTO) (COBERTOR_MOVENDO)"
-
-### Exemplo Pronto Final
-
-"(TOM_CONFIDENCIAL) Psst... (SUSSURRO) Olha o que escondi do papai... (SACOLA_BALANÇANDO) (VOZ_AGUDINHA) Seu snack favorito! (RISINHO_MALANDRO)"
-
-Formato .srt para Gemini TTS:
-[2.24s] Texto correspondente.
-[6.57s] (pausa pensativo)
+const ttsManual = `
+🎙️ 1. Tom de Voz: “voz calma e reconfortante”, “tom autoritário e direto”, “voz trêmula e emocionada”, etc.
+🕓 2. Ritmo: “fale lentamente”, “acelerado e nervoso”, “com hesitação entre as palavras”...
+😮‍💨 3. Emoções: “alegria contagiante”, “voz embargada de tristeza”, “falando com raiva contida”...
+🎭 4. Estilo: “falando com um bebê”, “imitando apresentador culinário”, “narrador épico”, “sensualidade exagerada”...
+🔉 5. Sons/Efeitos: marcadores como (SUSPIRO), (PAUSA), (RISADA), (RONRONO)... simulam efeitos não-verbais e pausas.
+Use exemplos e marcadores para TTS expressivo conforme desejar.
 `;
 
-    async function aprimorarFraseTTS(userPhrase) {
-      const API_KEY = localStorage.getItem('gemini_apikey');
-      if (!API_KEY) return { error: "Chave da API Gemini ausente." };
-      const systemPrompt = `Você é um assistente especializado em criar prompts para Texto-para-Fala (TTS) expressivo. Sua principal tarefa é formatar frases e diálogos conforme este manual de referência, tornando-as realistas, emocionais e ricas em marcações, prontas para serem usadas no Gemini TTS.\n--- MANUAL ---\n${ttsManual}\n---\nQuando receber uma frase, reescreva de forma detalhada e expressiva. Sempre responda só com o texto pronto para Gemini TTS, sem explicações.`;
+const systemPromptTTSManual = `Você é um assistente especializado em criar prompts para Texto-para-Fala (TTS) expressivo. Aprimore frases conforme o manual abaixo, só com exemplos prontos para uso, sempre em português do Brasil.
+--- MANUAL ---
+${ttsManual}
+--- FIM DO MANUAL ---
+`;
 
-      const payload = {
-        contents: [
-          { role: "system", parts: [{ text: systemPrompt }] },
-          { role: "user", parts: [{ text: userPhrase }] }
-        ],
-        generationConfig: { responseModalities: ["TEXT"] }
-      };
+let lastGeminiChat = "";
 
-      try {
-        const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=" + API_KEY, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        const data = await resp.json();
-        if (!resp.ok) return { error: (data.error && data.error.message) || "Erro desconhecido" };
-        let respostaGemini = "";
-        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
-          for (const p of data.candidates[0].content.parts) {
-            if (p.text) respostaGemini += p.text + "\n";
-          }
-        }
-        if (!respostaGemini.trim()) return { error: "Nenhum texto gerado pela API." };
-        return { text: respostaGemini.trim() };
-      } catch (e) {
-        return { error: e.message || "Erro inesperado." };
-      }
-    }
-
-    // Chat DOM
-    const chatHistoryDiv = document.getElementById('chat-history');
-    const chatInput = document.getElementById('chatInput');
-    const chatSendBtn = document.getElementById('chatSendBtn');
-    const chatErrorMessageDiv = document.getElementById('chatErrorMessage');
-    const chatLoadingDiv = document.getElementById('chat-loading');
-
-    function addChatHistory(userText, botText) {
-      const userMsg = `<div style="margin-bottom:0.5em;"><b>Você:</b> ${userText}</div>`;
-      const botMsg = `<div style="margin-bottom:0.8em;background:#e8f5e9;padding:.5em;border-radius:5px;"><b>Gemini TTS:</b><br><pre style="white-space:pre-wrap;margin:0;font-size:1em;font-family:inherit;">${botText}</pre></div>`;
-      chatHistoryDiv.innerHTML += userMsg + botMsg;
-      chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
-    }
-
-    chatSendBtn.onclick = async () => {
-      const texto = chatInput.value.trim();
-      if (!texto) return;
-      chatLoadingDiv.style.display = "block";
-      chatSendBtn.disabled = true;
-      chatInput.disabled = true;
-      chatErrorMessageDiv.style.display = "none";
-      const resposta = await aprimorarFraseTTS(texto);
-      chatLoadingDiv.style.display = "none";
-      chatSendBtn.disabled = false;
-      chatInput.disabled = false;
-      if (resposta.error) {
-        chatErrorMessageDiv.textContent = resposta.error;
-        chatErrorMessageDiv.style.display = "block";
-      } else {
-        addChatHistory(texto, resposta.text);
-        chatInput.value = "";
+// CHAT EXPRESSIVO usando gemini-2.5-flash-lite (TEXTO)
+document.getElementById('sendChat').onclick = async function() {
+  const chatInput = document.getElementById('chatInput');
+  const chatErrorMessageDiv = document.getElementById('chatErrorMessage');
+  const chatHistoryDiv = document.getElementById('chatHistory');
+  const userMsg = chatInput.value.trim();
+  chatErrorMessageDiv.textContent = '';
+  if (!API_KEY) { askApiKey(); if(!API_KEY)return;}
+  if (!userMsg) { chatErrorMessageDiv.textContent = "Digite uma frase para aprimorar."; return; }
+  chatHistoryDiv.innerHTML += `<div><b style="color:#4285f4">Você:</b> ${userMsg}</div>`;
+  chatInput.value = '';
+  document.getElementById('sendChat').disabled = true;
+  try {
+    const payload = {
+      contents: [
+        { role: "system", parts: [{ text: systemPromptTTSManual }] },
+        { role: "user", parts: [{ text: userMsg }] }
+      ],
+      generationConfig: {
+        responseModalities: ["TEXT"]
       }
     };
-    chatInput.addEventListener('keydown', function(e){
-      if(e.key==='Enter' && !e.shiftKey){
-        e.preventDefault();
-        chatSendBtn.onclick();
-      }
+    const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key='+API_KEY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
-  </script>
+    const data = await resp.json();
+    let answer = '';
+    if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts)
+      for (const p of data.candidates[0].content.parts)
+        if (p.text) answer += p.text;
+    if (answer) {
+      lastGeminiChat = answer;
+      chatHistoryDiv.innerHTML += `<div><b style="color:#197e1e">Assistente:</b> ${answer}</div>`;
+    } else throw new Error('Resposta vazia ou erro no Gemini');
+  } catch (e) {
+    chatErrorMessageDiv.textContent = "Falha no Gemini: " + (e.message || e);
+  } finally {
+    document.getElementById('sendChat').disabled = false;
+  }
+};
+document.getElementById('insertTTS').onclick = function() {
+  if (lastGeminiChat) {
+    document.getElementById('texto').value = lastGeminiChat;
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+};
+
+// ÁUDIO (TTS) usando gemini-2.5-flash-tts
+document.getElementById('ttsBtn').onclick = async function() {
+  document.getElementById('audioResult').innerHTML = '';
+  document.getElementById('hex-debug').innerHTML = '';
+  const texto = document.getElementById('texto').value.trim();
+  const modelo = document.getElementById('modelo').value;
+  const voz = document.getElementById('voz').value;
+  const msgbox = document.getElementById('msg');
+  msgbox.textContent='';
+  if(!API_KEY){askApiKey();if(!API_KEY)return;}
+  if(!texto){msgbox.textContent='Digite algum texto.';return;}
+  let speechConfig = {voiceConfig:{prebuiltVoiceConfig:{voiceName:voz}}};
+  const payload={
+    contents:[{role:"user",parts:[{text:texto}]}],
+    generationConfig:{responseModalities:["AUDIO"],speechConfig}
+  };
+  document.getElementById('ttsBtn').disabled=true;
+  msgbox.textContent = 'Gerando... Aguarde.';
+  try {
+    const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${API_KEY}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)
+    });
+    const data=await resp.json();
+    if(!resp.ok) throw new Error((data.error && data.error.message)||'Falha desconhecida API Gemini');
+    let base64='',mimetype='';
+    if(data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts)
+      for(const p of data.candidates[0].content.parts)
+        if(p.inlineData&&p.inlineData.data){
+          base64=p.inlineData.data; mimetype=p.inlineData.mimeType||'audio/wav';
+        }
+    if(!base64){msgbox.textContent='API não retornou áudio.';return;}
+    function b64ToBytes(b){const bin=atob(b);return Uint8Array.from([...bin].map(c=>c.charCodeAt(0)));}
+    let audioBytes = b64ToBytes(base64);
+    document.getElementById('hex-debug').innerText="HEX PCM (primeiros 64 bytes):\n" + audioBytes.slice(0,64).join(' ');
+    let blob = new Blob([audioBytes],{type:'audio/wav'});
+    const url = URL.createObjectURL(blob);
+    document.getElementById('audioResult').innerHTML = `
+      <b>Formato Gemini:</b> ${mimetype}<br>
+      <b>Tamanho:</b> ${audioBytes.length} bytes<br>
+      <audio controls src="${url}" style="display:block"></audio>
+      <a download="voz-gemini-tts.wav" href="${url}">Baixar Áudio</a>
+      <div style="margin-top:.8em;color:#4caf50">✓ Pronto!</div>
+    `;
+    msgbox.textContent = '';
+  } catch(e) {
+    msgbox.textContent = 'Falha ao gerar áudio: ' + (e.message||e);
+    document.getElementById('audioResult').innerHTML='';
+    document.getElementById('hex-debug').innerHTML='';
+  } finally {
+    document.getElementById('ttsBtn').disabled=false;
+  }
+};
+</script>
 </body>
 </html>
