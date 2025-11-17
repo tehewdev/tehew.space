@@ -1,196 +1,204 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <title>Gemini TTS Diagnóstico WAV - Completo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor HTML ao Vivo</title>
+    <!-- Ícone (favicon) usando SVG emoji -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'><text y='1.2em' font-size='90'>🚀</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: #000;
+            padding: 15px;
+            text-align: center;
+            border-bottom: 2px solid #333;
+        }
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .editor-section {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            border-right: 2px solid #333;
+        }
+        .tabs {
+            display: flex;
+            background: #000;
+            border-bottom: 2px solid #333;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: #222;
+            border-right: 1px solid #333;
+            transition: background 0.3s;
+        }
+        .tab:hover {
+            background: #333;
+        }
+        .tab.active {
+            background: #1a1a1a;
+            color: #0f0;
+        }
+        textarea {
+            flex: 1;
+            background: #1a1a1a;
+            color: #0f0;
+            border: none;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+        }
+        .preview-section {
+            width: 50%;
+            background: #fff;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #fff;
+        }
+        .editor-panel {
+            display: none;
+            flex: 1;
+        }
+        .editor-panel.active {
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
 </head>
 <body>
-  <h1>Gemini TTS Diagnóstico WAV (Nov/2025)</h1>
-  
-  <h2>Chat para Aprimorar Frases TTS</h2>
-  <div id="chatHistory" style="border:1px solid #bbb;min-height:60px;padding:6px 8px;margin-bottom:5px;"></div>
-  <textarea id="chatInput" placeholder="Digite uma frase para aprimorar e gerar áudio..." rows="3" cols="60"></textarea><br>
-  <button type="button" id="sendChat">Aprimorar Frase (texto)</button>
-  <button type="button" id="insertTTS">Usar Frase Aprimorada no TTS</button>
-  <div id="chatErrorMessage" style="color:red;font-weight:bold;"></div>
-  <hr>
-
-  <h2>Diagnóstico Gemini TTS</h2>
-  <label for="texto">Texto para Áudio:</label><br>
-  <textarea id="texto" rows="3" cols="60"></textarea><br>
-  <label for="modelo">Modelo TTS:</label>
-  <select id="modelo">
-    <option value="gemini-2.5-flash-tts">Gemini 2.5 Flash TTS (stable)</option>
-    <option value="gemini-2.5-flash-preview-tts">Gemini 2.5 Flash TTS (preview)</option>
-  </select>
-  <br>
-  <label for="voz">Voz:</label>
-  <select id="voz">
-    <option>Zephyr</option>
-    <option>Orus</option>
-    <option>Kore</option>
-    <option>Achernar</option>
-    <option>Aoede</option>
-    <option>Autonoe</option>
-    <option>Callirrhoe</option>
-    <option>Despina</option>
-    <option>Erinome</option>
-    <option>Gacrux</option>
-    <option>Laomedeia</option>
-    <option>Leda</option>
-    <option>Pulcherrima</option>
-    <option>Sulafat</option>
-    <option>Vindemiatrix</option>
-    <option>Achird</option>
-    <option>Algenib</option>
-    <option>Algieba</option>
-    <option>Alnilam</option>
-    <option>Charon</option>
-    <option>Enceladus</option>
-    <option>Fenrir</option>
-    <option>Iapetus</option>
-    <option>Puck</option>
-    <option>Rasalgethi</option>
-    <option>Sadachbia</option>
-    <option>Sadaltager</option>
-    <option>Schedar</option>
-    <option>Umbriel</option>
-    <option>Zubenelgenubi</option>
-  </select>
-  <br>
-  <button id="ttsBtn">Gerar Áudio</button>
-  <div id="msg" style="color:red;font-weight:bold;"></div>
-  <div id="audioResult"></div>
-  <div id="hex-debug"></div>
-
-<script>
-// VARIÁVEIS BÁSICAS
-let API_KEY = localStorage.getItem('gemini_apikey') || '';
-function askApiKey(){
-  let key = prompt("Insira sua chave da API Gemini:");
-  if(key){key=key.trim();API_KEY=key;localStorage.setItem('gemini_apikey', key);}
+    <div class="header">
+        <h1>🚀 Editor HTML ao Vivo - thewee</h1>
+    </div>
+    
+    <div class="container">
+        <div class="editor-section">
+            <div class="tabs">
+                <div class="tab active" data-tab="html">HTML</div>
+                <div class="tab" data-tab="css">CSS</div>
+                <div class="tab" data-tab="js">JavaScript</div>
+            </div>
+            
+            <div class="editor-panel active" id="html-panel">
+                <textarea id="html-code" placeholder="Digite seu HTML aqui...">
+<h1>Olá, Mundo!</h1>
+<p>Edite este código e veja o resultado ao vivo!</p>
+<button onclick="alert('Funcionou!')">Clique aqui</button>
+                </textarea>
+            </div>
+            
+            <div class="editor-panel" id="css-panel">
+                <textarea id="css-code" placeholder="Digite seu CSS aqui...">
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
 }
-if(!API_KEY) askApiKey();
 
-const ttsManual = `
-🎙️ 1. Tom de Voz: “voz calma e reconfortante”, “tom autoritário e direto”, “voz trêmula e emocionada”, etc.
-🕓 2. Ritmo: “fale lentamente”, “acelerado e nervoso”, “com hesitação entre as palavras”...
-😮‍💨 3. Emoções: “alegria contagiante”, “voz embargada de tristeza”, “falando com raiva contida”...
-🎭 4. Estilo: “falando com um bebê”, “imitando apresentador culinário”, “narrador épico”, “sensualidade exagerada”...
-🔉 5. Sons/Efeitos: marcadores como (SUSPIRO), (PAUSA), (RISADA), (RONRONO)... simulam efeitos não-verbais e pausas.
-Use exemplos e marcadores para TTS expressivo conforme desejar.
-`;
+h1 {
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
 
-const systemPromptTTSManual = `Você é um assistente especializado em criar prompts para Texto-para-Fala (TTS) expressivo. Aprimore frases conforme o manual abaixo, só com exemplos prontos para uso, sempre em português do Brasil.
---- MANUAL ---
-${ttsManual}
---- FIM DO MANUAL ---
-`;
+button {
+    padding: 10px 20px;
+    background: #fff;
+    color: #667eea;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
 
-let lastGeminiChat = "";
+button:hover {
+    transform: scale(1.05);
+}
+                </textarea>
+            </div>
+            
+            <div class="editor-panel" id="js-panel">
+                <textarea id="js-code" placeholder="Digite seu JavaScript aqui...">
+console.log('Editor ao vivo carregado!');
 
-// CHAT EXPRESSIVO usando gemini-2.5-flash-lite (TEXTO)
-document.getElementById('sendChat').onclick = async function() {
-  const chatInput = document.getElementById('chatInput');
-  const chatErrorMessageDiv = document.getElementById('chatErrorMessage');
-  const chatHistoryDiv = document.getElementById('chatHistory');
-  const userMsg = chatInput.value.trim();
-  chatErrorMessageDiv.textContent = '';
-  if (!API_KEY) { askApiKey(); if(!API_KEY)return;}
-  if (!userMsg) { chatErrorMessageDiv.textContent = "Digite uma frase para aprimorar."; return; }
-  chatHistoryDiv.innerHTML += `<div><b style="color:#4285f4">Você:</b> ${userMsg}</div>`;
-  chatInput.value = '';
-  document.getElementById('sendChat').disabled = true;
-  try {
-    const payload = {
-      contents: [
-        { role: "system", parts: [{ text: systemPromptTTSManual }] },
-        { role: "user", parts: [{ text: userMsg }] }
-      ],
-      generationConfig: {
-        responseModalities: ["TEXT"]
-      }
-    };
-    const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key='+API_KEY, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const data = await resp.json();
-    let answer = '';
-    if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts)
-      for (const p of data.candidates[0].content.parts)
-        if (p.text) answer += p.text;
-    if (answer) {
-      lastGeminiChat = answer;
-      chatHistoryDiv.innerHTML += `<div><b style="color:#197e1e">Assistente:</b> ${answer}</div>`;
-    } else throw new Error('Resposta vazia ou erro no Gemini');
-  } catch (e) {
-    chatErrorMessageDiv.textContent = "Falha no Gemini: " + (e.message || e);
-  } finally {
-    document.getElementById('sendChat').disabled = false;
-  }
-};
-document.getElementById('insertTTS').onclick = function() {
-  if (lastGeminiChat) {
-    document.getElementById('texto').value = lastGeminiChat;
-    window.scrollTo({top:0,behavior:'smooth'});
-  }
-};
+// Adicione seu código JavaScript aqui
+                </textarea>
+            </div>
+        </div>
+        
+        <div class="preview-section">
+            <iframe id="preview"></iframe>
+        </div>
+    </div>
 
-// ÁUDIO (TTS) usando gemini-2.5-flash-tts
-document.getElementById('ttsBtn').onclick = async function() {
-  document.getElementById('audioResult').innerHTML = '';
-  document.getElementById('hex-debug').innerHTML = '';
-  const texto = document.getElementById('texto').value.trim();
-  const modelo = document.getElementById('modelo').value;
-  const voz = document.getElementById('voz').value;
-  const msgbox = document.getElementById('msg');
-  msgbox.textContent='';
-  if(!API_KEY){askApiKey();if(!API_KEY)return;}
-  if(!texto){msgbox.textContent='Digite algum texto.';return;}
-  let speechConfig = {voiceConfig:{prebuiltVoiceConfig:{voiceName:voz}}};
-  const payload={
-    contents:[{role:"user",parts:[{text:texto}]}],
-    generationConfig:{responseModalities:["AUDIO"],speechConfig}
-  };
-  document.getElementById('ttsBtn').disabled=true;
-  msgbox.textContent = 'Gerando... Aguarde.';
-  try {
-    const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${API_KEY}`,{
-      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)
-    });
-    const data=await resp.json();
-    if(!resp.ok) throw new Error((data.error && data.error.message)||'Falha desconhecida API Gemini');
-    let base64='',mimetype='';
-    if(data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts)
-      for(const p of data.candidates[0].content.parts)
-        if(p.inlineData&&p.inlineData.data){
-          base64=p.inlineData.data; mimetype=p.inlineData.mimeType||'audio/wav';
+    <script>
+        const htmlCode = document.getElementById('html-code');
+        const cssCode = document.getElementById('css-code');
+        const jsCode = document.getElementById('js-code');
+        const preview = document.getElementById('preview');
+        const tabs = document.querySelectorAll('.tab');
+        const panels = document.querySelectorAll('.editor-panel');
+
+        // Sistema de abas
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.dataset.tab;
+                tabs.forEach(t => t.classList.remove('active'));
+                panels.forEach(p => p.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(`${targetTab}-panel`).classList.add('active');
+            });
+        });
+
+        // Atualização em tempo real
+        function updatePreview() {
+            const html = htmlCode.value;
+            const css = `<style>${cssCode.value}</style>`;
+            const js = `<script>${jsCode.value}<\/script>`;
+            const fullCode = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    ${css}
+                </head>
+                <body>
+                    ${html}
+                    ${js}
+                </body>
+                </html>
+            `;
+            preview.srcdoc = fullCode;
         }
-    if(!base64){msgbox.textContent='API não retornou áudio.';return;}
-    function b64ToBytes(b){const bin=atob(b);return Uint8Array.from([...bin].map(c=>c.charCodeAt(0)));}
-    let audioBytes = b64ToBytes(base64);
-    document.getElementById('hex-debug').innerText="HEX PCM (primeiros 64 bytes):\n" + audioBytes.slice(0,64).join(' ');
-    let blob = new Blob([audioBytes],{type:'audio/wav'});
-    const url = URL.createObjectURL(blob);
-    document.getElementById('audioResult').innerHTML = `
-      <b>Formato Gemini:</b> ${mimetype}<br>
-      <b>Tamanho:</b> ${audioBytes.length} bytes<br>
-      <audio controls src="${url}" style="display:block"></audio>
-      <a download="voz-gemini-tts.wav" href="${url}">Baixar Áudio</a>
-      <div style="margin-top:.8em;color:#4caf50">✓ Pronto!</div>
-    `;
-    msgbox.textContent = '';
-  } catch(e) {
-    msgbox.textContent = 'Falha ao gerar áudio: ' + (e.message||e);
-    document.getElementById('audioResult').innerHTML='';
-    document.getElementById('hex-debug').innerHTML='';
-  } finally {
-    document.getElementById('ttsBtn').disabled=false;
-  }
-};
-</script>
+
+        // Event listeners para atualização em tempo real
+        htmlCode.addEventListener('input', updatePreview);
+        cssCode.addEventListener('input', updatePreview);
+        jsCode.addEventListener('input', updatePreview);
+
+        // Carrega preview inicial
+        updatePreview();
+    </script>
 </body>
 </html>
