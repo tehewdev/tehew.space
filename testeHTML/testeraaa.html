@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebAnalyzer Pro - OSINT Tool</title>
+    <script type="module" src="https://unpkg.com/spoilerjs/dist/components/spoiler-span.js"></script>
+    <style>
+        body {
+            min-height: 100vh;
+            background: #0a0e27;
+            color: #f1f5f9;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .hero { text-align: center; padding: 3rem 1rem; }
+        .hero h1 { font-size: 2.5rem; font-weight: 700; }
+        .search-wrapper { max-width: 600px; margin: 0 auto; }
+        .search-box { background: #1e2749; border-radius: 12px; padding: 1rem; }
+        .search-input-group { display: flex; gap: 1rem; }
+        .search-input-group input { flex: 1; padding: 1rem; font-size: 1.1rem; border-radius: 8px; border: none; background: #151b3d; color: #f1f5f9; }
+        .search-input-group button { padding: 1rem 2rem; background: linear-gradient(135deg,#6366f1,#8b5cf6); color: #fff; border-radius: 8px; font-weight: bold; border: none; cursor:pointer; }
+        .results-section { max-width: 1200px; margin: 2rem auto; background: #151b3d; border-radius: 18px; padding: 2rem 2rem; }
+        .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; }
+        .results-header h2 { font-size: 2rem; }
+        .results-stats { display:flex; gap:2rem; }
+        .stat { text-align:center; }
+        .stat-value { font-size: 1.5rem; color: #6366f1; font-weight: bold;}
+        .stat-label { font-size: .85rem; color: #94a3b8;}
+        .result-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(380px,1fr)); gap:2rem;}
+        .result-item { background:#1e2749; border-radius:14px;padding:1.2rem 1rem; box-shadow:0 6px 16px #0002;}
+        .result-item h3 { color:#8b5cf6; margin-bottom: 10px;}
+        .kv-list { display: grid; gap: 6px; }
+        .kv-item {display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #232d51;}
+        .kv-key { color: #94a3b8; font-weight:400;}
+        .kv-value, .kv-value.highlight {font-weight:520;color:#f1f5f9;}
+        .kv-value.highlight { color:#6366f1; }
+        .data-table { width: 100%; font-size: 0.97rem; border-spacing: 0; }
+        .data-table th {background:#232d51;color:#94a3b8;font-weight:600;text-align:left;padding:7px;}
+        .data-table td {padding:7px;color:#eaeafc;border-bottom:1px solid #232d51;}
+        .data-table tr:last-child td {border-bottom:none;}
+        .loading { margin: 1rem auto; border-radius: 50%; width: 24px; height: 24px; border: 3px solid #232d51; border-top-color:#6366f1; animation:spin .8s linear infinite; display:inline-block;}
+        @keyframes spin {to { transform: rotate(360deg); } }
+        spoiler-span { background: rgba(99, 102, 241, 0.2); padding: 2px 8px; border-radius: 6px; border: 1px solid #6366f1; margin: 0 2px;}
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>🔍 WebAnalyzer Pro</h1>
+        <p>Ferramenta OSINT para análise visual de websites</p>
+    </div>
+    <div class="search-wrapper">
+        <div class="search-box">
+            <div class="search-input-group">
+                <input type="text" id="urlInput" placeholder="Digite a URL para análise (ex: web-check.xyz)" value="web-check.xyz">
+                <button onclick="startAnalysis()"><span id="btnText">🚀 Analisar</span></button>
+            </div>
+        </div>
+    </div>
+    <div class="results-section" id="resultsSection" style="display:none">
+        <div class="results-header">
+            <h2>Resultados da Análise</h2>
+            <div class="results-stats">
+                <div class="stat"><div class="stat-value" id="statChecks">6</div><div class="stat-label">VERIFICAÇÕES</div></div>
+                <div class="stat"><div class="stat-value" id="statTime">1.2s</div><div class="stat-label">TEMPO</div></div>
+                <div class="stat"><div class="stat-value" id="statIssues">2</div><div class="stat-label">PROBLEMAS</div></div>
+            </div>
+        </div>
+        <div class="result-grid" id="resultGrid">
+            <!-- resultados visuais aparecem aqui pelo JS -->
+        </div>
+    </div>
+    <script>
+        class TinyRouter {
+            constructor() { this.routes = new Map(); }
+            get(path, handler) { this.routes.set(`GET:${path}`, handler); return this; }
+            async fetch(method, path, data) { const key = `${method}:${path}`; const handler = this.routes.get(key); return handler ? await handler(data) : { error: 'Route not found', status:404 }; }
+        }
+        const router = new TinyRouter();
+        router
+            .get('/api/ip', async (url) => {
+                await new Promise(r => setTimeout(r, 800));
+                return {
+                    ip: '104.21.93.141',
+                    location: 'San Francisco, CA, US',
+                    asn: 'AS13335 Cloudflare, Inc.',
+                    isp: 'Cloudflare',
+                    latitude: 37.7749,
+                    longitude: -122.4194
+                };
+            })
+            .get('/api/ssl', async (url) => {
+                await new Promise(r => setTimeout(r, 600));
+                return {
+                    issuer: 'Let\'s Encrypt',
+                    subject: url,
+                    validFrom: '2024-01-15T00:00:00Z',
+                    validTo: '2025-04-15T23:59:59Z',
+                    daysRemaining: 143,
+                    protocol: 'TLSv1.3',
+                    cipher: 'ECDHE-RSA-AES128-GCM-SHA256'
+                };
+            })
+            .get('/api/dns', async (url) => {
+                await new Promise(r => setTimeout(r, 700));
+                return {
+                    records: [
+                        { type: 'A', value: '104.21.93.141', ttl: 300 },
+                        { type: 'A', value: '172.67.173.77', ttl: 300 },
+                        { type: 'AAAA', value: '2606:4700::6815:5d8d', ttl: 300 },
+                        { type: 'MX', value: 'mail.example.com', priority: 10, ttl: 3600 },
+                        { type: 'TXT', value: 'v=spf1 include:_spf.google.com ~all', ttl: 3600 }
+                    ]
+                };
+            })
+            .get('/api/headers', async (url) => {
+                await new Promise(r => setTimeout(r, 500));
+                return {
+                    'strict-transport-security': 'max-age=31536000; includeSubDomains',
+                    'x-frame-options': 'SAMEORIGIN',
+                    'x-content-type-options': 'nosniff',
+                    'content-security-policy': 'default-src \'self\'',
+                    'x-xss-protection': '1; mode=block',
+                    'referrer-policy': 'strict-origin-when-cross-origin'
+                };
+            })
+            .get('/api/performance', async (url) => {
+                await new Promise(r => setTimeout(r, 1200));
+                return {
+                    lighthouse: {
+                        performance: 94,
+                        accessibility: 98,
+                        bestPractices: 92,
+                        seo: 100
+                    },
+                    metrics: {
+                        fcp: '1.2s',
+                        lcp: '2.1s',
+                        cls: 0.05,
+                        tti: '3.4s'
+                    }
+                };
+            })
+            .get('/api/tech', async (url) => {
+                await new Promise(r => setTimeout(r, 900));
+                return {
+                    technologies: [
+                        { name: 'React', category: 'JavaScript Framework', version: '18.2.0' },
+                        { name: 'Next.js', category: 'Web Framework', version: '13.4.0' },
+                        { name: 'Cloudflare', category: 'CDN', version: null },
+                        { name: 'Vercel', category: 'Hosting', version: null }
+                    ]
+                };
+            });
+
+        window.startAnalysis = async function() {
+            const urlInput = document.getElementById('urlInput');
+            const url = urlInput.value.trim();
+            if (!url) { alert('Por favor, insira uma URL válida'); return; }
+            const btnText = document.getElementById('btnText');
+            const resultsSection = document.getElementById('resultsSection');
+            const resultGrid = document.getElementById('resultGrid');
+            btnText.innerHTML = '<span class="loading"></span>';
+            resultsSection.style.display = 'block';
+            resultGrid.innerHTML = '<div style="text-align: center; padding: 2rem;"><div class="loading"></div><p style="margin-top: 1rem; color: #94a3b8;">Executando análise completa...</p></div>';
+            const startTime = Date.now();
+            try {
+                const [ip, ssl, dns, headers, performance, tech] = await Promise.all([
+                    router.fetch('GET', '/api/ip', url),
+                    router.fetch('GET', '/api/ssl', url),
+                    router.fetch('GET', '/api/dns', url),
+                    router.fetch('GET', '/api/headers', url),
+                    router.fetch('GET', '/api/performance', url),
+                    router.fetch('GET', '/api/tech', url)
+                ]);
+
+                const endTime = Date.now();
+                const duration = ((endTime - startTime) / 1000).toFixed(1);
+                document.getElementById('statChecks').textContent = '6';
+                document.getElementById('statTime').textContent = `${duration}s`;
+                document.getElementById('statIssues').textContent = '2';
+
+                // RESULTADOS VISUAIS ESTRUTURADOS:
+                resultGrid.innerHTML = `
+<div class="result-item">
+    <h3>🌐 IP Information</h3>
+    <div class="kv-list">
+    <div class="kv-item"><span class="kv-key">Endereço IP</span><span class="kv-value highlight">${ip.ip}</span></div>
+    <div class="kv-item"><span class="kv-key">Localização</span><span class="kv-value">${ip.location}</span></div>
+    <div class="kv-item"><span class="kv-key">ASN</span><span class="kv-value">${ip.asn}</span></div>
+    <div class="kv-item"><span class="kv-key">Provedor</span><span class="kv-value">${ip.isp}</span></div>
+    <div class="kv-item"><span class="kv-key">Coordenadas</span><span class="kv-value">${ip.latitude}, ${ip.longitude}</span></div>
+    </div>
+</div>
+<div class="result-item">
+    <h3>🔒 SSL Certificate</h3>
+    <div class="kv-list">
+        <div class="kv-item"><span class="kv-key">Emissor</span><span class="kv-value">${ssl.issuer}</span></div>
+        <div class="kv-item"><span class="kv-key">Domínio</span><span class="kv-value highlight">${ssl.subject}</span></div>
+        <div class="kv-item"><span class="kv-key">Válido De</span><span class="kv-value">${ssl.validFrom.split('T')[0]}</span></div>
+        <div class="kv-item"><span class="kv-key">Válido Até</span><span class="kv-value">${ssl.validTo.split('T')[0]}</span></div>
+        <div class="kv-item"><span class="kv-key">Dias Restantes</span><span class="kv-value highlight">${ssl.daysRemaining} dias</span></div>
+        <div class="kv-item"><span class="kv-key">Protocolo</span><span class="kv-value">${ssl.protocol}</span></div>
+        <div class="kv-item"><span class="kv-key">Cipher</span><span class="kv-value">${ssl.cipher}</span></div>
+    </div>
+</div>
+<div class="result-item">
+    <h3>📋 DNS Records</h3>
+    <table class="data-table">
+        <thead>
+          <tr><th>Tipo</th><th>Valor</th><th>TTL</th></tr>
+        </thead>
+        <tbody>
+          ${dns.records.map(rec => `
+            <tr>
+              <td>${rec.type}</td>
+              <td>${rec.value}${rec.priority ? ` (${rec.priority})` : ''}</td>
+              <td>${rec.ttl}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+    </table>
+</div>
+<div class="result-item">
+    <h3>🛡️ Security Headers</h3>
+    <div class="kv-list">
+      <div class="kv-item"><span class="kv-key">Strict-Transport-Security</span><span class="kv-value">${headers['strict-transport-security']}</span></div>
+      <div class="kv-item"><span class="kv-key">X-Frame-Options</span><span class="kv-value highlight">${headers['x-frame-options']}</span></div>
+      <div class="kv-item"><span class="kv-key">X-Content-Type-Options</span><span class="kv-value highlight">${headers['x-content-type-options']}</span></div>
+      <div class="kv-item"><span class="kv-key">Content-Security-Policy</span><span class="kv-value">${headers['content-security-policy']}</span></div>
+      <div class="kv-item"><span class="kv-key">X-XSS-Protection</span><span class="kv-value">${headers['x-xss-protection']}</span></div>
+      <div class="kv-item"><span class="kv-key">Referrer-Policy</span><span class="kv-value">${headers['referrer-policy']}</span></div>
+    </div>
+</div>
+<div class="result-item">
+    <h3>⚡ Performance Metrics</h3>
+    <div class="kv-list">
+      <div class="kv-item"><span class="kv-key">Performance</span><span class="kv-value highlight">${performance.lighthouse.performance}/100</span></div>
+      <div class="kv-item"><span class="kv-key">Accessibility</span><span class="kv-value highlight">${performance.lighthouse.accessibility}/100</span></div>
+      <div class="kv-item"><span class="kv-key">Best Practices</span><span class="kv-value highlight">${performance.lighthouse.bestPractices}/100</span></div>
+      <div class="kv-item"><span class="kv-key">SEO</span><span class="kv-value highlight">${performance.lighthouse.seo}/100</span></div>
+      <div class="kv-item"><span class="kv-key">FCP</span><span class="kv-value">${performance.metrics.fcp}</span></div>
+      <div class="kv-item"><span class="kv-key">LCP</span><span class="kv-value">${performance.metrics.lcp}</span></div>
+      <div class="kv-item"><span class="kv-key">CLS</span><span class="kv-value">${performance.metrics.cls}</span></div>
+      <div class="kv-item"><span class="kv-key">TTI</span><span class="kv-value">${performance.metrics.tti}</span></div>
+    </div>
+</div>
+<div class="result-item">
+    <h3>🔧 Technology Stack</h3>
+    <table class="data-table">
+      <thead>
+        <tr><th>Tecnologia</th><th>Categoria</th><th>Versão</th></tr>
+      </thead>
+      <tbody>
+        ${tech.technologies.map(t => `
+          <tr>
+            <td>${t.name}</td>
+            <td>${t.category}</td>
+            <td>${t.version || '-'}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+</div>
+                `;
+                resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } catch (error) {
+                resultGrid.innerHTML = `<div class="result-item" style="border-left-color: #ef4444"><h3 style="color: #ef4444">❌ Erro na Análise</h3><div class="kv-list">${error.message}</div></div>`;
+            } finally {
+                btnText.innerHTML = '🚀 Analisar';
+            }
+        };
+
+        document.getElementById('urlInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') startAnalysis();
+        });
+    </script>
+</body>
+</html>
+>
