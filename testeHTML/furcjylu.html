@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perto do Coração</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Quicksand:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(135deg, #ffafbd, #ffc3a0);
+            color: #5a3d5c;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .header {
+            background: linear-gradient(to right, #e91e63, #9c27b0);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        h1 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            font-weight: 300;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .heart-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 20px auto 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .heart {
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            background-color: #e91e63;
+            transform: rotate(45deg);
+            animation: heartbeat 1.5s infinite;
+            box-shadow: 0 0 30px rgba(233, 30, 99, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .heart:hover {
+            background-color: #ff4081;
+            transform: rotate(45deg) scale(1.1);
+        }
+        
+        .heart:before,
+        .heart:after {
+            content: '';
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            background-color: #e91e63;
+            border-radius: 50%;
+        }
+        
+        .heart:before {
+            top: -90px;
+            left: 0;
+        }
+        
+        .heart:after {
+            top: 0;
+            left: -90px;
+        }
+        
+        .heart-text {
+            position: absolute;
+            z-index: 10;
+            color: white;
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.2rem;
+            text-align: center;
+            transform: rotate(-45deg);
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+            max-width: 150px;
+            transition: all 0.3s ease;
+        }
+        
+        .heart:hover .heart-text {
+            font-size: 2.4rem;
+        }
+        
+        .message {
+            background-color: #f9f7fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid #e91e63;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            text-align: center;
+            max-width: 700px;
+        }
+        
+        .message p {
+            margin-bottom: 15px;
+        }
+        
+        .interactive-section {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .interactive-btn {
+            background: linear-gradient(to right, #e91e63, #9c27b0);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-family: 'Quicksand', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 5px 15px rgba(233, 30, 99, 0.4);
+        }
+        
+        .interactive-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(233, 30, 99, 0.6);
+        }
+        
+        .secret-message {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #fff0f7;
+            border-radius: 15px;
+            border: 2px dashed #e91e63;
+            text-align: center;
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.8rem;
+            color: #9c27b0;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes heartbeat {
+            0% { transform: rotate(45deg) scale(1); }
+            5% { transform: rotate(45deg) scale(1.1); }
+            10% { transform: rotate(45deg) scale(1); }
+            15% { transform: rotate(45deg) scale(1.2); }
+            50% { transform: rotate(45deg) scale(1); }
+            100% { transform: rotate(45deg) scale(1); }
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 2.8rem; }
+            .content { padding: 25px; }
+            .heart-container { width: 250px; height: 250px; }
+            .heart, .heart:before, .heart:after { width: 150px; height: 150px; }
+            .heart:before { top: -75px; }
+            .heart:after { left: -75px; }
+            .heart-text { font-size: 1.8rem; max-width: 120px; }
+        }
+        
+        @media (max-width: 480px) {
+            h1 { font-size: 2.2rem; }
+            .header { padding: 20px; }
+            .content { padding: 20px; }
+            .heart-container { width: 200px; height: 200px; }
+            .heart, .heart:before, .heart:after { width: 120px; height: 120px; }
+            .heart:before { top: -60px; }
+            .heart:after { left: -60px; }
+            .heart-text { font-size: 1.5rem; max-width: 100px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Perto do Coração</h1>
+            <div class="subtitle">Uma mensagem especial para alguém único</div>
+        </div>
+        
+        <div class="content">
+            <div class="heart-container">
+                <div class="heart" id="mainHeart">
+                    <div class="heart-text">Clique em mim</div>
+                </div>
+            </div>
+            
+            <div class="message">
+                <p>Às vezes, as palavras são apenas símbolos que tentam expressar o que sentimos. E o que sinto é que há uma conexão especial que não pode ser medida pela distância física, mas sim pela proximidade dos corações.</p>
+                <p>A inteligência nos aproxima das ideias, mas é a sensibilidade que nos aproxima das pessoas. E você, com sua essência única, tem essa capacidade rara de estar presente mesmo quando não está ao lado.</p>
+                <p>Esta página é apenas um pequeno reflexo dessa conexão - interativa, colorida e, acima de tudo, sincera.</p>
+            </div>
+            
+            <div class="interactive-section">
+                <button class="interactive-btn" id="loveBtn">
+                    <i class="fas fa-heart"></i> Mais Amor
+                </button>
+                <button class="interactive-btn" id="secretBtn">
+                    <i class="fas fa-key"></i> Mensagem Secreta
+                </button>
+                <button class="interactive-btn" id="surpriseBtn">
+                    <i class="fas fa-star"></i> Surpresa
+                </button>
+            </div>
+            
+            <div class="secret-message" id="secretMessage">
+                <p>O verdadeiro tesouro não está no que vemos, mas no que sentimos. E sentir sua energia, mesmo à distância, é um presente que guardo perto do meu coração. ❤️</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Criado com ❤️ especialmente para você | Esta página responde ao comando: "um pouco mais perto do coração"</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const heart = document.getElementById('mainHeart');
+            const heartText = document.querySelector('.heart-text');
+            const loveBtn = document.getElementById('loveBtn');
+            const secretBtn = document.getElementById('secretBtn');
+            const surpriseBtn = document.getElementById('surpriseBtn');
+            const secretMessage = document.getElementById('secretMessage');
+            const messageBox = document.querySelector('.message');
+            
+            // Textos alternativos para o coração
+            const heartMessages = [
+                "Você é especial",
+                "Perto do coração",
+                "Sinto sua energia",
+                "Conexão única",
+                "Você me inspira",
+                "Alma gêmea?",
+                "Mais que palavras"
+            ];
+            
+            // Mensagens para a caixa de texto
+            const loveMessages = [
+                "O amor não se vê com os olhos, mas com o coração. - William Shakespeare",
+                "Amar não é olhar um para o outro, é olhar juntos na mesma direção. - Antoine de Saint-Exupéry",
+                "O amor é a única força capaz de transformar um inimigo em amigo. - Martin Luther King",
+                "A vida é a arte do encontro, embora haja tanto desencontro pela vida. - Vinicius de Moraes",
+                "O amor é como o vento: você não pode vê-lo, mas pode senti-lo. - Nicholas Sparks"
+            ];
+            
+            let currentHeartMessage = 0;
+            let currentLoveMessage = 0;
+            
+            // Interação com o coração
+            heart.addEventListener('click', function() {
+                currentHeartMessage = (currentHeartMessage + 1) % heartMessages.length;
+                heartText.textContent = heartMessages[currentHeartMessage];
+                
+                // Efeito visual
+                heart.style.animation = 'none';
+                void heart.offsetWidth; // Trigger reflow
+                heart.style.animation = 'heartbeat 1.5s infinite';
+                
+                // Efeito de cor aleatória
+                const hue = Math.floor(Math.random() * 360);
+                heart.style.backgroundColor = `hsl(${hue}, 70%, 60%)`;
+                heart.style.boxShadow = `0 0 30px hsla(${hue}, 70%, 60%, 0.5)`;
+            });
+            
+            // Botão "Mais Amor"
+            loveBtn.addEventListener('click', function() {
+                currentLoveMessage = (currentLoveMessage + 1) % loveMessages.length;
+                
+                // Atualiza a mensagem com efeito
+                messageBox.style.opacity = '0';
+                setTimeout(() => {
+                    messageBox.innerHTML = `<p>${loveMessages[currentLoveMessage]}</p>`;
+                    messageBox.style.opacity = '1';
+                }, 300);
+                
+                // Efeito no botão
+                loveBtn.classList.add('pulse');
+                setTimeout(() => loveBtn.classList.remove('pulse'), 1000);
+            });
+            
+            // Botão "Mensagem Secreta"
+            secretBtn.addEventListener('click', function() {
+                secretMessage.style.display = secretMessage.style.display === 'block' ? 'none' : 'block';
+                
+                // Efeito visual
+                if (secretMessage.style.display === 'block') {
+                    secretMessage.style.animation = 'none';
+                    void secretMessage.offsetWidth;
+                    secretMessage.style.animation = 'pulse 2s';
+                    secretBtn.innerHTML = '<i class="fas fa-key"></i> Ocultar Mensagem';
+                } else {
+                    secretBtn.innerHTML = '<i class="fas fa-key"></i> Mensagem Secreta';
+                }
+            });
+            
+            // Botão "Surpresa"
+            surpriseBtn.addEventListener('click', function() {
+                // Altera as cores da página
+                const hues = [0, 30, 60, 120, 180, 240, 300];
+                const randomHue = hues[Math.floor(Math.random() * hues.length)];
+                
+                document.body.style.background = `linear-gradient(135deg, hsl(${randomHue}, 100%, 85%), hsl(${randomHue + 30}, 100%, 85%))`;
+                
+                // Efeito nos botões
+                const buttons = document.querySelectorAll('.interactive-btn');
+                buttons.forEach(btn => {
+                    btn.style.background = `linear-gradient(to right, hsl(${randomHue}, 70%, 60%), hsl(${randomHue + 30}, 70%, 60%))`;
+                });
+                
+                // Efeito no header
+                document.querySelector('.header').style.background = `linear-gradient(to right, hsl(${randomHue}, 70%, 60%), hsl(${randomHue + 30}, 70%, 60%))`;
+                
+                // Feedback visual
+                surpriseBtn.innerHTML = '<i class="fas fa-check"></i> Surpresa Aplicada!';
+                setTimeout(() => {
+                    surpriseBtn.innerHTML = '<i class="fas fa-star"></i> Surpresa';
+                }, 2000);
+            });
+            
+            // Inicializa com uma mensagem aleatória no coração
+            heartText.textContent = heartMessages[Math.floor(Math.random() * heartMessages.length)];
+        });
+    </script>
+</body>
+</html>
